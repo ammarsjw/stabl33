@@ -139,7 +139,7 @@ contract BuyAndBond is Ownable {
         amountToken -= _amountStabl3.mul(discount).div(100);
 
         Bond memory bond = Bond(getBonds[msg.sender].length, msg.sender, true, _amountStabl3, _token, amountToken, block.timestamp);
-        emit CreatedBond(getBonds[msg.sender].length, msg.sender, _amountStabl3, _token, amountToken);
+        emit CreatedBond(bond.index, bond.recipient, bond.amountStabl3, bond.token, bond.amountToken);
         getBonds[msg.sender].push(bond);
 
         uint256 amountTreasury = amountToken.mul(treasuryPercentages[1]).roundDiv(1000);
@@ -162,5 +162,7 @@ contract BuyAndBond is Ownable {
         stabl3.transferFrom(treasuryWallet, msg.sender, bond.amountStabl3);
 
         bond.status = false;
+
+        emit ClaimedBond(bond.index, bond.recipient, bond.amountStabl3, bond.token, bond.amountToken);
     }
 }
