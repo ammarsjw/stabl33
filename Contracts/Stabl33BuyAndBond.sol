@@ -24,6 +24,7 @@ contract Stabl33BuyAndBond is Ownable {
     IERC20 public stabl3 = IERC20(0x20A91B0d2A5545BF05bcA96778e138E2E154e083);
 
     uint256 public discount;
+
     uint256 public bondTime;
 
     bool public saleState;
@@ -78,6 +79,8 @@ contract Stabl33BuyAndBond is Ownable {
         addSupportedToken(dai, true);
 
         discount = 10;
+
+        // TODO
         // bondTime = 30 days;
         bondTime = 1 minutes;
     }
@@ -118,14 +121,31 @@ contract Stabl33BuyAndBond is Ownable {
         return totalTokenAmounts[token];
     }
 
+    function _processAmount(IERC20 _token, uint256 _amountToken) internal view returns (uint256) {
+        if (_token.decimals() > 6) {
+            uint256 reduceBy = _token.decimals() - stabl3.decimals();
+            _amountToken = _amountToken.div(reduceBy);
+        }
+        else if (_token.decimals() < 6) {
+            uint256 increaseBy = stabl3.decimals() - _token.decimals();
+            _amountToken = _amountToken.mul(increaseBy);
+        }
+
+        return _amountToken;
+    }
+
     function buy(uint256 _amountStabl3, IERC20 _token) external {
         require(getSupportedTokens[_token], "STABL33: Token not supported");
         require(_amountStabl3 > 0, "STABL33: Amount should be greater than zero");
 
         stabl3.transferFrom(treasuryWallet, msg.sender, _amountStabl3);
 
-        // TODO
-        uint256 amountToken = _amountStabl3;
+        // TODO get true rate from treasury
+        uint256 rate = 0.0007 * (10 ** 18);
+
+        uint256 amountToken = _amountStabl3.mul(rate).div(10 ** 18);
+
+        amountToken = _processAmount(_token, amountToken);
 
         totalTokenAmounts[_token] += amountToken;
 
@@ -145,8 +165,13 @@ contract Stabl33BuyAndBond is Ownable {
         require(getSupportedTokens[_token], "STABL33: Token not supported");
         require(_amountStabl3 > 0, "STABL33: Amount should be greater than zero");
 
-        // TODO
-        uint256 amountToken = _amountStabl3;
+        // TODO get true rate from treasury
+        uint256 rate = 0.0007 * (10 ** 18);
+
+        uint256 amountToken = _amountStabl3.mul(rate).div(10 ** 18);
+
+        amountToken = _processAmount(_token, amountToken);
+
         amountToken -= amountToken.mul(discount).div(100);
 
         totalTokenAmounts[_token] += amountToken;

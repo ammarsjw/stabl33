@@ -112,7 +112,7 @@ contract Stabl33Staking is Ownable {
         emit AddedSupportedToken(token, state);
     }
 
-    function validateStaking(IERC20 _token, uint256 _amountToken) internal view returns (bool) {
+    function _validateStaking(IERC20 _token, uint256 _amountToken) internal view returns (bool) {
         uint256 maxStakePool;
         uint256 currentStakePool;
 
@@ -151,7 +151,7 @@ contract Stabl33Staking is Ownable {
         require(getSupportedTokens[_token], "STABL33: Token not supported");
         require(_amountToken > 0, "STABL33: Amount should be greater than zero");
         require(1 <= _stakingType && _stakingType <= 4, "STABL33: Incorrect staking type");
-        require(validateStaking(_token, _amountToken), "STABL33: Staking pool limit reached");
+        require(_validateStaking(_token, _amountToken), "STABL33: Staking pool limit reached");
 
         Staking memory staking = Staking(
             getStakings[msg.sender].length,
