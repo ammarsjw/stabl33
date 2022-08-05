@@ -78,6 +78,7 @@ contract Stabl33BuyAndBond is Ownable {
         addSupportedToken(usdc, true);
         addSupportedToken(dai, true);
 
+        // TODO confirm
         discount = 10;
 
         // TODO
@@ -121,72 +122,72 @@ contract Stabl33BuyAndBond is Ownable {
         return totalTokenAmounts[token];
     }
 
-    function _processAmount(IERC20 _token, uint256 _amountToken) internal view returns (uint256) {
+    function _processAmount(uint256 _amountStabl3, IERC20 _token) internal view returns (uint256) {
         if (_token.decimals() > 6) {
             uint256 reduceBy = _token.decimals() - stabl3.decimals();
-            _amountToken = _amountToken.div(reduceBy);
+            _amountStabl3 = _amountStabl3.div(reduceBy);
         }
         else if (_token.decimals() < 6) {
             uint256 increaseBy = stabl3.decimals() - _token.decimals();
-            _amountToken = _amountToken.mul(increaseBy);
+            _amountStabl3 = _amountStabl3.mul(increaseBy);
         }
 
-        return _amountToken;
+        return _amountStabl3;
     }
 
-    function buy(uint256 _amountStabl3, IERC20 _token) external {
+    function buy(IERC20 _token, uint256 _amountToken) external {
         require(getSupportedTokens[_token], "STABL33: Token not supported");
-        require(_amountStabl3 > 0, "STABL33: Amount should be greater than zero");
-
-        stabl3.transferFrom(treasuryWallet, msg.sender, _amountStabl3);
+        require(_amountToken > 0, "STABL33: Amount should be greater than zero");
 
         // TODO get true rate from treasury
         uint256 rate = 0.0007 * (10 ** 18);
 
-        uint256 amountToken = _amountStabl3.mul(rate).div(10 ** 18);
+        uint256 amountStabl3 = _amountToken.mul(rate).div(10 ** 18);
 
-        amountToken = _processAmount(_token, amountToken);
+        amountStabl3 = _processAmount(amountStabl3, _token);
 
-        totalTokenAmounts[_token] += amountToken;
+        totalTokenAmounts[_token] += _amountToken;
 
-        uint256 amountTreasury = amountToken.mul(treasuryPercentages[0]).roundDiv(1000);
+        stabl3.transferFrom(treasuryWallet, msg.sender, amountStabl3);
+
+        uint256 amountTreasury = _amountToken.mul(treasuryPercentages[0]).roundDiv(1000);
         SafeERC20.safeTransferFrom(_token, msg.sender, treasuryWallet, amountTreasury);
 
-        uint256 amountROI = amountToken.mul(ROIPercentages[0]).roundDiv(1000);
+        uint256 amountROI = _amountToken.mul(ROIPercentages[0]).roundDiv(1000);
         SafeERC20.safeTransferFrom(_token, msg.sender, ROIWallet, amountROI);
 
-        uint256 amountHQ = amountToken.mul(HQPercentages[0]).roundDiv(1000);
+        uint256 amountHQ = _amountToken.mul(HQPercentages[0]).roundDiv(1000);
         SafeERC20.safeTransferFrom(_token, msg.sender, HQWallet, amountHQ);
 
-        emit Buy(msg.sender, _amountStabl3, _token, amountToken);
+        emit Buy(msg.sender, amountStabl3, _token, _amountToken);
     }
 
-    function createBond(uint256 _amountStabl3, IERC20 _token) external {
+    function createBond(IERC20 _token, uint256 _amountToken) external {
         require(getSupportedTokens[_token], "STABL33: Token not supported");
-        require(_amountStabl3 > 0, "STABL33: Amount should be greater than zero");
+        require(_amountToken > 0, "STABL33: Amount should be greater than zero");
 
         // TODO get true rate from treasury
         uint256 rate = 0.0007 * (10 ** 18);
 
-        uint256 amountToken = _amountStabl3.mul(rate).div(10 ** 18);
+        uint256 amountStabl3 = _amountToken.mul(rate).div(10 ** 18);
 
-        amountToken = _processAmount(_token, amountToken);
+        amountStabl3 = _processAmount(amountStabl3, _token);
 
-        amountToken -= amountToken.mul(discount).div(100);
+        amountStabl3 += amountStabl3.mul(discount).div(100);
 
-        totalTokenAmounts[_token] += amountToken;
+        totalTokenAmounts[_token] += _amountToken;
 
-        Bond memory bond = Bond(getBonds[msg.sender].length, msg.sender, true, _amountStabl3, _token, amountToken, block.timestamp + bondTime);
+        Bond memory bond = Bond(getBonds[msg.sender].length, msg.sender, true, amountStabl3, _token, _amountToken, block.timestamp + bondTime);
         emit CreatedBond(bond.index, bond.recipient, bond.amountStabl3, bond.token, bond.amountToken);
         getBonds[msg.sender].push(bond);
 
-        uint256 amountTreasury = amountToken.mul(treasuryPercentages[1]).roundDiv(1000);
+        uint256 amountTreasury = _amountToken.mul(treasuryPercentages[1]).roundDiv(1000);
         SafeERC20.safeTransferFrom(_token, msg.sender, treasuryWallet, amountTreasury);
 
-        uint256 amountROI = amountToken.mul(ROIPercentages[1]).roundDiv(1000);
+        uint256 amountROI = _amountToken.mul(ROIPercentages[1]).roundDiv(1000);
         SafeERC20.safeTransferFrom(_token, msg.sender, ROIWallet, amountROI);
 
-        uint256 amountHQ = amountToken.mul(HQPercentages[1]).roundDiv(1000);
+        uint256 amountHQ = _amountToken.mul(HQPercentages[1]).roundDiv(1000);
         SafeERC20.safeTransferFrom(_token, msg.sender, HQWallet, amountHQ);
     }
 
