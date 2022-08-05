@@ -6,6 +6,11 @@ pragma solidity ^0.8.0;
  */
 interface IERC20 {
     /**
+     * @dev Returns the amount of decimals for the token.
+     */
+    function decimals() external view returns (uint8);
+
+    /**
      * @dev Returns the amount of tokens in existence.
      */
     function totalSupply() external view returns (uint256);

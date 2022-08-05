@@ -3,13 +3,11 @@
 pragma solidity 0.8.15;
 
 import "./Ownable.sol";
-import "./SafeMath.sol";
+import "./SafeMathUpgradeable.sol";
 import "./SafeERC20.sol";
-import "./MathUpgradeable.sol";
 
-contract BuyAndBond is Ownable {
-    using SafeMath for uint256;
-    using MathUpgradeable for uint256;
+contract Stabl33BuyAndBond is Ownable {
+    using SafeMathUpgradeable for uint256;
     using SafeERC20 for IERC20;
 
     address public treasuryWallet;
@@ -20,15 +18,15 @@ contract BuyAndBond is Ownable {
     uint256[] public ROIPercentages;
     uint256[] public HQPercentages;
 
-    IERC20 usdc = IERC20(0x8Af5a6599BD2406C44588FCf84FD6Eb1bB2e0243);
-    IERC20 dai = IERC20(0xA83a21816ae63D3315c540396f887F53cfF274fA);
+    IERC20 public usdc = IERC20(0x8Af5a6599BD2406C44588FCf84FD6Eb1bB2e0243);
+    IERC20 public dai = IERC20(0xA83a21816ae63D3315c540396f887F53cfF274fA);
 
-    IERC20 stabl3 = IERC20(0x20A91B0d2A5545BF05bcA96778e138E2E154e083);
+    IERC20 public stabl3 = IERC20(0x20A91B0d2A5545BF05bcA96778e138E2E154e083);
 
-    uint256 discount;
-    uint256 bondTime;
+    uint256 public discount;
+    uint256 public bondTime;
 
-    bool saleState;
+    bool public saleState;
 
     // structs
 
@@ -39,16 +37,19 @@ contract BuyAndBond is Ownable {
         uint256 amountStabl3;
         IERC20 token;
         uint256 amountToken;
-        uint256 startTime;
+        uint256 endTime;
     }
 
     // mappings
 
     // ongoing bonds
-    mapping(address => Bond[]) public getBonds;
+    mapping (address => Bond[]) public getBonds;
 
     // supported tokens to buy STABL3
-    mapping(IERC20 => bool) public getSupportedTokens;
+    mapping (IERC20 => bool) public getSupportedTokens;
+
+    // total amount of tokens received
+    mapping (IERC20 => uint256) totalTokenAmounts;
 
     // events
 
@@ -61,6 +62,8 @@ contract BuyAndBond is Ownable {
     event UpdatedDiscount(uint256 newAmount, uint256 oldAmount);
 
     event AddedSupportedToken(IERC20 token, bool state);
+
+    // constructor
 
     constructor() {
         treasuryWallet = 0x49A61ba8E25FBd58cE9B30E1276c4Eb41dD80a80;
@@ -111,13 +114,20 @@ contract BuyAndBond is Ownable {
         emit AddedSupportedToken(token, state);
     }
 
+    function getTotalTokenAmounts(IERC20 token) external view returns (uint256) {
+        return totalTokenAmounts[token];
+    }
+
     function buy(uint256 _amountStabl3, IERC20 _token) external {
         require(getSupportedTokens[_token], "STABL33: Token not supported");
         require(_amountStabl3 > 0, "STABL33: Amount should be greater than zero");
 
         stabl3.transferFrom(treasuryWallet, msg.sender, _amountStabl3);
 
+        // TODO
         uint256 amountToken = _amountStabl3;
+
+        totalTokenAmounts[_token] += amountToken;
 
         uint256 amountTreasury = amountToken.mul(treasuryPercentages[0]).roundDiv(1000);
         SafeERC20.safeTransferFrom(_token, msg.sender, treasuryWallet, amountTreasury);
@@ -135,10 +145,13 @@ contract BuyAndBond is Ownable {
         require(getSupportedTokens[_token], "STABL33: Token not supported");
         require(_amountStabl3 > 0, "STABL33: Amount should be greater than zero");
 
+        // TODO
         uint256 amountToken = _amountStabl3;
-        amountToken -= _amountStabl3.mul(discount).div(100);
+        amountToken -= amountToken.mul(discount).div(100);
 
-        Bond memory bond = Bond(getBonds[msg.sender].length, msg.sender, true, _amountStabl3, _token, amountToken, block.timestamp);
+        totalTokenAmounts[_token] += amountToken;
+
+        Bond memory bond = Bond(getBonds[msg.sender].length, msg.sender, true, _amountStabl3, _token, amountToken, block.timestamp + bondTime);
         emit CreatedBond(bond.index, bond.recipient, bond.amountStabl3, bond.token, bond.amountToken);
         getBonds[msg.sender].push(bond);
 
@@ -152,12 +165,11 @@ contract BuyAndBond is Ownable {
         SafeERC20.safeTransferFrom(_token, msg.sender, HQWallet, amountHQ);
     }
 
-    function claimBond(uint256 index, IERC20 _token) external {
+    function claimBond(uint256 index) external {
         Bond storage bond = getBonds[msg.sender][index];
 
-        require(getSupportedTokens[_token], "STABL33: Token not supported");
         require(bond.status, "STABL33: Bond already claimed");
-        require(block.timestamp > bond.startTime.add(bondTime), "STABL33: Bond time not finished");
+        require(block.timestamp > bond.endTime, "STABL33: Bond time not finished");
 
         stabl3.transferFrom(treasuryWallet, msg.sender, bond.amountStabl3);
 

@@ -13,7 +13,7 @@ pragma solidity ^0.8.0;
  * NOTE: `SafeMath` is generally not needed starting with Solidity 0.8, since the compiler
  * now has built in overflow checking.
  */
-library SafeMath {
+library SafeMathUpgradeable {
     /**
      * @dev Returns the addition of two unsigned integers, with an overflow flag.
      *
@@ -222,6 +222,68 @@ library SafeMath {
         unchecked {
             require(b > 0, errorMessage);
             return a % b;
+        }
+    }
+
+    /**
+     * @dev Returns the largest of two numbers.
+     */
+    function max(uint256 a, uint256 b) internal pure returns (uint256) {
+        return a >= b ? a : b;
+    }
+
+    /**
+     * @dev Returns the smallest of two numbers.
+     */
+    function min(uint256 a, uint256 b) internal pure returns (uint256) {
+        return a < b ? a : b;
+    }
+
+    /**
+     * @dev Returns the average of two numbers. The result is rounded towards
+     * zero.
+     */
+    function average(uint256 a, uint256 b) internal pure returns (uint256) {
+        // (a + b) / 2 can overflow.
+        return (a & b) + (a ^ b) / 2;
+    }
+
+    /**
+     * @dev Returns the ceiling of the division of two numbers.
+     *
+     * This differs from standard division with `/` in that it rounds up instead
+     * of rounding down.
+     */
+    function ceilDiv(uint256 a, uint256 b) internal pure returns (uint256) {
+        // (a + b - 1) / b can overflow on addition, so we distribute.
+        return a / b + (a % b == 0 ? 0 : 1);
+    }
+
+    /**
+     * @dev Returns the current rounding of the division of two numbers.
+     *
+     * This differs from standard division with `/` in that it can round up and
+     * down depending on the floating point.
+     */
+    function roundDiv(uint256 a, uint256 b) internal pure returns (uint256) {
+        uint256 result = a * 10 / b;
+        if (result % 10 >= 5) {
+            result = a / b + (a % b == 0 ? 0 : 1);
+        }
+        else {
+            result = a / b;
+        }
+
+        return result;
+    }
+
+    /**
+     * @dev Returns the subtraction of two unsigned integers, without an overflow flag
+     */
+    function safeSub(uint256 a, uint256 b) internal pure returns (uint256) {
+        unchecked {
+            if (b > a) return 0;
+            return a - b;
         }
     }
 }
