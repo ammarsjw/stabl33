@@ -185,16 +185,16 @@ contract Stabl33Staking is Ownable {
 
         uint256 fee = staking.amountToken.mul(ROIFeePercentage).div(1000);
 
-        uint256 finalAmountToken = staking.amountToken + reward - fee;
+        uint256 amountTokenAccrued = staking.amountToken + reward - fee;
 
         SafeERC20.safeTransferFrom(IERC20(staking.token), treasury, ROI, fee);
 
-        SafeERC20.safeTransferFrom(IERC20(staking.token), treasury, msg.sender, finalAmountToken);
+        SafeERC20.safeTransferFrom(IERC20(staking.token), treasury, msg.sender, amountTokenAccrued);
 
         staking.status = false;
 
         totalStakedAmount[staking.token] -= staking.amountToken;
 
-        emit Unstake(staking.index, staking.user, staking.token, finalAmountToken, staking.stakingType);
+        emit Unstake(staking.index, staking.user, staking.token, amountTokenAccrued, staking.stakingType);
     }
 }
