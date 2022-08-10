@@ -10,9 +10,9 @@ contract Stabl33BuyAndBond is Ownable {
     using SafeMathUpgradeable for uint256;
     using SafeERC20 for IERC20;
 
-    address public treasuryWallet;
-    address public ROIWallet;
-    address public HQWallet;
+    address public treasury;
+    address public ROI;
+    address public HQ;
 
     uint256[] public treasuryPercentages;
     uint256[] public ROIPercentages;
@@ -62,21 +62,21 @@ contract Stabl33BuyAndBond is Ownable {
 
     event UpdatedDiscount(uint256 newAmount, uint256 oldAmount);
 
-    event AddedSupportedToken(IERC20 token, bool state);
+    event UpdatedSupportedToken(IERC20 token, bool state);
 
     // constructor
 
     constructor() {
-        treasuryWallet = 0x49A61ba8E25FBd58cE9B30E1276c4Eb41dD80a80;
-        ROIWallet = 0x3edCe801a3f1851675e68589844B1b412EAc6B07;
-        HQWallet = 0x294d0487fdf7acecf342ae70AFc5549A6E90f3e0;
+        treasury = 0x49A61ba8E25FBd58cE9B30E1276c4Eb41dD80a80;
+        ROI = 0x3edCe801a3f1851675e68589844B1b412EAc6B07;
+        HQ = 0x294d0487fdf7acecf342ae70AFc5549A6E90f3e0;
 
         treasuryPercentages = [800, 800];
         ROIPercentages = [161, 161];
         HQPercentages = [39, 39];
 
-        addSupportedToken(usdc, true);
-        addSupportedToken(dai, true);
+        updateSupportedToken(usdc, true);
+        updateSupportedToken(dai, true);
 
         // TODO confirm
         discount = 10;
@@ -86,19 +86,19 @@ contract Stabl33BuyAndBond is Ownable {
         bondTime = 1 minutes;
     }
 
-    function updateTreasuryWallet(address _treasuryWallet) external onlyOwner {
-        require(treasuryWallet != _treasuryWallet, "STABL33: Treasury wallet is already this address");
-        treasuryWallet = _treasuryWallet;
+    function updateTreasury(address _treasury) external onlyOwner {
+        require(treasury != _treasury, "STABL33: Treasury is already this address");
+        treasury = _treasury;
     }
 
-    function updateROIWallet(address _ROIWallet) external onlyOwner {
-        require(ROIWallet != _ROIWallet, "STABL33: ROI wallet is already this address");
-        ROIWallet = _ROIWallet;
+    function updateROI(address _ROI) external onlyOwner {
+        require(ROI != _ROI, "STABL33: ROI is already this address");
+        ROI = _ROI;
     }
 
-    function updateHQWallet(address _HQWallet) external onlyOwner {
-        require(HQWallet != _HQWallet, "STABL33: HQ wallet is already this address");
-        HQWallet = _HQWallet;
+    function updateHQ(address _HQ) external onlyOwner {
+        require(HQ != _HQ, "STABL33: HQ is already this address");
+        HQ = _HQ;
     }
 
     function updateSaleState(bool state) external onlyOwner {
@@ -112,10 +112,10 @@ contract Stabl33BuyAndBond is Ownable {
         discount = _discount;
     }
 
-    function addSupportedToken(IERC20 token, bool state) public onlyOwner {
+    function updateSupportedToken(IERC20 token, bool state) public onlyOwner {
         require(getSupportedTokens[token] != state, "STABL33: Supported token is already of the value 'state'");
         getSupportedTokens[token] = state;
-        emit AddedSupportedToken(token, state);
+        emit UpdatedSupportedToken(token, state);
     }
 
     function getTotalTokenAmounts(IERC20 token) external view returns (uint256) {
@@ -148,16 +148,16 @@ contract Stabl33BuyAndBond is Ownable {
 
         totalTokenAmounts[_token] += _amountToken;
 
-        stabl3.transferFrom(treasuryWallet, msg.sender, amountStabl3);
+        stabl3.transferFrom(treasury, msg.sender, amountStabl3);
 
         uint256 amountTreasury = _amountToken.mul(treasuryPercentages[0]).roundDiv(1000);
-        SafeERC20.safeTransferFrom(_token, msg.sender, treasuryWallet, amountTreasury);
+        SafeERC20.safeTransferFrom(_token, msg.sender, treasury, amountTreasury);
 
         uint256 amountROI = _amountToken.mul(ROIPercentages[0]).roundDiv(1000);
-        SafeERC20.safeTransferFrom(_token, msg.sender, ROIWallet, amountROI);
+        SafeERC20.safeTransferFrom(_token, msg.sender, ROI, amountROI);
 
         uint256 amountHQ = _amountToken.mul(HQPercentages[0]).roundDiv(1000);
-        SafeERC20.safeTransferFrom(_token, msg.sender, HQWallet, amountHQ);
+        SafeERC20.safeTransferFrom(_token, msg.sender, HQ, amountHQ);
 
         emit Buy(msg.sender, amountStabl3, _token, _amountToken);
     }
@@ -182,13 +182,13 @@ contract Stabl33BuyAndBond is Ownable {
         getBonds[msg.sender].push(bond);
 
         uint256 amountTreasury = _amountToken.mul(treasuryPercentages[1]).roundDiv(1000);
-        SafeERC20.safeTransferFrom(_token, msg.sender, treasuryWallet, amountTreasury);
+        SafeERC20.safeTransferFrom(_token, msg.sender, treasury, amountTreasury);
 
         uint256 amountROI = _amountToken.mul(ROIPercentages[1]).roundDiv(1000);
-        SafeERC20.safeTransferFrom(_token, msg.sender, ROIWallet, amountROI);
+        SafeERC20.safeTransferFrom(_token, msg.sender, ROI, amountROI);
 
         uint256 amountHQ = _amountToken.mul(HQPercentages[1]).roundDiv(1000);
-        SafeERC20.safeTransferFrom(_token, msg.sender, HQWallet, amountHQ);
+        SafeERC20.safeTransferFrom(_token, msg.sender, HQ, amountHQ);
     }
 
     function claimBond(uint256 index) external {
@@ -197,7 +197,7 @@ contract Stabl33BuyAndBond is Ownable {
         require(bond.status, "STABL33: Bond already claimed");
         require(block.timestamp > bond.endTime, "STABL33: Bond time not finished");
 
-        stabl3.transferFrom(treasuryWallet, msg.sender, bond.amountStabl3);
+        stabl3.transferFrom(treasury, msg.sender, bond.amountStabl3);
 
         bond.status = false;
 
