@@ -23,6 +23,8 @@ contract Stabl33BuyAndBond is Ownable {
 
     IERC20 public stabl3 = IERC20(0x20A91B0d2A5545BF05bcA96778e138E2E154e083);
 
+    uint256 public initialRate;
+
     uint256 public discount;
 
     uint256 public bondTime;
@@ -47,25 +49,30 @@ contract Stabl33BuyAndBond is Ownable {
     mapping (address => Bond[]) public getBonds;
 
     // reserved tokens to buy STABL3
-    mapping (IERC20 => bool) public getReservedTokens;
+    mapping (IERC20 => bool) public isReservedToken;
+
+    // decimals of reserved token
+    mapping (IERC20 => uint256) public decimalsReservedToken;
 
     // array for reserved tokens
     IERC20[] public allReservedTokens;
 
     // total amount of tokens received
-    mapping (IERC20 => uint256) tokenReceivedAmounts;
+    mapping (IERC20 => uint256) amountReservedTokenPooled;
 
     // events
+
+    event UpdatedDiscount(uint256 newAmount, uint256 oldAmount);
+
+    event UpdatedBondTime(uint256 newBondTime,uint256 oldBondTime);
+
+    event UpdatedReservedToken(IERC20 token, bool state);
 
     event Buy(address indexed recipient, uint256 amountStabl3, IERC20 token, uint256 amountToken);
 
     event CreatedBond(uint256 index, address indexed recipient, uint256 amountStabl3, IERC20 token, uint256 amountToken);
 
     event ClaimedBond(uint256 index, address indexed recipient, uint256 amountStabl3, IERC20 token, uint256 amountToken);
-
-    event UpdatedDiscount(uint256 newAmount, uint256 oldAmount);
-
-    event UpdatedReservedToken(IERC20 token, bool state);
 
     // constructor
 
@@ -78,15 +85,16 @@ contract Stabl33BuyAndBond is Ownable {
         ROIPercentages = [161, 161];
         HQPercentages = [39, 39];
 
-        updateReservedToken(usdc, true);
-        updateReservedToken(dai, true);
+        updateReservedToken(usdc, 6, true);
+        updateReservedToken(dai, 18, true);
 
-        // TODO confirm
+        initialRate = 0.0007 * (10 ** 18);
+
         discount = 10;
 
         // TODO
         // bondTime = 30 days;
-        bondTime = 1 minutes;
+        bondTime = 5 minutes;
     }
 
     function updateTreasury(address _treasury) external onlyOwner {
@@ -104,53 +112,64 @@ contract Stabl33BuyAndBond is Ownable {
         HQ = _HQ;
     }
 
+    function updateReservedToken(IERC20 token, uint256 decimals, bool state) public onlyOwner {
+        require(isReservedToken[token] != state, "STABL33: Reserved token is already of the value 'state'");
+        isReservedToken[token] = state;
+        decimalsReservedToken[token] = decimals;
+        allReservedTokens.push(token);
+        emit UpdatedReservedToken(token, state);
+    }
+
+    function updateDiscount(uint256 _discount) external onlyOwner {
+        emit UpdatedDiscount(_discount, discount);
+        discount = _discount;
+    }
+
+    function updateBondTime(uint256 _bondTime) external onlyOwner {
+        emit UpdatedBondTime(_bondTime, bondTime);
+        bondTime = _bondTime;
+    }
+
+    function getAmountReservedTokenPooled(IERC20 token) external view returns (uint256) {
+        return amountReservedTokenPooled[token];
+    }
+
     function updateSaleState(bool state) external onlyOwner {
         require(saleState != state, "STABL33: Sale state is already of the value 'state'");
         saleState = state;
     }
 
-    function updateDiscount(uint256 _discount) external onlyOwner {
-        require(_discount > 0, "STABL33: Discount should be greater than zero");
-        emit UpdatedDiscount(_discount, discount);
-        discount = _discount;
-    }
+    function _getRate() internal view returns (uint256) {
+        // uint256 totalAmountReservedTokenTreasury;
 
-    function updateReservedToken(IERC20 token, bool state) public onlyOwner {
-        require(getReservedTokens[token] != state, "STABL33: Reserved token is already of the value 'state'");
-        getReservedTokens[token] = state;
-        allReservedTokens.push(token);
-        emit UpdatedReservedToken(token, state);
-    }
+        // uint256 decimalsReservedToken;
+        // uint256 amountReservedTokenTreasury;
+        // for (uint256 i = 0 ; i < allReservedTokens.length ; i++) {
+        //     if (isReservedToken[allReservedTokens[i]]) {
+        //         amountReservedTokenTreasury = allReservedTokens[i].balanceOf(treasury);
 
-    function gettokenReceivedAmounts(IERC20 token) external view returns (uint256) {
-        return tokenReceivedAmounts[token];
-    }
+        //         decimalsReservedToken = allReservedTokens[i].decimals();
+        //         if (decimalsReservedToken < 18) {
+        //             amountReservedTokenTreasury = amountReservedTokenTreasury.mul(10 ** (18 - decimalsReservedToken));
+        //         }
 
-    function _processAmount(uint256 _amountStabl3, IERC20 _token) internal view returns (uint256) {
-        if (_token.decimals() > 6) {
-            uint256 reduceBy = _token.decimals() - stabl3.decimals();
-            _amountStabl3 = _amountStabl3.div(reduceBy);
-        }
-        else if (_token.decimals() < 6) {
-            uint256 increaseBy = stabl3.decimals() - _token.decimals();
-            _amountStabl3 = _amountStabl3.mul(increaseBy);
-        }
+        //         totalAmountReservedTokenTreasury += amountReservedTokenTreasury;
+        //     }
+        // }
 
-        return _amountStabl3;
+        // return totalAmountReservedTokenTreasury;
     }
 
     function buy(IERC20 _token, uint256 _amountToken) external {
-        require(getReservedTokens[_token], "STABL33: Token not reserved");
+        require(saleState, "STABL33: Sale not yet started");
+        require(isReservedToken[_token], "STABL33: Token not reserved");
         require(_amountToken > 0, "STABL33: Amount should be greater than zero");
 
-        // TODO get true rate from treasury
-        uint256 rate = 0.0007 * (10 ** 18);
+        uint256 rate = _getRate();
 
-        uint256 amountStabl3 = _amountToken.mul(rate).div(10 ** 18);
+        uint256 amountStabl3 = _amountToken.mul(10 ** (18 - decimalsReservedToken[_token])).mul(10 ** 6).div(rate);
 
-        amountStabl3 = _processAmount(amountStabl3, _token);
-
-        tokenReceivedAmounts[_token] += _amountToken;
+        amountReservedTokenPooled[_token] += _amountToken;
 
         stabl3.transferFrom(treasury, msg.sender, amountStabl3);
 
@@ -167,19 +186,17 @@ contract Stabl33BuyAndBond is Ownable {
     }
 
     function createBond(IERC20 _token, uint256 _amountToken) external {
-        require(getReservedTokens[_token], "STABL33: Token not reserved");
+        require(saleState, "STABL33: Sale not yet started");
+        require(isReservedToken[_token], "STABL33: Token not reserved");
         require(_amountToken > 0, "STABL33: Amount should be greater than zero");
 
-        // TODO get true rate from treasury
-        uint256 rate = 0.0007 * (10 ** 18);
+        uint256 rate = _getRate();
 
-        uint256 amountStabl3 = _amountToken.mul(rate).div(10 ** 18);
-
-        amountStabl3 = _processAmount(amountStabl3, _token);
+        uint256 amountStabl3 = _amountToken.mul(10 ** (18 - decimalsReservedToken[_token])).mul(10 ** 6).div(rate);
 
         amountStabl3 += amountStabl3.mul(discount).div(100);
 
-        tokenReceivedAmounts[_token] += _amountToken;
+        amountReservedTokenPooled[_token] += _amountToken;
 
         Bond memory bond = Bond(getBonds[msg.sender].length, msg.sender, true, amountStabl3, _token, _amountToken, block.timestamp + bondTime);
         emit CreatedBond(bond.index, bond.recipient, bond.amountStabl3, bond.token, bond.amountToken);
@@ -196,6 +213,7 @@ contract Stabl33BuyAndBond is Ownable {
     }
 
     function claimBond(uint256 index) external {
+        require(saleState, "STABL33: Sale not yet started");
         Bond storage bond = getBonds[msg.sender][index];
 
         require(bond.status, "STABL33: Bond already claimed");

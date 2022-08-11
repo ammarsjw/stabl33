@@ -5,5 +5,5 @@ pragma solidity 0.8.16;
 import "./IERC20.sol";
 
 interface IStabl33BuyAndBond {
-    function getTokenReceivedAmounts(IERC20 token) external view returns (uint256);
+    function getAmountReservedTokenPooled(IERC20 token) external view returns (uint256);
 }

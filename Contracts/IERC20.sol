@@ -11,11 +11,6 @@ interface IERC20 {
     function totalSupply() external view returns (uint256);
 
     /**
-    * @dev Returns the token decimals.
-    */
-    function decimals() external view returns (uint256);
-
-    /**
     * @dev Returns the token symbol.
     */
     function symbol() external view returns (string memory);

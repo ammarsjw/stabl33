@@ -51,13 +51,13 @@ contract Stabl33Staking is Ownable {
     mapping (address => Staking[]) public getStakings;
 
     // reserved tokens to stake
-    mapping (IERC20 => bool) public getReservedTokens;
+    mapping (IERC20 => bool) public isReservedToken;
 
     // array for reserved tokens
     IERC20[] public allReservedTokens;
 
     // total amount of tokens received
-    mapping (IERC20 => uint256) public tokenStakedAmounts;
+    mapping (IERC20 => uint256) public amountReservedTokenStaked;
 
     // events
 
@@ -109,8 +109,8 @@ contract Stabl33Staking is Ownable {
     }
 
     function updateReservedToken(IERC20 token, bool state) public onlyOwner {
-        require(getReservedTokens[token] != state, "STABL33: Reserved token is already of the value 'state'");
-        getReservedTokens[token] = state;
+        require(isReservedToken[token] != state, "STABL33: Reserved token is already of the value 'state'");
+        isReservedToken[token] = state;
         allReservedTokens.push(token);
         emit UpdatedReservedToken(token, state);
     }
@@ -120,23 +120,25 @@ contract Stabl33Staking is Ownable {
         uint256 currentPool;
 
         uint256 decimalsReservedToken;
-        uint256 amountReservedTokenBuyAndBond;
+        uint256 amountReservedTokenPooled;
         uint256 amountReservedTokenReceived;
         for (uint256 i = 0 ; i < allReservedTokens.length ; i++) {
-            amountReservedTokenBuyAndBond = stabl33BuyAndBond.getTokenReceivedAmounts(allReservedTokens[i]).mul(70).div(100);
+            if (isReservedToken[allReservedTokens[i]]) {
+                amountReservedTokenPooled = stabl33BuyAndBond.getAmountReservedTokenPooled(allReservedTokens[i]).mul(70).div(100);
 
-            amountReservedTokenReceived = tokenStakedAmounts[allReservedTokens[i]];
+                amountReservedTokenReceived = amountReservedTokenStaked[allReservedTokens[i]];
 
-            decimalsReservedToken = IERC20(allReservedTokens[i]).decimals();
-            if (decimalsReservedToken < 18) {
-                amountReservedTokenBuyAndBond = amountReservedTokenBuyAndBond.mul(10 ** (18 - decimalsReservedToken));
+                decimalsReservedToken = IERC20(allReservedTokens[i]).decimals();
+                if (decimalsReservedToken < 18) {
+                    amountReservedTokenPooled = amountReservedTokenPooled.mul(10 ** (18 - decimalsReservedToken));
 
-                amountReservedTokenReceived = amountReservedTokenReceived.mul(10 ** (18 - decimalsReservedToken));
+                    amountReservedTokenReceived = amountReservedTokenReceived.mul(10 ** (18 - decimalsReservedToken));
+                }
+
+                maxPool += amountReservedTokenPooled;
+
+                currentPool += amountReservedTokenReceived;
             }
-
-            maxPool += amountReservedTokenBuyAndBond;
-
-            currentPool += amountReservedTokenReceived;
         }
 
         uint256 decimalsToken = IERC20(_token).decimals();
@@ -150,7 +152,7 @@ contract Stabl33Staking is Ownable {
     }
 
     function stake(IERC20 _token, uint256 _amountToken, uint8 _stakingType) external {
-        require(getReservedTokens[_token], "STABL33: Token not reserved");
+        require(isReservedToken[_token], "STABL33: Token not reserved");
         require(_amountToken > 0, "STABL33: Amount should be greater than zero");
         require(1 <= _stakingType && _stakingType <= 4, "STABL33: Incorrect staking type");
         require(_validatePool(_token, _amountToken), "STABL33: Staking pool limit reached");
@@ -167,7 +169,7 @@ contract Stabl33Staking is Ownable {
         emit Stake(staking.index, staking.user, staking.token, staking.amountToken, staking.stakingType);
         getStakings[msg.sender].push(staking);
 
-        tokenStakedAmounts[_token] += _amountToken;
+        amountReservedTokenStaked[_token] += _amountToken;
 
         uint256 amountTreasury = _amountToken.mul(treasuryPercentages[0]).roundDiv(1000);
         SafeERC20.safeTransferFrom(_token, msg.sender, treasury, amountTreasury);
@@ -194,8 +196,10 @@ contract Stabl33Staking is Ownable {
 
         staking.status = false;
 
-        tokenStakedAmounts[staking.token] -= staking.amountToken;
+        amountReservedTokenStaked[staking.token] -= staking.amountToken;
 
         emit Unstake(staking.index, staking.user, staking.token, amountTokenAccrued, staking.stakingType);
     }
 }
+
+// TODO add setters from buy and bond
