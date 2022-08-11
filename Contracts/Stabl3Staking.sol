@@ -64,13 +64,15 @@ contract Stabl3Staking is Ownable {
 
     // events
 
-    event Buy(address indexed user, uint256 amountStabl3, IERC20 token, uint256 amountToken);
+    event UpdatedReservedToken(IERC20 token, bool state);
+
+    event UpdatedROIFeePercentage(uint256 newROIFeePercentage, uint256 oldROIFeePercentage);
+
+    event UpdatedRewardPercentage(uint256 newRewardPercentage, uint256 oldRewardPercentage); 
 
     event Stake(uint256 index, address indexed user, IERC20 token, uint256 amountToken, uint8 stakingType);
 
     event Unstake(uint256 index, address indexed user, IERC20 token, uint256 amountTokenAccrued, uint8 stakingType);
-
-    event UpdatedReservedToken(IERC20 token, bool state);
 
     // constructor
 
@@ -111,12 +113,37 @@ contract Stabl3Staking is Ownable {
         HQ = _HQ;
     }
 
+    function updateDistributionPercentages(
+        uint256[2] memory _treasuryPercentages,
+        uint256[2] memory _ROIPercentages,
+        uint256[2] memory _HQPercentages
+    ) external onlyOwner {
+        require(_treasuryPercentages[0] + _ROIPercentages[0] + _HQPercentages[0] == 1000,
+            "STABL3: Sum of magnified buy percentages should equal 1000");
+        require(_treasuryPercentages[1] + _ROIPercentages[1] + _HQPercentages[1] == 1000,
+            "STABL3: Sum of magnified bond percentages should equal 1000");
+
+        treasuryPercentages = _treasuryPercentages;
+        ROIPercentages = _ROIPercentages;
+        HQPercentages = _HQPercentages;
+    }
+
     function updateReservedToken(IERC20 token, uint256 decimals, bool state) public onlyOwner {
         require(isReservedToken[token] != state, "Stabl3: Reserved token is already of the value 'state'");
         isReservedToken[token] = state;
         decimalsReservedToken[token] = decimals;
         allReservedTokens.push(token);
         emit UpdatedReservedToken(token, state);
+    }
+
+    function updateROIFeePercentage(uint256 _ROIFeePercentage) external onlyOwner {
+        emit UpdatedROIFeePercentage(_ROIFeePercentage, ROIFeePercentage);
+        ROIFeePercentage = _ROIFeePercentage;
+    }
+
+    function updateRewardPercentage(uint256 _rewardPercentage) external onlyOwner {
+        emit UpdatedRewardPercentage(_rewardPercentage, rewardPercentage);
+        rewardPercentage = _rewardPercentage;
     }
 
     function _validatePool(IERC20 _token, uint256 _amountToken) internal view returns (bool) {

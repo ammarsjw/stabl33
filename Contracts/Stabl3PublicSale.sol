@@ -62,11 +62,11 @@ contract Stabl3PublicSale is Ownable {
 
     // events
 
+    event UpdatedReservedToken(IERC20 token, bool state);
+
     event UpdatedDiscount(uint256 newAmount, uint256 oldAmount);
 
     event UpdatedBondTime(uint256 newBondTime,uint256 oldBondTime);
-
-    event UpdatedReservedToken(IERC20 token, bool state);
 
     event Buy(address indexed recipient, uint256 amountStabl3, IERC20 token, uint256 amountToken);
 
