@@ -6,13 +6,13 @@ import "./Ownable.sol";
 import "./SafeMathUpgradeable.sol";
 import "./SafeERC20.sol";
 
-import "./IStabl33BuyAndBond.sol";
+import "./IStabl3PublicSale.sol";
 
 contract Stabl33Staking is Ownable {
     using SafeMathUpgradeable for uint256;
     using SafeERC20 for IERC20;
 
-    IStabl33BuyAndBond public stabl33BuyAndBond;
+    IStabl3PublicSale public stabl3PublicSale;
 
     address public treasury;
     address public ROI;
@@ -53,6 +53,9 @@ contract Stabl33Staking is Ownable {
     // reserved tokens to stake
     mapping (IERC20 => bool) public isReservedToken;
 
+    // decimals of reserved token
+    mapping (IERC20 => uint256) public decimalsReservedToken;
+
     // array for reserved tokens
     IERC20[] public allReservedTokens;
 
@@ -71,8 +74,8 @@ contract Stabl33Staking is Ownable {
 
     // constructor
 
-    constructor(address _stabl33BuyAndBond) {
-        stabl33BuyAndBond = IStabl33BuyAndBond(_stabl33BuyAndBond);
+    constructor(address _stabl3PublicSale) {
+        stabl3PublicSale = IStabl3PublicSale(_stabl3PublicSale);
 
         treasury = 0x49A61ba8E25FBd58cE9B30E1276c4Eb41dD80a80;
         ROI = 0x3edCe801a3f1851675e68589844B1b412EAc6B07;
@@ -84,8 +87,8 @@ contract Stabl33Staking is Ownable {
 
         ROIFeePercentage = 50;
 
-        updateReservedToken(usdc, true);
-        updateReservedToken(dai, true);
+        updateReservedToken(usdc, 6, true);
+        updateReservedToken(dai, 18, true);
 
         lockTimes = [7776000, 15552000, 23328000, 31104000];   // 3, 6, 9 and 12 months time in seconds
 
@@ -108,9 +111,10 @@ contract Stabl33Staking is Ownable {
         HQ = _HQ;
     }
 
-    function updateReservedToken(IERC20 token, bool state) public onlyOwner {
+    function updateReservedToken(IERC20 token, uint256 decimals, bool state) public onlyOwner {
         require(isReservedToken[token] != state, "STABL33: Reserved token is already of the value 'state'");
         isReservedToken[token] = state;
+        decimalsReservedToken[token] = decimals;
         allReservedTokens.push(token);
         emit UpdatedReservedToken(token, state);
     }
@@ -119,20 +123,20 @@ contract Stabl33Staking is Ownable {
         uint256 maxPool;
         uint256 currentPool;
 
-        uint256 decimalsReservedToken;
+        uint256 decimals;
         uint256 amountReservedTokenPooled;
         uint256 amountReservedTokenReceived;
         for (uint256 i = 0 ; i < allReservedTokens.length ; i++) {
             if (isReservedToken[allReservedTokens[i]]) {
-                amountReservedTokenPooled = stabl33BuyAndBond.getAmountReservedTokenPooled(allReservedTokens[i]).mul(70).div(100);
+                amountReservedTokenPooled = stabl3PublicSale.getAmountReservedTokenPooled(allReservedTokens[i]).mul(70).div(100);
 
                 amountReservedTokenReceived = amountReservedTokenStaked[allReservedTokens[i]];
 
-                decimalsReservedToken = IERC20(allReservedTokens[i]).decimals();
-                if (decimalsReservedToken < 18) {
-                    amountReservedTokenPooled = amountReservedTokenPooled.mul(10 ** (18 - decimalsReservedToken));
+                decimals = decimalsReservedToken[allReservedTokens[i]];
+                if (decimals < 18) {
+                    amountReservedTokenPooled = amountReservedTokenPooled.mul(10 ** (18 - decimals));
 
-                    amountReservedTokenReceived = amountReservedTokenReceived.mul(10 ** (18 - decimalsReservedToken));
+                    amountReservedTokenReceived = amountReservedTokenReceived.mul(10 ** (18 - decimals));
                 }
 
                 maxPool += amountReservedTokenPooled;
@@ -141,7 +145,7 @@ contract Stabl33Staking is Ownable {
             }
         }
 
-        uint256 decimalsToken = IERC20(_token).decimals();
+        uint256 decimalsToken = decimalsReservedToken[_token];
         if (decimalsToken < 18) {
             _amountToken = _amountToken.mul(10 ** (18 - decimalsToken));
         }
@@ -202,4 +206,5 @@ contract Stabl33Staking is Ownable {
     }
 }
 
-// TODO add setters from buy and bond
+//TODO add setters from buy and bond
+//TODO fix decimals here
