@@ -46,11 +46,14 @@ contract Stabl33BuyAndBond is Ownable {
     // ongoing bonds
     mapping (address => Bond[]) public getBonds;
 
-    // supported tokens to buy STABL3
-    mapping (IERC20 => bool) public getSupportedTokens;
+    // reserved tokens to buy STABL3
+    mapping (IERC20 => bool) public getReservedTokens;
+
+    // array for reserved tokens
+    IERC20[] public allReservedTokens;
 
     // total amount of tokens received
-    mapping (IERC20 => uint256) totalTokenAmounts;
+    mapping (IERC20 => uint256) tokenReceivedAmounts;
 
     // events
 
@@ -62,7 +65,7 @@ contract Stabl33BuyAndBond is Ownable {
 
     event UpdatedDiscount(uint256 newAmount, uint256 oldAmount);
 
-    event UpdatedSupportedToken(IERC20 token, bool state);
+    event UpdatedReservedToken(IERC20 token, bool state);
 
     // constructor
 
@@ -75,8 +78,8 @@ contract Stabl33BuyAndBond is Ownable {
         ROIPercentages = [161, 161];
         HQPercentages = [39, 39];
 
-        updateSupportedToken(usdc, true);
-        updateSupportedToken(dai, true);
+        updateReservedToken(usdc, true);
+        updateReservedToken(dai, true);
 
         // TODO confirm
         discount = 10;
@@ -112,14 +115,15 @@ contract Stabl33BuyAndBond is Ownable {
         discount = _discount;
     }
 
-    function updateSupportedToken(IERC20 token, bool state) public onlyOwner {
-        require(getSupportedTokens[token] != state, "STABL33: Supported token is already of the value 'state'");
-        getSupportedTokens[token] = state;
-        emit UpdatedSupportedToken(token, state);
+    function updateReservedToken(IERC20 token, bool state) public onlyOwner {
+        require(getReservedTokens[token] != state, "STABL33: Reserved token is already of the value 'state'");
+        getReservedTokens[token] = state;
+        allReservedTokens.push(token);
+        emit UpdatedReservedToken(token, state);
     }
 
-    function getTotalTokenAmounts(IERC20 token) external view returns (uint256) {
-        return totalTokenAmounts[token];
+    function gettokenReceivedAmounts(IERC20 token) external view returns (uint256) {
+        return tokenReceivedAmounts[token];
     }
 
     function _processAmount(uint256 _amountStabl3, IERC20 _token) internal view returns (uint256) {
@@ -136,7 +140,7 @@ contract Stabl33BuyAndBond is Ownable {
     }
 
     function buy(IERC20 _token, uint256 _amountToken) external {
-        require(getSupportedTokens[_token], "STABL33: Token not supported");
+        require(getReservedTokens[_token], "STABL33: Token not reserved");
         require(_amountToken > 0, "STABL33: Amount should be greater than zero");
 
         // TODO get true rate from treasury
@@ -146,7 +150,7 @@ contract Stabl33BuyAndBond is Ownable {
 
         amountStabl3 = _processAmount(amountStabl3, _token);
 
-        totalTokenAmounts[_token] += _amountToken;
+        tokenReceivedAmounts[_token] += _amountToken;
 
         stabl3.transferFrom(treasury, msg.sender, amountStabl3);
 
@@ -163,7 +167,7 @@ contract Stabl33BuyAndBond is Ownable {
     }
 
     function createBond(IERC20 _token, uint256 _amountToken) external {
-        require(getSupportedTokens[_token], "STABL33: Token not supported");
+        require(getReservedTokens[_token], "STABL33: Token not reserved");
         require(_amountToken > 0, "STABL33: Amount should be greater than zero");
 
         // TODO get true rate from treasury
@@ -175,7 +179,7 @@ contract Stabl33BuyAndBond is Ownable {
 
         amountStabl3 += amountStabl3.mul(discount).div(100);
 
-        totalTokenAmounts[_token] += _amountToken;
+        tokenReceivedAmounts[_token] += _amountToken;
 
         Bond memory bond = Bond(getBonds[msg.sender].length, msg.sender, true, amountStabl3, _token, _amountToken, block.timestamp + bondTime);
         emit CreatedBond(bond.index, bond.recipient, bond.amountStabl3, bond.token, bond.amountToken);

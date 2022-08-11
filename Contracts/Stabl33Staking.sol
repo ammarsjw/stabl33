@@ -50,14 +50,14 @@ contract Stabl33Staking is Ownable {
     // ongoing stakings
     mapping (address => Staking[]) public getStakings;
 
-    // supported tokens to stake
-    mapping (IERC20 => bool) public getSupportedTokens;
+    // reserved tokens to stake
+    mapping (IERC20 => bool) public getReservedTokens;
 
-    // array for supported tokens
-    IERC20[] public allSupportedTokens;
+    // array for reserved tokens
+    IERC20[] public allReservedTokens;
 
     // total amount of tokens received
-    mapping (IERC20 => uint256) public totalStakedAmount;
+    mapping (IERC20 => uint256) public tokenStakedAmounts;
 
     // events
 
@@ -67,7 +67,7 @@ contract Stabl33Staking is Ownable {
 
     event Unstake(uint256 index, address indexed user, IERC20 token, uint256 amountTokenAccrued, uint8 stakingType);
 
-    event UpdatedSupportedToken(IERC20 token, bool state);
+    event UpdatedReservedToken(IERC20 token, bool state);
 
     // constructor
 
@@ -84,8 +84,8 @@ contract Stabl33Staking is Ownable {
 
         ROIFeePercentage = 50;
 
-        updateSupportedToken(usdc, true);
-        updateSupportedToken(dai, true);
+        updateReservedToken(usdc, true);
+        updateReservedToken(dai, true);
 
         lockTimes = [7776000, 15552000, 23328000, 31104000];   // 3, 6, 9 and 12 months time in seconds
 
@@ -108,34 +108,35 @@ contract Stabl33Staking is Ownable {
         HQ = _HQ;
     }
 
-    function updateSupportedToken(IERC20 token, bool state) public onlyOwner {
-        require(getSupportedTokens[token] != state, "STABL33: Supported token is already of the value 'state'");
-        getSupportedTokens[token] = state;
-        emit UpdatedSupportedToken(token, state);
+    function updateReservedToken(IERC20 token, bool state) public onlyOwner {
+        require(getReservedTokens[token] != state, "STABL33: Reserved token is already of the value 'state'");
+        getReservedTokens[token] = state;
+        allReservedTokens.push(token);
+        emit UpdatedReservedToken(token, state);
     }
 
     function _validatePool(IERC20 _token, uint256 _amountToken) internal view returns (bool) {
         uint256 maxPool;
         uint256 currentPool;
 
-        uint256 decimalsSupportedToken;
-        uint256 amountSupportedTokenBuyAndBond;
-        uint256 amountSupportedTokenReceived;
-        for (uint256 i = 0 ; i < allSupportedTokens.length ; i++) {
-            amountSupportedTokenBuyAndBond = stabl33BuyAndBond.getTotalTokenAmounts(allSupportedTokens[i]).mul(70).div(100);
+        uint256 decimalsReservedToken;
+        uint256 amountReservedTokenBuyAndBond;
+        uint256 amountReservedTokenReceived;
+        for (uint256 i = 0 ; i < allReservedTokens.length ; i++) {
+            amountReservedTokenBuyAndBond = stabl33BuyAndBond.getTokenReceivedAmounts(allReservedTokens[i]).mul(70).div(100);
 
-            amountSupportedTokenReceived = totalStakedAmount[allSupportedTokens[i]];
+            amountReservedTokenReceived = tokenStakedAmounts[allReservedTokens[i]];
 
-            decimalsSupportedToken = IERC20(allSupportedTokens[i]).decimals();
-            if (decimalsSupportedToken < 18) {
-                amountSupportedTokenBuyAndBond = amountSupportedTokenBuyAndBond.mul(10 ** (18 - decimalsSupportedToken));
+            decimalsReservedToken = IERC20(allReservedTokens[i]).decimals();
+            if (decimalsReservedToken < 18) {
+                amountReservedTokenBuyAndBond = amountReservedTokenBuyAndBond.mul(10 ** (18 - decimalsReservedToken));
 
-                amountSupportedTokenReceived = amountSupportedTokenReceived.mul(10 ** (18 - decimalsSupportedToken));
+                amountReservedTokenReceived = amountReservedTokenReceived.mul(10 ** (18 - decimalsReservedToken));
             }
 
-            maxPool += amountSupportedTokenBuyAndBond;
+            maxPool += amountReservedTokenBuyAndBond;
 
-            currentPool += amountSupportedTokenReceived;
+            currentPool += amountReservedTokenReceived;
         }
 
         uint256 decimalsToken = IERC20(_token).decimals();
@@ -149,7 +150,7 @@ contract Stabl33Staking is Ownable {
     }
 
     function stake(IERC20 _token, uint256 _amountToken, uint8 _stakingType) external {
-        require(getSupportedTokens[_token], "STABL33: Token not supported");
+        require(getReservedTokens[_token], "STABL33: Token not reserved");
         require(_amountToken > 0, "STABL33: Amount should be greater than zero");
         require(1 <= _stakingType && _stakingType <= 4, "STABL33: Incorrect staking type");
         require(_validatePool(_token, _amountToken), "STABL33: Staking pool limit reached");
@@ -166,7 +167,7 @@ contract Stabl33Staking is Ownable {
         emit Stake(staking.index, staking.user, staking.token, staking.amountToken, staking.stakingType);
         getStakings[msg.sender].push(staking);
 
-        totalStakedAmount[_token] += _amountToken;
+        tokenStakedAmounts[_token] += _amountToken;
 
         uint256 amountTreasury = _amountToken.mul(treasuryPercentages[0]).roundDiv(1000);
         SafeERC20.safeTransferFrom(_token, msg.sender, treasury, amountTreasury);
@@ -193,7 +194,7 @@ contract Stabl33Staking is Ownable {
 
         staking.status = false;
 
-        totalStakedAmount[staking.token] -= staking.amountToken;
+        tokenStakedAmounts[staking.token] -= staking.amountToken;
 
         emit Unstake(staking.index, staking.user, staking.token, amountTokenAccrued, staking.stakingType);
     }
