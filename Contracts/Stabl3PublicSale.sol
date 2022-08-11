@@ -112,6 +112,18 @@ contract Stabl33BuyAndBond is Ownable {
         HQ = _HQ;
     }
 
+    function updateTreasuryPercentages(uint256[2] memory _treasuryPercentages) external onlyOwner {
+        treasuryPercentages = _treasuryPercentages;
+    }
+
+    function updateROIPercentages(uint256[2] memory _ROIPercentages) external onlyOwner {
+        ROIPercentages = _ROIPercentages;
+    }
+
+    function updateHQPercentages(uint256[2] memory _HQPercentages) external onlyOwner {
+        HQPercentages = _HQPercentages;
+    }
+
     function updateReservedToken(IERC20 token, uint256 decimals, bool state) public onlyOwner {
         require(isReservedToken[token] != state, "STABL33: Reserved token is already of the value 'state'");
         isReservedToken[token] = state;
