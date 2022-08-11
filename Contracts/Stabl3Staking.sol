@@ -205,6 +205,3 @@ contract Stabl33Staking is Ownable {
         emit Unstake(staking.index, staking.user, staking.token, amountTokenAccrued, staking.stakingType);
     }
 }
-
-//TODO add setters from buy and bond
-//TODO fix decimals here

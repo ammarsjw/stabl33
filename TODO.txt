@@ -1,0 +1,4 @@
+Staking:
+
+// TODO add setters from buy and bond
+// TODO fix decimals here

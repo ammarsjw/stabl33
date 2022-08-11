@@ -140,24 +140,24 @@ contract Stabl33BuyAndBond is Ownable {
     }
 
     function _getRate() internal view returns (uint256) {
-        // uint256 totalAmountReservedTokenTreasury;
+        uint256 totalAmountReservedTokenTreasury;
 
-        // uint256 decimalsReservedToken;
-        // uint256 amountReservedTokenTreasury;
-        // for (uint256 i = 0 ; i < allReservedTokens.length ; i++) {
-        //     if (isReservedToken[allReservedTokens[i]]) {
-        //         amountReservedTokenTreasury = allReservedTokens[i].balanceOf(treasury);
+        uint256 decimals;
+        uint256 amountReservedTokenTreasury;
+        for (uint256 i = 0 ; i < allReservedTokens.length ; i++) {
+            if (isReservedToken[allReservedTokens[i]]) {
+                amountReservedTokenTreasury = allReservedTokens[i].balanceOf(treasury);
 
-        //         decimalsReservedToken = allReservedTokens[i].decimals();
-        //         if (decimalsReservedToken < 18) {
-        //             amountReservedTokenTreasury = amountReservedTokenTreasury.mul(10 ** (18 - decimalsReservedToken));
-        //         }
+                decimals = decimalsReservedToken[allReservedTokens[i]];
+                if (decimals < 18) {
+                    amountReservedTokenTreasury = amountReservedTokenTreasury.mul(10 ** (18 - decimals));
+                }
 
-        //         totalAmountReservedTokenTreasury += amountReservedTokenTreasury;
-        //     }
-        // }
+                totalAmountReservedTokenTreasury += amountReservedTokenTreasury;
+            }
+        }
 
-        // return totalAmountReservedTokenTreasury;
+        return initialRate + totalAmountReservedTokenTreasury;
     }
 
     function buy(IERC20 _token, uint256 _amountToken) external {
