@@ -112,15 +112,18 @@ contract Stabl33BuyAndBond is Ownable {
         HQ = _HQ;
     }
 
-    function updateTreasuryPercentages(uint256[2] memory _treasuryPercentages) external onlyOwner {
+    function updateDistributionPercentages(
+        uint256[2] memory _treasuryPercentages,
+        uint256[2] memory _ROIPercentages,
+        uint256[2] memory _HQPercentages
+    ) external onlyOwner {
+        require(_treasuryPercentages[0] + _ROIPercentages[0] + _HQPercentages[0] == 1000,
+            "STABL3: Sum of magnified buy percentages should equal 1000");
+        require(_treasuryPercentages[1] + _ROIPercentages[1] + _HQPercentages[1] == 1000,
+            "STABL3: Sum of magnified bond percentages should equal 1000");
+
         treasuryPercentages = _treasuryPercentages;
-    }
-
-    function updateROIPercentages(uint256[2] memory _ROIPercentages) external onlyOwner {
         ROIPercentages = _ROIPercentages;
-    }
-
-    function updateHQPercentages(uint256[2] memory _HQPercentages) external onlyOwner {
         HQPercentages = _HQPercentages;
     }
 
