@@ -8,7 +8,7 @@ import "./SafeERC20.sol";
 
 import "./IStabl3PublicSale.sol";
 
-contract Stabl33Staking is Ownable {
+contract Stabl3Staking is Ownable {
     using SafeMathUpgradeable for uint256;
     using SafeERC20 for IERC20;
 
@@ -97,22 +97,22 @@ contract Stabl33Staking is Ownable {
     }
 
     function updateTreasury(address _treasury) external onlyOwner {
-        require(treasury != _treasury, "STABL33: Treasury is already this address");
+        require(treasury != _treasury, "Stabl3: Treasury is already this address");
         treasury = _treasury;
     }
 
     function updateROI(address _ROI) external onlyOwner {
-        require(ROI != _ROI, "STABL33: ROI is already this address");
+        require(ROI != _ROI, "Stabl3: ROI is already this address");
         ROI = _ROI;
     }
 
     function updateHQ(address _HQ) external onlyOwner {
-        require(HQ != _HQ, "STABL33: HQ is already this address");
+        require(HQ != _HQ, "Stabl3: HQ is already this address");
         HQ = _HQ;
     }
 
     function updateReservedToken(IERC20 token, uint256 decimals, bool state) public onlyOwner {
-        require(isReservedToken[token] != state, "STABL33: Reserved token is already of the value 'state'");
+        require(isReservedToken[token] != state, "Stabl3: Reserved token is already of the value 'state'");
         isReservedToken[token] = state;
         decimalsReservedToken[token] = decimals;
         allReservedTokens.push(token);
@@ -156,10 +156,10 @@ contract Stabl33Staking is Ownable {
     }
 
     function stake(IERC20 _token, uint256 _amountToken, uint8 _stakingType) external {
-        require(isReservedToken[_token], "STABL33: Token not reserved");
-        require(_amountToken > 0, "STABL33: Amount should be greater than zero");
-        require(1 <= _stakingType && _stakingType <= 4, "STABL33: Incorrect staking type");
-        require(_validatePool(_token, _amountToken), "STABL33: Staking pool limit reached");
+        require(isReservedToken[_token], "Stabl3: Token not reserved");
+        require(_amountToken > 0, "Stabl3: Amount should be greater than zero");
+        require(1 <= _stakingType && _stakingType <= 4, "Stabl3: Incorrect staking type");
+        require(_validatePool(_token, _amountToken), "Stabl3: Staking pool limit reached");
 
         Staking memory staking = Staking(
             getStakings[msg.sender].length,
@@ -185,8 +185,8 @@ contract Stabl33Staking is Ownable {
     function unstake(uint256 index) external {
         Staking storage staking = getStakings[msg.sender][index];
 
-        require(staking.status, "STABL33: Already unstaked");
-        require(block.timestamp > staking.endTime, "STABL33: Cannot unstake before end time");
+        require(staking.status, "Stabl3: Already unstaked");
+        require(block.timestamp > staking.endTime, "Stabl3: Cannot unstake before end time");
 
         uint256 reward = staking.amountToken.mul(rewardPercentage).div(100);
 

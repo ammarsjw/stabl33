@@ -6,7 +6,7 @@ import "./Ownable.sol";
 import "./SafeMathUpgradeable.sol";
 import "./SafeERC20.sol";
 
-contract Stabl33BuyAndBond is Ownable {
+contract Stabl3PublicSale is Ownable {
     using SafeMathUpgradeable for uint256;
     using SafeERC20 for IERC20;
 
@@ -98,17 +98,17 @@ contract Stabl33BuyAndBond is Ownable {
     }
 
     function updateTreasury(address _treasury) external onlyOwner {
-        require(treasury != _treasury, "STABL33: Treasury is already this address");
+        require(treasury != _treasury, "Stabl3: Treasury is already this address");
         treasury = _treasury;
     }
 
     function updateROI(address _ROI) external onlyOwner {
-        require(ROI != _ROI, "STABL33: ROI is already this address");
+        require(ROI != _ROI, "Stabl3: ROI is already this address");
         ROI = _ROI;
     }
 
     function updateHQ(address _HQ) external onlyOwner {
-        require(HQ != _HQ, "STABL33: HQ is already this address");
+        require(HQ != _HQ, "Stabl3: HQ is already this address");
         HQ = _HQ;
     }
 
@@ -128,7 +128,7 @@ contract Stabl33BuyAndBond is Ownable {
     }
 
     function updateReservedToken(IERC20 token, uint256 decimals, bool state) public onlyOwner {
-        require(isReservedToken[token] != state, "STABL33: Reserved token is already of the value 'state'");
+        require(isReservedToken[token] != state, "Stabl3: Reserved token is already of the value 'state'");
         isReservedToken[token] = state;
         decimalsReservedToken[token] = decimals;
         allReservedTokens.push(token);
@@ -150,7 +150,7 @@ contract Stabl33BuyAndBond is Ownable {
     }
 
     function updateSaleState(bool state) external onlyOwner {
-        require(saleState != state, "STABL33: Sale state is already of the value 'state'");
+        require(saleState != state, "Stabl3: Sale state is already of the value 'state'");
         saleState = state;
     }
 
@@ -176,9 +176,9 @@ contract Stabl33BuyAndBond is Ownable {
     }
 
     function buy(IERC20 _token, uint256 _amountToken) external {
-        require(saleState, "STABL33: Sale not yet started");
-        require(isReservedToken[_token], "STABL33: Token not reserved");
-        require(_amountToken > 0, "STABL33: Amount should be greater than zero");
+        require(saleState, "Stabl3: Sale not yet started");
+        require(isReservedToken[_token], "Stabl3: Token not reserved");
+        require(_amountToken > 0, "Stabl3: Amount should be greater than zero");
 
         uint256 rate = _getRate();
 
@@ -201,9 +201,9 @@ contract Stabl33BuyAndBond is Ownable {
     }
 
     function createBond(IERC20 _token, uint256 _amountToken) external {
-        require(saleState, "STABL33: Sale not yet started");
-        require(isReservedToken[_token], "STABL33: Token not reserved");
-        require(_amountToken > 0, "STABL33: Amount should be greater than zero");
+        require(saleState, "Stabl3: Sale not yet started");
+        require(isReservedToken[_token], "Stabl3: Token not reserved");
+        require(_amountToken > 0, "Stabl3: Amount should be greater than zero");
 
         uint256 rate = _getRate();
 
@@ -228,11 +228,11 @@ contract Stabl33BuyAndBond is Ownable {
     }
 
     function claimBond(uint256 index) external {
-        require(saleState, "STABL33: Sale not yet started");
+        require(saleState, "Stabl3: Sale not yet started");
         Bond storage bond = getBonds[msg.sender][index];
 
-        require(bond.status, "STABL33: Bond already claimed");
-        require(block.timestamp > bond.endTime, "STABL33: Bond time not finished");
+        require(bond.status, "Stabl3: Bond already claimed");
+        require(block.timestamp > bond.endTime, "Stabl3: Bond time not finished");
 
         stabl3.transferFrom(treasury, msg.sender, bond.amountStabl3);
 
