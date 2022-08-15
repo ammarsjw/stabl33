@@ -24,6 +24,7 @@ contract Stabl3PublicSale is Ownable {
     IERC20 public stabl3 = IERC20(0x20A91B0d2A5545BF05bcA96778e138E2E154e083);
 
     uint256 public initialRate;
+    uint256 public initialSupply;
 
     uint256 public discount;
 
@@ -70,9 +71,9 @@ contract Stabl3PublicSale is Ownable {
 
     event Buy(address indexed recipient, uint256 amountStabl3, IERC20 token, uint256 amountToken);
 
-    event CreatedBond(uint256 index, address indexed recipient, uint256 amountStabl3, IERC20 token, uint256 amountToken);
+    event CreatedBond(address indexed recipient, uint256 index, uint256 amountStabl3, IERC20 token, uint256 amountToken);
 
-    event ClaimedBond(uint256 index, address indexed recipient, uint256 amountStabl3, IERC20 token, uint256 amountToken);
+    event ClaimedBond(address indexed recipient, uint256 index, uint256 amountStabl3, IERC20 token, uint256 amountToken);
 
     // constructor
 
@@ -89,6 +90,8 @@ contract Stabl3PublicSale is Ownable {
         updateReservedToken(dai, 18, true);
 
         initialRate = 0.0007 * (10 ** 18);
+        // TODO
+        initialSupply = 87879135542857168;
 
         discount = 10;
 
@@ -154,11 +157,12 @@ contract Stabl3PublicSale is Ownable {
         saleState = state;
     }
 
-    function _getRate() internal view returns (uint256) {
+    function getRate() public view returns (uint256) {
         uint256 totalAmountReservedTokenTreasury;
 
         uint256 decimals;
         uint256 amountReservedTokenTreasury;
+
         for (uint256 i = 0 ; i < allReservedTokens.length ; i++) {
             if (isReservedToken[allReservedTokens[i]]) {
                 amountReservedTokenTreasury = allReservedTokens[i].balanceOf(treasury);
@@ -172,7 +176,9 @@ contract Stabl3PublicSale is Ownable {
             }
         }
 
-        return initialRate + totalAmountReservedTokenTreasury;
+        uint256 rate = initialRate + (((initialSupply - stabl3.balanceOf(treasury)) * (10 ** 18)) / totalAmountReservedTokenTreasury);
+
+        return rate;
     }
 
     function buy(IERC20 _token, uint256 _amountToken) external {
@@ -180,7 +186,7 @@ contract Stabl3PublicSale is Ownable {
         require(isReservedToken[_token], "Stabl3: Token not reserved");
         require(_amountToken > 0, "Stabl3: Amount should be greater than zero");
 
-        uint256 rate = _getRate();
+        uint256 rate = getRate();
 
         uint256 amountStabl3 = _amountToken.mul(10 ** (18 - decimalsReservedToken[_token])).mul(10 ** 6).div(rate);
 
@@ -205,7 +211,7 @@ contract Stabl3PublicSale is Ownable {
         require(isReservedToken[_token], "Stabl3: Token not reserved");
         require(_amountToken > 0, "Stabl3: Amount should be greater than zero");
 
-        uint256 rate = _getRate();
+        uint256 rate = getRate();
 
         uint256 amountStabl3 = _amountToken.mul(10 ** (18 - decimalsReservedToken[_token])).mul(10 ** 6).div(rate);
 
@@ -214,7 +220,7 @@ contract Stabl3PublicSale is Ownable {
         amountReservedTokenPooled[_token] += _amountToken;
 
         Bond memory bond = Bond(getBonds[msg.sender].length, msg.sender, true, amountStabl3, _token, _amountToken, block.timestamp + bondTime);
-        emit CreatedBond(bond.index, bond.recipient, bond.amountStabl3, bond.token, bond.amountToken);
+        emit CreatedBond(bond.recipient, bond.index, bond.amountStabl3, bond.token, bond.amountToken);
         getBonds[msg.sender].push(bond);
 
         uint256 amountTreasury = _amountToken.mul(treasuryPercentages[1]).roundDiv(1000);
@@ -238,6 +244,6 @@ contract Stabl3PublicSale is Ownable {
 
         bond.status = false;
 
-        emit ClaimedBond(bond.index, bond.recipient, bond.amountStabl3, bond.token, bond.amountToken);
+        emit ClaimedBond(bond.recipient, bond.index, bond.amountStabl3, bond.token, bond.amountToken);
     }
 }
