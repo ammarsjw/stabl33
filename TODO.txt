@@ -2,3 +2,7 @@ Staking:
 
 // TODO add setters from buy and bond
 // TODO fix decimals here
+
+Questions:
+
+// Do staking and lending share the same pool (current/max pool)

@@ -62,7 +62,7 @@ contract Stabl3PublicSale is Ownable {
 
     // events
 
-    event UpdatedReservedToken(IERC20 token, bool state);
+    event UpdatedReservedToken(IERC20 token, uint256 decimals, bool state);
 
     event UpdatedDiscount(uint256 newAmount, uint256 oldAmount);
 
@@ -132,7 +132,7 @@ contract Stabl3PublicSale is Ownable {
         isReservedToken[token] = state;
         decimalsReservedToken[token] = decimals;
         allReservedTokens.push(token);
-        emit UpdatedReservedToken(token, state);
+        emit UpdatedReservedToken(token, decimals, state);
     }
 
     function updateDiscount(uint256 _discount) external onlyOwner {
