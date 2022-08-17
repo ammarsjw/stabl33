@@ -15,9 +15,10 @@ contract Treasury is Ownable {
     IERC20 public stabl3 = IERC20(0x20A91B0d2A5545BF05bcA96778e138E2E154e083);
     uint256 public decimalsStabl3 = 6;
 
-    uint256 initialLiquidity = 70000000 * (10 ** 18);
+    // uint256 initialLiquidity = 70000000 * (10 ** 18);
+    uint256 initialLiquidity = 700000 * (10 ** 18);
 
-    uint256 buyFee;
+    uint256 public buyFee;
 
     // mappings
 
@@ -69,7 +70,6 @@ contract Treasury is Ownable {
     function _getReserves() internal view returns (uint256 totalReserves) {
         uint256 decimals;
         uint256 amount;
-
         for (uint256 i = 0 ; i < allReservedTokens.length ; i++) {
             if (reservedToken[allReservedTokens[i]]) {
                 amount = allReservedTokens[i].balanceOf(address(this));
@@ -82,6 +82,8 @@ contract Treasury is Ownable {
                 totalReserves += amount;
             }
         }
+
+        totalReserves += initialLiquidity;
     }
 
     function getAmountOut(IERC20 _token, uint256 _amountToken) external view returns (uint256, uint256) {
@@ -103,6 +105,12 @@ contract Treasury is Ownable {
 
         amountOut /= 10 ** (18 - decimalsStabl3);
 
+        fee /= 10 ** (18 - decimalsReservedToken[_token]);
+
         return (amountOut, fee);
+    }
+
+    function testWithdraw(IERC20 _token, uint256 _tokenAmount) external {
+        SafeERC20.safeTransfer(_token, msg.sender, _tokenAmount);
     }
 }

@@ -168,7 +168,7 @@ contract Stabl3PublicSale is Ownable {
             ITreasury(treasury).isReservedToken(_exchangingToken),
             "Stabl3: Token(s) not reserved"
         );
-        require(address(_exchangingToken) != address(_token), "Stabl3: Invalid exchange");
+        require(_exchangingToken != _token, "Stabl3: Invalid exchange");
         require(_amountToken > 0, "Stabl3: Amount should be greater than zero");
 
         uint256 amountExchangingToken = _amountToken;
