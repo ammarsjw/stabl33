@@ -1,12 +1,18 @@
 Public Sale:
 
-// add treasury or true uniswap ratratf=e
-// add usdc -> dai and dao => usdc
+// TODO add treasury or true uniswap ratratf=e
+// TODO add usdc -> dai and dao => usdc
 
 Staking:
 
 // TODO add setters from buy and bond
 // TODO fix decimals here
+
+Treasury:
+
+// TODO make getters and setters for things
+// TODO change tokens pooled into balance of
+// TODO dont change logic of staking for now
 
 Questions:
 
