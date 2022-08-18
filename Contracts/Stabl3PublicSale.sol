@@ -85,17 +85,17 @@ contract Stabl3PublicSale is Ownable {
     }
 
     function updateTreasury(address _treasury) external onlyOwner {
-        require(treasury != _treasury, "Stabl3: Treasury is already this address");
+        require(treasury != _treasury, "Stabl3PublicSale: Treasury is already this address");
         treasury = _treasury;
     }
 
     function updateROI(address _ROI) external onlyOwner {
-        require(ROI != _ROI, "Stabl3: ROI is already this address");
+        require(ROI != _ROI, "Stabl3PublicSale: ROI is already this address");
         ROI = _ROI;
     }
 
     function updateHQ(address _HQ) external onlyOwner {
-        require(HQ != _HQ, "Stabl3: HQ is already this address");
+        require(HQ != _HQ, "Stabl3PublicSale: HQ is already this address");
         HQ = _HQ;
     }
 
@@ -130,7 +130,7 @@ contract Stabl3PublicSale is Ownable {
     }
 
     function updateSaleState(bool state) external onlyOwner {
-        require(saleState != state, "Stabl3: Sale state is already of the value 'state'");
+        require(saleState != state, "Stabl3PublicSale: Sale state is already of the value 'state'");
         saleState = state;
     }
 
@@ -146,9 +146,9 @@ contract Stabl3PublicSale is Ownable {
     }
 
     function buy(IERC20 _token, uint256 _amountToken) external {
-        require(saleState, "Stabl3: Sale not yet started");
-        require(ITreasury(treasury).isReservedToken(_token), "Stabl3: Token not reserved");
-        require(_amountToken > 0, "Stabl3: Amount should be greater than zero");
+        require(saleState, "Stabl3PublicSale: Sale not yet started");
+        require(ITreasury(treasury).isReservedToken(_token), "Stabl3PublicSale: Token not reserved");
+        require(_amountToken > 0, "Stabl3PublicSale: Amount should be greater than zero");
 
         (uint256 amountStabl3, uint256 fee) = ITreasury(treasury).getAmountOut(_token, _amountToken);
 
@@ -162,14 +162,14 @@ contract Stabl3PublicSale is Ownable {
     }
 
     function exchange(IERC20 _exchangingToken, IERC20 _token, uint256 _amountToken) external {
-        require(saleState, "Stabl3: Sale not yet started");
+        require(saleState, "Stabl3PublicSale: Sale not yet started");
         require(
             ITreasury(treasury).isReservedToken(_token) &&
             ITreasury(treasury).isReservedToken(_exchangingToken),
-            "Stabl3: Token(s) not reserved"
+            "Stabl3PublicSale: Token(s) not reserved"
         );
-        require(_exchangingToken != _token, "Stabl3: Invalid exchange");
-        require(_amountToken > 0, "Stabl3: Amount should be greater than zero");
+        require(_exchangingToken != _token, "Stabl3PublicSale: Invalid exchange");
+        require(_amountToken > 0, "Stabl3PublicSale: Amount should be greater than zero");
 
         uint256 amountExchangingToken = _amountToken;
 
@@ -186,9 +186,9 @@ contract Stabl3PublicSale is Ownable {
     }
 
     function createBond(IERC20 _token, uint256 _amountToken) external {
-        require(saleState, "Stabl3: Sale not yet started");
-        require(ITreasury(treasury).isReservedToken(_token), "Stabl3: Token not reserved");
-        require(_amountToken > 0, "Stabl3: Amount should be greater than zero");
+        require(saleState, "Stabl3PublicSale: Sale not yet started");
+        require(ITreasury(treasury).isReservedToken(_token), "Stabl3PublicSale: Token not reserved");
+        require(_amountToken > 0, "Stabl3PublicSale: Amount should be greater than zero");
 
         (uint256 amountStabl3, uint256 fee) = ITreasury(treasury).getAmountOut(_token, _amountToken);
 
@@ -203,11 +203,11 @@ contract Stabl3PublicSale is Ownable {
     }
 
     function claimBond(uint256 index) external {
-        require(saleState, "Stabl3: Sale not yet started");
+        require(saleState, "Stabl3PublicSale: Sale not yet started");
         Bond storage bond = getBonds[msg.sender][index];
 
-        require(bond.status, "Stabl3: Bond already claimed");
-        require(block.timestamp > bond.startTime + bondTime, "Stabl3: Bond time not finished");
+        require(bond.status, "Stabl3PublicSale: Bond already claimed");
+        require(block.timestamp > bond.startTime + bondTime, "Stabl3PublicSale: Bond time not finished");
 
         stabl3.transferFrom(treasury, ROI, bond.fee);
 

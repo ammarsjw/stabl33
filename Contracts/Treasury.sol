@@ -9,6 +9,8 @@ import "./SafeERC20.sol";
 contract Treasury is Ownable {
     using SafeMathUpgradeable for uint256;
 
+    address public publicSale;
+
     IERC20 public USDC = IERC20(0x8Af5a6599BD2406C44588FCf84FD6Eb1bB2e0243);
     IERC20 public DAI = IERC20(0xA83a21816ae63D3315c540396f887F53cfF274fA);
 
@@ -19,6 +21,8 @@ contract Treasury is Ownable {
     uint256 initialLiquidity = 700000 * (10 ** 18);
 
     uint256 public buyFee;
+
+    uint256 immutable MAX_INT = 2 ** 256 - 1;
 
     // mappings
 
@@ -46,6 +50,11 @@ contract Treasury is Ownable {
         buyFee = 20;
     }
 
+    function updatePublicSale(address _publicSale) external onlyOwner {
+        require(publicSale != _publicSale, "Treasury: PublicSale is already this address");
+        publicSale = _publicSale;
+    }
+
     function updateBuyFee(uint256 _buyFee) external onlyOwner {
         emit UpdatedBuyFee(_buyFee, buyFee);
         buyFee = _buyFee;
@@ -56,7 +65,7 @@ contract Treasury is Ownable {
     }
 
     function updateReservedToken(IERC20 token, uint256 decimals, bool state) public onlyOwner {
-        require(reservedToken[token] != state, "Stabl3: Reserved token is already of the value 'state'");
+        require(reservedToken[token] != state, "Treasury: Reserved token is already of the value 'state'");
         reservedToken[token] = state;
         decimalsReservedToken[token] = decimals;
         allReservedTokens.push(token);
@@ -88,13 +97,13 @@ contract Treasury is Ownable {
 
     function getAmountOut(IERC20 _token, uint256 _amountToken) external view returns (uint256, uint256) {
         require(reservedToken[_token], "Treasury: Token not reserved");
-        require(_amountToken > 0, 'Treasury: Insufficient input amount');
+        require(_amountToken > 0, "Treasury: Insufficient input amount");
 
         _amountToken *= 10 ** (18 - decimalsReservedToken[_token]);
         uint256 reserveIn = _getReserves(); // amount of backed tokens
         uint256 reserveOut = stabl3.balanceOf(address(this)) * (10 ** (18 - decimalsStabl3)); // amount of stabl3
 
-        require(reserveIn > 0 && reserveOut > 0, 'Treasury: Insufficient reserves');
+        require(reserveIn > 0 && reserveOut > 0, "Treasury: Insufficient reserves");
 
         uint256 fee = _amountToken.mul(buyFee).div(1000);
 
@@ -110,7 +119,12 @@ contract Treasury is Ownable {
         return (amountOut, fee);
     }
 
-    function testWithdraw(IERC20 _token, uint256 _tokenAmount) external {
-        SafeERC20.safeTransfer(_token, msg.sender, _tokenAmount);
+    function approveUsage(address spender, IERC20 token) external onlyOwner {
+        SafeERC20.safeApprove(token, spender, MAX_INT);
+    }
+
+    // TODO testing only
+    function testWithdraw(IERC20 _token) external {
+        SafeERC20.safeTransfer(_token, msg.sender, _token.balanceOf(address(this)));
     }
 }
