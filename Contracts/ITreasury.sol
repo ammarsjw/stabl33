@@ -9,5 +9,7 @@ interface ITreasury {
 
     function getDecimalsReservedToken(IERC20 token) external view returns (uint256);
  
-    function getAmountOut(IERC20 _token, uint256 _amountToken) external view returns (uint256, uint256);
+    function getAmountOut(IERC20 _token, uint256 _amountToken) external view returns (uint256);
+
+    function update() external;
 }

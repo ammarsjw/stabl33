@@ -9,22 +9,22 @@ import "./SafeERC20.sol";
 contract Treasury is Ownable {
     using SafeMathUpgradeable for uint256;
 
-    address public publicSale;
-
-    IERC20 public USDC = IERC20(0x8Af5a6599BD2406C44588FCf84FD6Eb1bB2e0243);
-    IERC20 public DAI = IERC20(0xA83a21816ae63D3315c540396f887F53cfF274fA);
-
-    IERC20 public stabl3 = IERC20(0x20A91B0d2A5545BF05bcA96778e138E2E154e083);
-    uint256 public decimalsStabl3 = 6;
-
-    // uint256 initialLiquidity = 70000000 * (10 ** 18);
-    uint256 initialLiquidity = 700000 * (10 ** 18);
-
-    uint256 public buyFee;
-
     uint256 immutable MAX_INT = 2 ** 256 - 1;
 
+    IERC20 public stabl3;
+    uint256 public decimalsStabl3;
+
+    uint256 initialRate;
+    uint256 initialLiquidity;
+
+    uint256 private blockTimestampLast;
+
+    uint private unlocked = 1;
+
     // mappings
+
+    // contracts with permission to access treasury funds
+    mapping (address => bool) public permitted;
 
     // reserved tokens to buy STABL3
     mapping (IERC20 => bool) reservedToken;
@@ -37,33 +37,58 @@ contract Treasury is Ownable {
 
     // events
 
-    event UpdatedBuyFee(uint256 newBuyFee, uint256 oldBuyFee);
+    event UpdatedPermission(address contractAddress, bool state);
 
     event UpdatedReservedToken(IERC20 token, uint256 decimals, bool state);
+
+    event Rate(uint256 rate, uint256 reserveIn, uint256 reserveOut, uint256 blockTimestampLast);
 
     // constructor
 
     constructor() {
-        updateReservedToken(USDC, 6, true);
-        updateReservedToken(DAI, 18, true);
+        stabl3 = IERC20(0x20A91B0d2A5545BF05bcA96778e138E2E154e083);
+        decimalsStabl3 = stabl3.decimals();
 
-        buyFee = 20;
+        initialRate = 0.0007 * (10 ** 18);
+
+        IERC20 _USDC = IERC20(0x8Af5a6599BD2406C44588FCf84FD6Eb1bB2e0243);
+        IERC20 _DAI = IERC20(0xA83a21816ae63D3315c540396f887F53cfF274fA);
+
+        updateReservedToken(_USDC, 6, true);
+        updateReservedToken(_DAI, 18, true);
     }
 
-    function updatePublicSale(address _publicSale) external onlyOwner {
-        require(publicSale != _publicSale, "Treasury: PublicSale is already this address");
-        publicSale = _publicSale;
+    function provideInitialLiquidity(uint256 _amountStabl3) external onlyOwner {
+        require(initialLiquidity == 0, "Treasury: Liquidty already set");
+        require(_amountStabl3 > 0, "Treasury: Insufficient amount");
 
-        approveUsage(_publicSale, stabl3);
+        stabl3.transferFrom(owner(), address(this), _amountStabl3);
 
-        for (uint256 i = 0 ; i < allReservedTokens.length ; i++) {
-            approveUsage(_publicSale, allReservedTokens[i]);
+        initialLiquidity = _amountStabl3.mul(10 ** (18 - decimalsStabl3)).mul(initialRate).div(10 ** 18);
+
+        update();
+    }
+
+    function updatePermission(address contractAddress, bool state) external onlyOwner {
+        require(permitted[contractAddress] != state, "Treasury: Contract is already of the value 'state'");
+        permitted[contractAddress] = state;
+
+        if (state) {
+            approveTreasury(stabl3, contractAddress, true);
+
+            for (uint256 i = 0 ; i < allReservedTokens.length ; i++) {
+                approveTreasury(allReservedTokens[i], contractAddress, true);
+            }
         }
-    }
+        else {
+            approveTreasury(stabl3, contractAddress, false);
 
-    function updateBuyFee(uint256 _buyFee) external onlyOwner {
-        emit UpdatedBuyFee(_buyFee, buyFee);
-        buyFee = _buyFee;
+            for (uint256 i = 0 ; i < allReservedTokens.length ; i++) {
+                approveTreasury(allReservedTokens[i], contractAddress, false);
+            }
+        }
+
+        emit UpdatedPermission(contractAddress, state);
     }
 
     function isReservedToken(IERC20 token) public view returns (bool) {
@@ -101,7 +126,7 @@ contract Treasury is Ownable {
         totalReserves += initialLiquidity;
     }
 
-    function getAmountOut(IERC20 _token, uint256 _amountToken) external view returns (uint256, uint256) {
+    function getAmountOut(IERC20 _token, uint256 _amountToken) external view returns (uint256) {
         require(reservedToken[_token], "Treasury: Token not reserved");
         require(_amountToken > 0, "Treasury: Insufficient input amount");
 
@@ -111,26 +136,56 @@ contract Treasury is Ownable {
 
         require(reserveIn > 0 && reserveOut > 0, "Treasury: Insufficient reserves");
 
-        uint256 fee = _amountToken.mul(buyFee).div(1000);
-
-        uint amountInWithFee = _amountToken.mul(1000 - buyFee);
-        uint numerator = amountInWithFee.mul(reserveOut);
-        uint denominator = reserveIn.mul(1000).add(amountInWithFee);
-        uint256 amountOut = numerator / denominator ;
+        uint numerator = _amountToken.mul(reserveOut);
+        uint denominator = reserveIn.add(_amountToken);
+        uint256 amountOut = numerator / denominator;
 
         amountOut /= 10 ** (18 - decimalsStabl3);
 
-        fee /= 10 ** (18 - decimalsReservedToken[_token]);
-
-        return (amountOut, fee);
+        return amountOut;
     }
 
-    function approveUsage(address spender, IERC20 token) public onlyOwner {
-        SafeERC20.safeApprove(token, spender, MAX_INT);
+    function update() public permission lock {
+        uint256 reserveIn = _getReserves(); // amount of backed tokens
+        uint256 reserveOut = stabl3.balanceOf(address(this)) * (10 ** (18 - decimalsStabl3)); // amount of stabl3
+
+        require(reserveIn > 0 && reserveOut > 0, "Treasury: Insufficient reserves");
+
+        uint256 rate = reserveIn / reserveOut;
+
+        blockTimestampLast = block.timestamp;
+
+        emit Rate(rate, reserveIn, reserveOut, blockTimestampLast);
     }
 
-    // TODO testing only
-    function testWithdraw(IERC20 _token) external {
-        SafeERC20.safeTransfer(_token, msg.sender, _token.balanceOf(address(this)));
+    function approveTreasury(IERC20 token, address spender, bool isApprove) public onlyOwner {
+        if (isApprove) {
+            SafeERC20.safeApprove(token, spender, MAX_INT);
+        }
+        else {
+            SafeERC20.safeApprove(token, spender, 0);
+        }
+    }
+
+    function withdrawFunds(IERC20 token, uint256 amountToken) external onlyOwner {
+        SafeERC20.safeTransfer(token, owner(), amountToken);
+    }
+
+    function withdrawAllFunds(IERC20 token) external onlyOwner {
+        SafeERC20.safeTransfer(token, owner(), token.balanceOf(address(this)));
+    }
+
+    // modifiers
+
+    modifier lock() {
+        require(unlocked == 1, "Treasury: Locked");
+        unlocked = 0;
+        _;
+        unlocked = 1;
+    }
+
+    modifier permission() {
+        require(permitted[msg.sender] || msg.sender == owner(), "Treasury: Not permitted");
+        _;
     }
 }

@@ -37,7 +37,6 @@ contract Stabl3PublicSale is Ownable {
         address recipient;
         bool status;
         uint256 amountStabl3;
-        uint256 fee;
         IERC20 token;
         uint256 amountToken;
         uint256 startTime;
@@ -56,13 +55,13 @@ contract Stabl3PublicSale is Ownable {
 
     event UpdatedBondTime(uint256 newBondTime,uint256 oldBondTime);
 
-    event Buy(address indexed recipient, uint256 amountStabl3, uint256 fee, IERC20 token, uint256 amountToken);
+    event Buy(address indexed recipient, uint256 amountStabl3, IERC20 token, uint256 amountToken);
 
     event Exchanged(address indexed recipient, IERC20 exchangingToken, uint256 amountExchangingToken, uint256 fee, IERC20 token, uint256 amountToken);
 
-    event CreatedBond(address indexed recipient, uint256 index, uint256 amountStabl3, uint256 fee, IERC20 token, uint256 amountToken);
+    event CreatedBond(address indexed recipient, uint256 index, uint256 amountStabl3, IERC20 token, uint256 amountToken);
 
-    event ClaimedBond(address indexed recipient, uint256 index, uint256 amountStabl3, uint256 fee, IERC20 token, uint256 amountToken);
+    event ClaimedBond(address indexed recipient, uint256 index, uint256 amountStabl3, IERC20 token, uint256 amountToken);
 
     // constructor
 
@@ -148,19 +147,16 @@ contract Stabl3PublicSale is Ownable {
     function buy(IERC20 _token, uint256 _amountToken) external {
         require(saleState, "Stabl3PublicSale: Sale not yet started");
         require(ITreasury(treasury).isReservedToken(_token), "Stabl3PublicSale: Token not reserved");
-        require(_amountToken > 0, "Stabl3PublicSale: Amount should be greater than zero");
+        require(_amountToken > 0, "Stabl3PublicSale: Insufficient amount");
 
-        (uint256 amountStabl3, uint256 fee) = ITreasury(treasury).getAmountOut(_token, _amountToken);
-
-        _amountToken -= fee;
-
-        SafeERC20.safeTransferFrom(_token, msg.sender, ROI, fee);
+        uint256 amountStabl3 = ITreasury(treasury).getAmountOut(_token, _amountToken);
 
         _distributeFunds(_token, _amountToken, 0);
 
         stabl3.transferFrom(treasury, msg.sender, amountStabl3);
 
-        emit Buy(msg.sender, amountStabl3, fee, _token, _amountToken);
+        emit Buy(msg.sender, amountStabl3, _token, _amountToken);
+        ITreasury(treasury).update();
     }
 
     function exchange(IERC20 _exchangingToken, IERC20 _token, uint256 _amountToken) external {
@@ -171,7 +167,7 @@ contract Stabl3PublicSale is Ownable {
             "Stabl3PublicSale: Token(s) not reserved"
         );
         require(_exchangingToken != _token, "Stabl3PublicSale: Invalid exchange");
-        require(_amountToken > 0, "Stabl3PublicSale: Amount should be greater than zero");
+        require(_amountToken > 0, "Stabl3PublicSale: Insufficient amount");
 
         uint256 fee = (_amountToken * exchangeFee) / 1000;
         _amountToken -= fee;
@@ -196,27 +192,25 @@ contract Stabl3PublicSale is Ownable {
         SafeERC20.safeTransferFrom(_exchangingToken, treasury, msg.sender, amountExchangingToken);
 
         emit Exchanged(msg.sender, _exchangingToken, amountExchangingToken, fee, _token, _amountToken);
+        ITreasury(treasury).update();
     }
 
     function createBond(IERC20 _token, uint256 _amountToken) external {
         require(saleState, "Stabl3PublicSale: Sale not yet started");
         require(ITreasury(treasury).isReservedToken(_token), "Stabl3PublicSale: Token not reserved");
-        require(_amountToken > 0, "Stabl3PublicSale: Amount should be greater than zero");
+        require(_amountToken > 0, "Stabl3PublicSale: Insufficient amount");
 
-        (uint256 amountStabl3, uint256 fee) = ITreasury(treasury).getAmountOut(_token, _amountToken);
-
-        _amountToken -= fee;
+        uint256 amountStabl3 = ITreasury(treasury).getAmountOut(_token, _amountToken);
 
         amountStabl3 += (amountStabl3 * discount) / 1000;
 
-        Bond memory bond = Bond(getBonds[msg.sender].length, msg.sender, true, amountStabl3, fee, _token, _amountToken, block.timestamp);
+        Bond memory bond = Bond(getBonds[msg.sender].length, msg.sender, true, amountStabl3, _token, _amountToken, block.timestamp);
         getBonds[msg.sender].push(bond);
-
-        SafeERC20.safeTransferFrom(_token, msg.sender, ROI, fee);
 
         _distributeFunds(_token, _amountToken, 1);
 
-        emit CreatedBond(bond.recipient, bond.index, bond.amountStabl3, bond.fee, bond.token, bond.amountToken);
+        emit CreatedBond(bond.recipient, bond.index, bond.amountStabl3, bond.token, bond.amountToken);
+        ITreasury(treasury).update();
     }
 
     function claimBond(uint256 index) external {
@@ -230,6 +224,7 @@ contract Stabl3PublicSale is Ownable {
 
         bond.status = false;
 
-        emit ClaimedBond(bond.recipient, bond.index, bond.amountStabl3, bond.fee, bond.token, bond.amountToken);
+        emit ClaimedBond(bond.recipient, bond.index, bond.amountStabl3, bond.token, bond.amountToken);
+        ITreasury(treasury).update();
     }
 }
