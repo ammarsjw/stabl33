@@ -53,6 +53,12 @@ contract Treasury is Ownable {
     function updatePublicSale(address _publicSale) external onlyOwner {
         require(publicSale != _publicSale, "Treasury: PublicSale is already this address");
         publicSale = _publicSale;
+
+        approveUsage(_publicSale, stabl3);
+
+        for (uint256 i = 0 ; i < allReservedTokens.length ; i++) {
+            approveUsage(_publicSale, allReservedTokens[i]);
+        }
     }
 
     function updateBuyFee(uint256 _buyFee) external onlyOwner {
@@ -119,7 +125,7 @@ contract Treasury is Ownable {
         return (amountOut, fee);
     }
 
-    function approveUsage(address spender, IERC20 token) external onlyOwner {
+    function approveUsage(address spender, IERC20 token) public onlyOwner {
         SafeERC20.safeApprove(token, spender, MAX_INT);
     }
 
