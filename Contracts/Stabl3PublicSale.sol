@@ -134,14 +134,14 @@ contract Stabl3PublicSale is Ownable {
         saleState = state;
     }
 
-    function _distributeFunds(IERC20 _token, uint256 _amountToken, uint256 _index) internal {
-        uint256 amountTreasury = _amountToken.mul(treasuryPercentages[_index]).roundDiv(1000);
+    function _distributeFunds(IERC20 _token, uint256 _amountToken, uint256 _percentagesIndex) internal {
+        uint256 amountTreasury = _amountToken.mul(treasuryPercentages[_percentagesIndex]).roundDiv(1000);
         SafeERC20.safeTransferFrom(_token, msg.sender, treasury, amountTreasury);
 
-        uint256 amountROI = _amountToken.mul(ROIPercentages[_index]).roundDiv(1000);
+        uint256 amountROI = _amountToken.mul(ROIPercentages[_percentagesIndex]).roundDiv(1000);
         SafeERC20.safeTransferFrom(_token, msg.sender, ROI, amountROI);
 
-        uint256 amountHQ = _amountToken.mul(HQPercentages[_index]).roundDiv(1000);
+        uint256 amountHQ = _amountToken.mul(HQPercentages[_percentagesIndex]).roundDiv(1000);
         SafeERC20.safeTransferFrom(_token, msg.sender, HQ, amountHQ);
     }
 
@@ -152,9 +152,11 @@ contract Stabl3PublicSale is Ownable {
 
         (uint256 amountStabl3, uint256 fee) = ITreasury(treasury).getAmountOut(_token, _amountToken);
 
-        _distributeFunds(_token, _amountToken, 0);
+        _amountToken -= fee;
 
-        stabl3.transferFrom(treasury, ROI, fee);
+        SafeERC20.safeTransferFrom(_token, msg.sender, ROI, fee);
+
+        _distributeFunds(_token, _amountToken, 0);
 
         stabl3.transferFrom(treasury, msg.sender, amountStabl3);
 
@@ -171,14 +173,25 @@ contract Stabl3PublicSale is Ownable {
         require(_exchangingToken != _token, "Stabl3PublicSale: Invalid exchange");
         require(_amountToken > 0, "Stabl3PublicSale: Amount should be greater than zero");
 
-        uint256 amountExchangingToken = _amountToken;
+        uint256 fee = (_amountToken * exchangeFee) / 1000;
+        _amountToken -= fee;
 
-        uint256 fee = (amountExchangingToken * exchangeFee) / 1000;
-        amountExchangingToken -= fee;
+        uint256 amountExchangingToken;
+        uint256 decimalsExchangingToken = ITreasury(treasury).getDecimalsReservedToken(_exchangingToken);
+        uint256 decimalsToken = ITreasury(treasury).getDecimalsReservedToken(_token);
+        if (decimalsExchangingToken > decimalsToken) {
+            amountExchangingToken = _amountToken * (10 ** (decimalsExchangingToken - decimalsToken));
+        }
+        else if (decimalsToken > decimalsExchangingToken) {
+            amountExchangingToken = _amountToken / (10 ** (decimalsToken - decimalsExchangingToken));
+        }
+        else {
+            amountExchangingToken = _amountToken;
+        }
+
+        SafeERC20.safeTransferFrom(_token, msg.sender, ROI, fee);
 
         _distributeFunds(_token, _amountToken, 0);
-
-        SafeERC20.safeTransferFrom(_exchangingToken, treasury, ROI, fee);
 
         SafeERC20.safeTransferFrom(_exchangingToken, treasury, msg.sender, amountExchangingToken);
 
@@ -192,10 +205,14 @@ contract Stabl3PublicSale is Ownable {
 
         (uint256 amountStabl3, uint256 fee) = ITreasury(treasury).getAmountOut(_token, _amountToken);
 
+        _amountToken -= fee;
+
         amountStabl3 += (amountStabl3 * discount) / 1000;
 
         Bond memory bond = Bond(getBonds[msg.sender].length, msg.sender, true, amountStabl3, fee, _token, _amountToken, block.timestamp);
         getBonds[msg.sender].push(bond);
+
+        SafeERC20.safeTransferFrom(_token, msg.sender, ROI, fee);
 
         _distributeFunds(_token, _amountToken, 1);
 
@@ -208,8 +225,6 @@ contract Stabl3PublicSale is Ownable {
 
         require(bond.status, "Stabl3PublicSale: Bond already claimed");
         require(block.timestamp > bond.startTime + bondTime, "Stabl3PublicSale: Bond time not finished");
-
-        stabl3.transferFrom(treasury, ROI, bond.fee);
 
         stabl3.transferFrom(treasury, msg.sender, bond.amountStabl3);
 
