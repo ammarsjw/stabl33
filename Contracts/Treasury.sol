@@ -11,6 +11,9 @@ contract Treasury is Ownable {
 
     uint256 immutable MAX_INT = 2 ** 256 - 1;
 
+    address public ROI;
+    address public HQ;
+
     IERC20 public stabl3;
     uint256 public decimalsStabl3;
 
@@ -44,6 +47,9 @@ contract Treasury is Ownable {
     // constructor
 
     constructor() {
+        ROI = 0x3edCe801a3f1851675e68589844B1b412EAc6B07;
+        HQ = 0x294d0487fdf7acecf342ae70AFc5549A6E90f3e0;
+
         stabl3 = IERC20(0x20A91B0d2A5545BF05bcA96778e138E2E154e083);
         decimalsStabl3 = stabl3.decimals();
 
@@ -115,6 +121,9 @@ contract Treasury is Ownable {
         for (uint256 i = 0 ; i < allReservedTokens.length ; i++) {
             if (reservedToken[allReservedTokens[i]]) {
                 amount = allReservedTokens[i].balanceOf(address(this));
+
+                amount += allReservedTokens[i].balanceOf(ROI);
+                amount += allReservedTokens[i].balanceOf(HQ);
 
                 decimals = decimalsReservedToken[allReservedTokens[i]];
 
