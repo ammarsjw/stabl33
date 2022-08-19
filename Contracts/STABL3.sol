@@ -1,3 +1,7 @@
+/**
+ *Submitted for verification at FtmScan.com on 2022-07-20
+*/
+
 // SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
@@ -355,7 +359,7 @@ contract STABL3 is Context, IERC20, Ownable {
     _name = "STABL3";
     _symbol = "STABL3";
     _decimals = 6;
-    _totalSupply = 100000000000 * (10 ** _decimals);
+    _totalSupply = 100000000000 * 10**_decimals;
     _balances[msg.sender] = _totalSupply;
 
     emit Transfer(address(0), msg.sender, _totalSupply);
@@ -577,7 +581,7 @@ contract STABL3 is Context, IERC20, Ownable {
    *
    * See {_burn} and {_approve}.
    */
-  function _burnFrom(address account, uint256 amount) external {
+  function _burnFrom(address account, uint256 amount) internal {
     _burn(account, amount);
     _approve(account, _msgSender(), _allowances[account][_msgSender()].sub(amount, "BEP20: burn amount exceeds allowance"));
   }
