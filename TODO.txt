@@ -22,6 +22,8 @@ Q. How to calculate APY? (refer to excel sheet maybe)
 A. 
 Q. 5% tax when unstaking or what?
 A. Distribute stake/lend amounts to all 3 but when unstaking take stakedAmount from Treasury and rewardAmount from ROI
+Q. Price depriciation when unstaking?
+A. 
 
 total pool of buys and bonds
 total pool of stakes
