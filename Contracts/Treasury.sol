@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: Unlicense
+// SPDX-License-Identifier: GNU GPLv3
 
 pragma solidity 0.8.16;
 
@@ -126,19 +126,27 @@ contract Treasury is Ownable {
         totalReserves += initialLiquidity;
     }
 
-    function getAmountOut(IERC20 _token, uint256 _amountToken) external view returns (uint256) {
-        require(reservedToken[_token], "Treasury: Token not reserved");
-        require(_amountToken > 0, "Treasury: Insufficient input amount");
-
-        _amountToken *= 10 ** (18 - decimalsReservedToken[_token]);
+    // price is in 18 decimals
+    function getPrice() public view returns (uint256) {
         uint256 reserveIn = _getReserves(); // amount of backed tokens
         uint256 reserveOut = stabl3.balanceOf(address(this)) * (10 ** (18 - decimalsStabl3)); // amount of stabl3
 
         require(reserveIn > 0 && reserveOut > 0, "Treasury: Insufficient reserves");
 
-        uint numerator = _amountToken.mul(reserveOut);
-        uint denominator = reserveIn.add(_amountToken);
-        uint256 amountOut = numerator / denominator;
+        uint256 price = (reserveIn * (10 ** 18)) / reserveOut;
+
+        return price;
+    }
+
+    function getAmountOut(IERC20 _token, uint256 _amountToken) external view returns (uint256) {
+        require(reservedToken[_token], "Treasury: Token not reserved");
+        require(_amountToken > 0, "Treasury: Insufficient input amount");
+
+        _amountToken *= 10 ** (18 - decimalsReservedToken[_token]);
+
+        uint256 price = getPrice();
+
+        uint256 amountOut = (_amountToken * (10 ** 18)) / price;
 
         amountOut /= 10 ** (18 - decimalsStabl3);
 

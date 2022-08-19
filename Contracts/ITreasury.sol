@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: Unlicense
+// SPDX-License-Identifier: GNU GPLv3
 
 pragma solidity 0.8.16;
 

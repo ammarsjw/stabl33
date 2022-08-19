@@ -17,3 +17,5 @@ Treasury:
 Questions:
 
 // Do staking and lending share the same pool (current/max pool)
+// 100% marketcap all3 combined
+// withdraw stuck tokens if user accidentally sends
