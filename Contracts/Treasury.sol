@@ -63,7 +63,7 @@ contract Treasury is Ownable {
     }
 
     function provideInitialLiquidity(uint256 _amountStabl3) external onlyOwner {
-        require(initialLiquidity == 0, "Treasury: Liquidty already set");
+        require(stabl3.balanceOf(address(this)) == 0, "Treasury: Liquidty already set");
         require(_amountStabl3 > 0, "Treasury: Insufficient amount");
 
         stabl3.transferFrom(owner(), address(this), _amountStabl3);
