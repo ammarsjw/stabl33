@@ -11,12 +11,12 @@ contract Treasury is Ownable {
 
     uint256 immutable MAX_INT = 2 ** 256 - 1;
 
-    uint8 constant initialPool = 0;
-    uint8 constant buyPool = 1;
-    uint8 constant bondPool = 2;
-    uint8 constant stakePool = 3;
-    uint8 constant lendPool = 4;
-    uint8 constant borrowPool = 5;
+    uint8 constant INITIAL_POOL = 0;
+    uint8 constant BUY_POOL = 1;
+    uint8 constant BOND_POOL = 2;
+    uint8 constant STAKE_POOL = 3;
+    uint8 constant LEND_POOL = 4;
+    uint8 constant BORROW_POOL = 5;
 
     address public ROI;
     address public HQ;
@@ -81,7 +81,7 @@ contract Treasury is Ownable {
 
         IERC20 _DAI = IERC20(0xA83a21816ae63D3315c540396f887F53cfF274fA);
 
-        update(0, _DAI, initialLiquidity);
+        update(INITIAL_POOL, _DAI, initialLiquidity);
     }
 
     function updatePermission(address _contractAddress, bool _state) external onlyOwner {
