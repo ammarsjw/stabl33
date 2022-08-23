@@ -59,13 +59,16 @@ contract Treasury is Ownable {
         ROI = 0x3edCe801a3f1851675e68589844B1b412EAc6B07;
         HQ = 0x294d0487fdf7acecf342ae70AFc5549A6E90f3e0;
 
-        stabl3 = IERC20(0x20A91B0d2A5545BF05bcA96778e138E2E154e083);
+        // stabl3 = IERC20(0x20A91B0d2A5545BF05bcA96778e138E2E154e083);
+        stabl3 = IERC20(0x65a4c65BF67c914D8Af80B3D8f9974a1DF4d2f33);
         decimalsStabl3 = stabl3.decimals();
 
         initialRate = 0.0007 * (10 ** 18);
 
-        IERC20 _USDC = IERC20(0x8Af5a6599BD2406C44588FCf84FD6Eb1bB2e0243);
-        IERC20 _DAI = IERC20(0xA83a21816ae63D3315c540396f887F53cfF274fA);
+        // IERC20 _USDC = IERC20(0x8Af5a6599BD2406C44588FCf84FD6Eb1bB2e0243);
+        // IERC20 _DAI = IERC20(0xA83a21816ae63D3315c540396f887F53cfF274fA);
+        IERC20 _USDC = IERC20(0x9764B36C3eCd6EBcD0758e8E429e5D447142F25b);
+        IERC20 _DAI = IERC20(0x5A83418BFd8c3908f8953Dc5d5802e386A9FCE74);
 
         updateReservedToken(_USDC, 6, true);
         updateReservedToken(_DAI, 18, true);
@@ -79,7 +82,8 @@ contract Treasury is Ownable {
 
         initialLiquidity = _amountStabl3.mul(10 ** (18 - decimalsStabl3)).mul(initialRate).div(10 ** 18);
 
-        IERC20 _DAI = IERC20(0xA83a21816ae63D3315c540396f887F53cfF274fA);
+        // IERC20 _DAI = IERC20(0xA83a21816ae63D3315c540396f887F53cfF274fA);
+        IERC20 _DAI = IERC20(0x5A83418BFd8c3908f8953Dc5d5802e386A9FCE74);
 
         update(INITIAL_POOL, _DAI, initialLiquidity);
     }
