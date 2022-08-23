@@ -1,0 +1,33 @@
+specVersion: 0.0.4
+schema:
+  file: schema.graphql
+dataSources:
+  - kind: ethereum
+    name: Treasury
+    network: ropsten
+    source:
+      address: "0xeEEeE40251D07b400b9168d91B0462dE3B506527"
+      abi: Treasury
+      startBlock: 12846254
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - OwnershipTransferred
+        - Rate
+        - UpdatedPermission
+        - UpdatedReservedToken
+      abis:
+        - name: Treasury
+          file: Treasury\abis\Treasury.json
+      eventHandlers:
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+        - event: Rate(uint256,uint256)
+          handler: handleRate
+        - event: UpdatedPermission(address,bool)
+          handler: handleUpdatedPermission
+        - event: UpdatedReservedToken(address,uint256,bool)
+          handler: handleUpdatedReservedToken
+      file: Treasury\Treasury.wasm

@@ -1,0 +1,39 @@
+type Transaction @entity {
+  id: ID!
+  timestamp: BigInt!
+  blockNumber: BigInt!
+  blockHash: Bytes!
+  from: Bytes!
+  to: Bytes
+  value: BigInt!
+  gasPrice: BigInt!
+}
+
+type OwnershipTransferred @entity {
+  id: ID!
+  transaction: Transaction!
+  previousOwner: Bytes!
+  newOwner: Bytes!
+}
+
+type UpdatedPermission @entity {
+  id: ID!
+  transaction: Transaction!
+  contractAddress: Bytes!
+  state: Boolean!
+}
+
+type UpdatedReservedToken @entity {
+  id: ID!
+  transaction: Transaction!
+  token: Bytes!
+  decimals: BigInt!
+  state: Boolean!
+}
+
+type Rate @entity {
+  id: ID!
+  transaction: Transaction!
+  rate: BigInt!
+  blockTimestampLast: BigInt!
+}
