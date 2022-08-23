@@ -43,7 +43,10 @@ contract Treasury is Ownable {
     // array for reserved tokens
     IERC20[] public allReservedTokens;
 
-    mapping (uint8 => mapping(IERC20 => uint256)) pool;
+    // record for funds pooled
+    mapping (uint8 => mapping(IERC20 => uint256)) treasuryPool;
+    mapping (uint8 => mapping(IERC20 => uint256)) ROIPool;
+    mapping (uint8 => mapping(IERC20 => uint256)) HQPool;
 
     // events
 
@@ -65,13 +68,13 @@ contract Treasury is Ownable {
 
         initialRate = 0.0007 * (10 ** 18);
 
-        // IERC20 _USDC = IERC20(0x8Af5a6599BD2406C44588FCf84FD6Eb1bB2e0243);
-        // IERC20 _DAI = IERC20(0xA83a21816ae63D3315c540396f887F53cfF274fA);
-        IERC20 _USDC = IERC20(0x9764B36C3eCd6EBcD0758e8E429e5D447142F25b);
-        IERC20 _DAI = IERC20(0x5A83418BFd8c3908f8953Dc5d5802e386A9FCE74);
+        // IERC20 USDC = IERC20(0x8Af5a6599BD2406C44588FCf84FD6Eb1bB2e0243);
+        // IERC20 DAI = IERC20(0xA83a21816ae63D3315c540396f887F53cfF274fA);
+        IERC20 USDC = IERC20(0x9764B36C3eCd6EBcD0758e8E429e5D447142F25b);
+        IERC20 DAI = IERC20(0x5A83418BFd8c3908f8953Dc5d5802e386A9FCE74);
 
-        updateReservedToken(_USDC, 6, true);
-        updateReservedToken(_DAI, 18, true);
+        updateReservedToken(USDC, 6, true);
+        updateReservedToken(DAI, 18, true);
     }
 
     function provideInitialLiquidity(uint256 _amountStabl3) external onlyOwner {
@@ -82,10 +85,10 @@ contract Treasury is Ownable {
 
         initialLiquidity = _amountStabl3.mul(10 ** (18 - decimalsStabl3)).mul(initialRate).div(10 ** 18);
 
-        // IERC20 _DAI = IERC20(0xA83a21816ae63D3315c540396f887F53cfF274fA);
-        IERC20 _DAI = IERC20(0x5A83418BFd8c3908f8953Dc5d5802e386A9FCE74);
+        // IERC20 DAI = IERC20(0xA83a21816ae63D3315c540396f887F53cfF274fA);
+        IERC20 DAI = IERC20(0x5A83418BFd8c3908f8953Dc5d5802e386A9FCE74);
 
-        update(INITIAL_POOL, _DAI, initialLiquidity);
+        update(INITIAL_POOL, DAI, initialLiquidity, 0, 0);
     }
 
     function updatePermission(address _contractAddress, bool _state) external onlyOwner {
@@ -130,8 +133,12 @@ contract Treasury is Ownable {
         return allReservedTokens.length;
     }
 
-    function getPools(uint8 _type, IERC20 _token) external view returns (uint256) {
-        return pool[_type][_token];
+    function getPools(uint8 _type, IERC20 _token) external view returns (uint256, uint256, uint256) {
+        return (
+            treasuryPool[_type][_token],
+            ROIPool[_type][_token],
+            HQPool[_type][_token]
+        );
     }
 
     function _getReserves() internal view returns (uint256 totalReserves) {
@@ -198,8 +205,10 @@ contract Treasury is Ownable {
         return amountToken;
     }
 
-    function update(uint8 _type, IERC20 _token, uint256 _amountToken) public lock permission {
-        pool[_type][_token] += _amountToken;
+    function update(uint8 _type, IERC20 _token, uint256 _amountTokenTreasury, uint256 _amountTokenROI, uint256 _amountTokenHQ) public lock permission {
+        treasuryPool[_type][_token] += _amountTokenTreasury;
+        ROIPool[_type][_token] += _amountTokenROI;
+        HQPool[_type][_token] += _amountTokenHQ;
 
         uint256 rate = getRate();
 

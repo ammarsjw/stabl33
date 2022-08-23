@@ -17,16 +17,18 @@ interface ITreasury {
 
     function allReservedTokensLength() external view returns (uint256);
 
+    function getPools(uint8 _type, IERC20 _token) external view returns (uint256, uint256, uint256);
+
     function getRate() external view returns (uint256);
 
     function getAmountOut(IERC20 _token, uint256 _amountToken) external view returns (uint256);
 
     function getAmountIn(uint256 _amountStabl3, IERC20 _token) external view returns (uint256);
 
-    function update() external;
+    function update(uint8 _type, IERC20 _token, uint256 _amountTokenTreasury, uint256 _amountTokenROI, uint256 _amountTokenHQ) external;
 
-    function approveTreasury(IERC20 token, address spender, bool isApprove) external;
-
+    function approveTreasury(IERC20 _token, address _spender, bool _isApprove) external;
+            
     function withdrawFunds(IERC20 _token, uint256 _amountToken) external;
 
     function withdrawAllFunds(IERC20 _token) external;
