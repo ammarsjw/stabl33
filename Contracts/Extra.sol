@@ -1,0 +1,124 @@
+// SPDX-License-Identifier: GNU GPLv3
+
+pragma solidity 0.8.16;
+
+import "./Ownable.sol";
+import "./SafeMathUpgradeable.sol";
+import "./SafeERC20.sol";
+import "./ABDKMath64x64.sol";
+
+import "./ITreasury.sol";
+
+contract Extra is Ownable {
+    using SafeMathUpgradeable for uint256;
+
+    uint256 immutable MAX_INT = 2 ** 256 - 1;
+
+    uint8 constant INITIAL_POOL = 0;
+    uint8 constant BUY_POOL = 1;
+    uint8 constant BOND_POOL = 2;
+    uint8 constant STAKE_POOL = 3;
+    uint8 constant LEND_POOL = 4;
+    uint8 constant BORROW_POOL = 5;
+    uint8 constant EXCHANGE_POOL = 6;
+
+    ITreasury public treasury;
+
+    constructor(ITreasury _treasury) {
+        treasury = _treasury;
+    }
+
+    function getRewardAPY() external view returns (uint256) {
+        uint256 totalROIReserves; // numerator for totalAPY
+        uint256 totalStakeAndLendAmountTreasury; // denominator for totalAPY
+
+        uint256 totalBuyAndBondAmountTreasury; // numerator for collateralAPY
+        uint256 totalExchangeAmountTreasury; // denominator for collateralAPY
+
+        uint256 decimals;
+
+        uint256 ROIReserves;
+        uint256 stakeAndLendAmountTreasury;
+
+        uint256 buyAndBondAmountTreasury;
+        uint256 exchangeAmountTreasury;
+
+        IERC20 reservedToken;
+        for (uint256 i = 0 ; i < treasury.allReservedTokensLength() ; i++) {
+            reservedToken = treasury.allReservedTokens(i);
+            if (treasury.isReservedToken(reservedToken)) {
+                ROIReserves = reservedToken.balanceOf(address(this));
+                stakeAndLendAmountTreasury = treasury.getTreasuryPool(STAKE_POOL, reservedToken);
+                stakeAndLendAmountTreasury += treasury.getTreasuryPool(LEND_POOL, reservedToken);
+
+                buyAndBondAmountTreasury = treasury.getTreasuryPool(BUY_POOL, reservedToken);
+                buyAndBondAmountTreasury += treasury.getTreasuryPool(BOND_POOL, reservedToken);
+                exchangeAmountTreasury = treasury.getTreasuryPool(EXCHANGE_POOL, reservedToken);
+
+                decimals = treasury.decimalsReservedToken(reservedToken);
+
+                if (decimals < 18) {
+                    ROIReserves = ROIReserves * (10 ** (18 - decimals));
+                    stakeAndLendAmountTreasury = stakeAndLendAmountTreasury * (10 ** (18 - decimals));
+
+                    buyAndBondAmountTreasury = buyAndBondAmountTreasury * (10 ** (18 - decimals));
+                    exchangeAmountTreasury = exchangeAmountTreasury * (10 ** (18 - decimals));
+                }
+
+                totalROIReserves += ROIReserves;
+                totalStakeAndLendAmountTreasury += stakeAndLendAmountTreasury;
+
+                totalBuyAndBondAmountTreasury += buyAndBondAmountTreasury;
+                totalExchangeAmountTreasury += exchangeAmountTreasury;
+            }
+        }
+
+        uint256 totalAPY = (totalROIReserves * (10 ** 18)) / totalStakeAndLendAmountTreasury;
+
+        uint256 collateralAPY;
+        uint256 APY;
+        if (totalExchangeAmountTreasury > totalBuyAndBondAmountTreasury) {
+            uint256 collateralAmount = totalExchangeAmountTreasury - totalBuyAndBondAmountTreasury;
+
+            collateralAPY = (collateralAmount * (10 ** 18)) / totalStakeAndLendAmountTreasury;
+
+            APY = totalAPY - collateralAPY;
+        }
+        else {
+            uint256 collateralAmount = totalBuyAndBondAmountTreasury - totalExchangeAmountTreasury;
+
+            collateralAPY = (collateralAmount * (10 ** 18)) / totalStakeAndLendAmountTreasury;
+
+            APY = totalAPY + collateralAPY;
+        }
+
+        return APY;
+    }
+
+    function approveTreasury(IERC20 _token, address _spender, bool _isApprove) public onlyOwner {
+        if (_isApprove) {
+            SafeERC20.safeApprove(_token, _spender, MAX_INT);
+        }
+        else {
+            SafeERC20.safeApprove(_token, _spender, 0);
+        }
+    }
+
+    function withdrawFunds(IERC20 _token, uint256 _amountToken) external onlyOwner {
+        SafeERC20.safeTransfer(_token, owner(), _amountToken);
+    }
+
+    function withdrawAllFunds(IERC20 _token) external onlyOwner {
+        SafeERC20.safeTransfer(_token, owner(), _token.balanceOf(address(this)));
+    }
+
+    function _compound(uint256 _principal, uint256 _ratio, uint256 _exponent) internal pure returns (uint256) {
+        if (_exponent == 0) {
+            return 0;
+        }
+
+        uint256 accruedReward = ABDKMath64x64.mulu(ABDKMath64x64.pow(ABDKMath64x64.add(ABDKMath64x64.fromUInt(1), ABDKMath64x64.divu(_ratio,10**18)), _exponent), _principal);
+
+        return accruedReward.sub(_principal);
+    }
+}

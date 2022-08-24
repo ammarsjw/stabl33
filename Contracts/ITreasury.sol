@@ -5,11 +5,19 @@ pragma solidity 0.8.16;
 import "./IERC20.sol";
 
 interface ITreasury {
+    function isReservedToken(IERC20 _token) external view returns (bool);
+
+    function decimalsReservedToken(IERC20 _token) external view returns (uint256);
+
+    function allReservedTokens(uint) external view returns (IERC20);
+
+    function getTreasuryPool(uint8, IERC20) external view returns (uint256);
+    function getROIPool(uint8, IERC20) external view returns (uint256);
+    function getHQPool(uint8, IERC20) external view returns (uint256);
+
     function provideInitialLiquidity(uint256 _amountStabl3) external;
 
     function updatePermission(address _contractAddress, bool _state) external;
-
-    function isReservedToken(IERC20 _token) external view returns (bool);
 
     function updateReservedToken(IERC20 _token, uint256 _decimals, bool _state) external;
 
@@ -17,7 +25,7 @@ interface ITreasury {
 
     function allReservedTokensLength() external view returns (uint256);
 
-    function getPools(uint8 _type, IERC20 _token) external view returns (uint256, uint256, uint256);
+    function allPools(uint8 _type, IERC20 _token) external view returns (uint256, uint256, uint256);
 
     function getRate() external view returns (uint256);
 

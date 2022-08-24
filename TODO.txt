@@ -1,19 +1,3 @@
-Public Sale:
-
-// TODO add treasury or true uniswap ratratf=e
-// TODO add usdc -> dai and dao => usdc
-
-Staking:
-
-// TODO add setters from buy and bond
-// TODO fix decimals here
-
-Treasury:
-
-// TODO make getters and setters for things
-// TODO change tokens pooled into balance of
-// TODO dont change logic of staking for now
-
 Questions:
 
 Q. Do staking and lending share the same pool (current/max pool)
@@ -21,13 +5,12 @@ A. Yes. For current pool exceeds checker we add both pools and compare it with m
 Q. How to calculate APY? (refer to excel sheet maybe)
 A. 
 Q. 5% tax when unstaking or what?
-A. Distribute stake/lend amounts to all 3 but when unstaking take stakedAmount from Treasury and rewardAmount from ROI
-Q. Price depriciation when unstaking?
+A. Distribute stake/lend amounts to all 3 but when unstaking take stakedAmount from Treasury and rewardAmount from ROI and cut 5% from stakedAmount
+Q. Price depriciation when unstaking and exchaning UCD?
 A. 
-
-total pool of buys and bonds
-total pool of stakes
-total pool of lending
-total pool of borrowing
-borrowing withing treasury?
-UCD functionality
+Q. Are we going to use the APY at the time of unstaking or staking to calculate rewards?
+A. 
+Q. Are we compounding once per month?
+A. 
+Q. The max possible pool for staking + lending is the amount of valuation received from (buy + bond) * 0.7 in the treasury or the whole amount
+A. 

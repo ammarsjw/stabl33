@@ -17,6 +17,7 @@ contract Treasury is Ownable {
     uint8 constant STAKE_POOL = 3;
     uint8 constant LEND_POOL = 4;
     uint8 constant BORROW_POOL = 5;
+    uint8 constant EXCHANGE_POOL = 6;
 
     address public ROI;
     address public HQ;
@@ -25,7 +26,7 @@ contract Treasury is Ownable {
     uint256 public decimalsStabl3;
 
     uint256 public initialRate;
-    uint256 public initialLiquidity;
+    uint256 public initialSupply;
 
     uint256 private unlocked = 1;
 
@@ -35,18 +36,18 @@ contract Treasury is Ownable {
     mapping (address => bool) public permitted;
 
     // reserved tokens to buy STABL3
-    mapping (IERC20 => bool) reservedToken;
+    mapping (IERC20 => bool) public isReservedToken;
 
     // decimals of reserved token
-    mapping (IERC20 => uint256) decimalsReservedToken;
+    mapping (IERC20 => uint256) public decimalsReservedToken;
 
     // array for reserved tokens
     IERC20[] public allReservedTokens;
 
     // record for funds pooled
-    mapping (uint8 => mapping(IERC20 => uint256)) treasuryPool;
-    mapping (uint8 => mapping(IERC20 => uint256)) ROIPool;
-    mapping (uint8 => mapping(IERC20 => uint256)) HQPool;
+    mapping (uint8 => mapping(IERC20 => uint256)) public getTreasuryPool;
+    mapping (uint8 => mapping(IERC20 => uint256)) public getROIPool;
+    mapping (uint8 => mapping(IERC20 => uint256)) public getHQPool;
 
     // events
 
@@ -78,17 +79,12 @@ contract Treasury is Ownable {
     }
 
     function provideInitialLiquidity(uint256 _amountStabl3) external onlyOwner {
-        require(stabl3.balanceOf(address(this)) == 0, "Treasury: Liquidty already set");
         require(_amountStabl3 > 0, "Treasury: Insufficient amount");
+        require(stabl3.balanceOf(address(this)) == 0, "Treasury: Liquidty already set");
 
         stabl3.transferFrom(owner(), address(this), _amountStabl3);
 
-        initialLiquidity = _amountStabl3.mul(10 ** (18 - decimalsStabl3)).mul(initialRate).div(10 ** 18);
-
-        // IERC20 DAI = IERC20(0xA83a21816ae63D3315c540396f887F53cfF274fA);
-        IERC20 DAI = IERC20(0x5A83418BFd8c3908f8953Dc5d5802e386A9FCE74);
-
-        update(INITIAL_POOL, DAI, initialLiquidity, 0, 0);
+        initialSupply = _amountStabl3;
     }
 
     function updatePermission(address _contractAddress, bool _state) external onlyOwner {
@@ -113,31 +109,23 @@ contract Treasury is Ownable {
         emit UpdatedPermission(_contractAddress, _state);
     }
 
-    function isReservedToken(IERC20 _token) public view returns (bool) {
-        return reservedToken[_token];
-    }
-
     function updateReservedToken(IERC20 _token, uint256 _decimals, bool _state) public onlyOwner {
-        require(reservedToken[_token] != _state, "Treasury: Reserved token is already of the value 'state'");
-        reservedToken[_token] = _state;
+        require(isReservedToken[_token] != _state, "Treasury: Reserved token is already of the value 'state'");
+        isReservedToken[_token] = _state;
         decimalsReservedToken[_token] = _decimals;
         allReservedTokens.push(_token);
         emit UpdatedReservedToken(_token, _decimals, _state);
-    }
-
-    function getDecimalsReservedToken(IERC20 _token) public view returns (uint256) {
-        return decimalsReservedToken[_token];
     }
 
     function allReservedTokensLength() external view returns (uint256) {
         return allReservedTokens.length;
     }
 
-    function getPools(uint8 _type, IERC20 _token) external view returns (uint256, uint256, uint256) {
+    function allPools(uint8 _type, IERC20 _token) external view returns (uint256, uint256, uint256) {
         return (
-            treasuryPool[_type][_token],
-            ROIPool[_type][_token],
-            HQPool[_type][_token]
+            getTreasuryPool[_type][_token],
+            getROIPool[_type][_token],
+            getHQPool[_type][_token]
         );
     }
 
@@ -145,7 +133,7 @@ contract Treasury is Ownable {
         uint256 decimals;
         uint256 amount;
         for (uint256 i = 0 ; i < allReservedTokens.length ; i++) {
-            if (reservedToken[allReservedTokens[i]]) {
+            if (isReservedToken[allReservedTokens[i]]) {
                 amount = allReservedTokens[i].balanceOf(address(this));
 
                 amount += allReservedTokens[i].balanceOf(ROI);
@@ -161,30 +149,43 @@ contract Treasury is Ownable {
             }
         }
 
-        totalReserves += initialLiquidity;
+        totalReserves;
     }
 
     // rate is in 18 decimals
-    function getRate() public view returns (uint256) {
+    function _getRate() internal view returns (uint256 rate) {
         uint256 reserveIn = _getReserves(); // amount of backed tokens
-        uint256 reserveOut = stabl3.balanceOf(address(this)) * (10 ** (18 - decimalsStabl3)); // amount of stabl3
+        uint256 reserveOut = (initialSupply - stabl3.balanceOf(address(this))) * (10 ** (18 - decimalsStabl3)); // amount of stabl3
 
-        require(reserveIn > 0 && reserveOut > 0, "Treasury: Insufficient reserves");
+        if (reserveIn == 0) {
+            rate = initialRate;
+        }
+        else {
+            rate = (reserveIn * (10 ** 18)) / reserveOut;
+        }
+    }
 
-        uint256 rate = (reserveIn * (10 ** 18)) / reserveOut;
+    // rate and both the arguments are in 18 decimals
+    function getRateImpact(uint256 _amountStabl3Converted, uint256 _amountTokenConverted) public view returns (uint256 rate) {
+        uint256 reserveIn = _getReserves(); // amount of backed tokens
+        uint256 reserveOut = (initialSupply - stabl3.balanceOf(address(this))) * (10 ** (18 - decimalsStabl3)); // amount of stabl3
 
-        return rate;
+        rate = ((reserveIn + _amountTokenConverted) * (10 ** 18)) / (reserveOut + _amountStabl3Converted);
     }
 
     function getAmountOut(IERC20 _token, uint256 _amountToken) external view returns (uint256) {
-        require(reservedToken[_token], "Treasury: Token not reserved");
+        require(isReservedToken[_token], "Treasury: Token not reserved");
         require(_amountToken > 0, "Treasury: Insufficient input amount");
 
         _amountToken *= 10 ** (18 - decimalsReservedToken[_token]);
 
-        uint256 rate = getRate();
+        uint256 rate = _getRate();
 
         uint256 amountStabl3 = (_amountToken * (10 ** 18)) / rate;
+
+        rate = getRateImpact(amountStabl3, _amountToken);
+
+        amountStabl3 = (_amountToken * (10 ** 18)) / rate;
 
         amountStabl3 /= 10 ** (18 - decimalsStabl3);
 
@@ -196,7 +197,7 @@ contract Treasury is Ownable {
 
         _amountStabl3 *= 10 ** (18 - decimalsStabl3);
 
-        uint256 rate = getRate();
+        uint256 rate = _getRate();
 
         uint256 amountToken = (_amountStabl3 * rate) / 10 ** 18;
 
@@ -206,11 +207,11 @@ contract Treasury is Ownable {
     }
 
     function update(uint8 _type, IERC20 _token, uint256 _amountTokenTreasury, uint256 _amountTokenROI, uint256 _amountTokenHQ) public lock permission {
-        treasuryPool[_type][_token] += _amountTokenTreasury;
-        ROIPool[_type][_token] += _amountTokenROI;
-        HQPool[_type][_token] += _amountTokenHQ;
+        getTreasuryPool[_type][_token] += _amountTokenTreasury;
+        getROIPool[_type][_token] += _amountTokenROI;
+        getHQPool[_type][_token] += _amountTokenHQ;
 
-        uint256 rate = getRate();
+        uint256 rate = _getRate();
 
         emit Rate(rate, block.timestamp);
     }
