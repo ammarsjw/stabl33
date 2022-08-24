@@ -201,6 +201,10 @@ contract Treasury is Ownable {
 
         uint256 amountToken = (_amountStabl3 * rate) / 10 ** 18;
 
+        rate = getRateImpact(_amountStabl3, amountToken);
+
+        amountToken = (_amountStabl3 * rate) / 10 ** 18;
+
         amountToken /= 10 ** (18 - decimalsReservedToken[_token]);
 
         return amountToken;
