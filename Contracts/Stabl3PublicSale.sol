@@ -12,21 +12,19 @@ contract Stabl3PublicSale is Ownable {
     using SafeMathUpgradeable for uint256;
     using SafeERC20 for IERC20;
 
+    uint8 constant BUY_POOL = 1;
+
     ITreasury public treasury;
     address public ROI;
     address public HQ;
 
-    IERC20 public stabl3 = IERC20(0x20A91B0d2A5545BF05bcA96778e138E2E154e083);
+    IERC20 public stabl3;
 
-    uint256[] public treasuryPercentages;
-    uint256[] public ROIPercentages;
-    uint256[] public HQPercentages;
+    uint256 public treasuryPercentage;
+    uint256 public ROIPercentage;
+    uint256 public HQPercentage;
 
     uint256 public exchangeFee;
-
-    uint256 public discount;
-
-    uint256 public bondTime;
 
     bool public saleState;
 
@@ -70,21 +68,16 @@ contract Stabl3PublicSale is Ownable {
         ROI = 0x3edCe801a3f1851675e68589844B1b412EAc6B07;
         HQ = 0x294d0487fdf7acecf342ae70AFc5549A6E90f3e0;
 
-        treasuryPercentages = [800, 800];
-        ROIPercentages = [161, 161];
-        HQPercentages = [39, 39];
+        stabl3 = IERC20(0x20A91B0d2A5545BF05bcA96778e138E2E154e083);
+
+        treasuryPercentage = 800;
+        ROIPercentage = 161;
+        HQPercentage = 39;
 
         exchangeFee = 3;
-
-        discount = 100;
-
-        // TODO
-        // bondTime = 30 days;
-        bondTime = 5 minutes;
     }
 
     function updateTreasury(ITreasury _treasury) external onlyOwner {
-        require(address(treasury) != address(_treasury), "Stabl3PublicSale: Treasury is already this address");
         treasury = _treasury;
     }
 
@@ -99,18 +92,16 @@ contract Stabl3PublicSale is Ownable {
     }
 
     function updateDistributionPercentages(
-        uint256[2] memory _treasuryPercentages,
-        uint256[2] memory _ROIPercentages,
-        uint256[2] memory _HQPercentages
+        uint256 _treasuryPercentage,
+        uint256 _ROIPercentage,
+        uint256 _HQPercentage
     ) external onlyOwner {
-        require(_treasuryPercentages[0] + _ROIPercentages[0] + _HQPercentages[0] == 1000,
+        require(_treasuryPercentage + _ROIPercentage + _HQPercentage == 1000,
             "STABL3: Sum of magnified buy percentages should equal 1000");
-        require(_treasuryPercentages[1] + _ROIPercentages[1] + _HQPercentages[1] == 1000,
-            "STABL3: Sum of magnified bond percentages should equal 1000");
 
-        treasuryPercentages = _treasuryPercentages;
-        ROIPercentages = _ROIPercentages;
-        HQPercentages = _HQPercentages;
+        treasuryPercentage = _treasuryPercentage;
+        ROIPercentage = _ROIPercentage;
+        HQPercentage = _HQPercentage;
     }
 
     function updateExchangeFee(uint256 _exchangeFee) external onlyOwner {
@@ -118,30 +109,9 @@ contract Stabl3PublicSale is Ownable {
         exchangeFee = _exchangeFee;
     }
 
-    function updateDiscount(uint256 _discount) external onlyOwner {
-        emit UpdatedDiscount(_discount, discount);
-        discount = _discount;
-    }
-
-    function updateBondTime(uint256 _bondTime) external onlyOwner {
-        emit UpdatedBondTime(_bondTime, bondTime);
-        bondTime = _bondTime;
-    }
-
     function updateSaleState(bool state) external onlyOwner {
         require(saleState != state, "Stabl3PublicSale: Sale state is already of the value 'state'");
         saleState = state;
-    }
-
-    function _distributeFunds(IERC20 _token, uint256 _amountToken, uint256 _percentagesIndex) internal {
-        uint256 amountTreasury = _amountToken.mul(treasuryPercentages[_percentagesIndex]).roundDiv(1000);
-        SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), amountTreasury);
-
-        uint256 amountROI = _amountToken.mul(ROIPercentages[_percentagesIndex]).roundDiv(1000);
-        SafeERC20.safeTransferFrom(_token, msg.sender, ROI, amountROI);
-
-        uint256 amountHQ = _amountToken.mul(HQPercentages[_percentagesIndex]).roundDiv(1000);
-        SafeERC20.safeTransferFrom(_token, msg.sender, HQ, amountHQ);
     }
 
     function buy(IERC20 _token, uint256 _amountToken) external {
@@ -151,12 +121,20 @@ contract Stabl3PublicSale is Ownable {
 
         uint256 amountStabl3 = treasury.getAmountOut(_token, _amountToken);
 
-        _distributeFunds(_token, _amountToken, 0);
+        uint256 amountTreasury = _amountToken.mul(treasuryPercentage).ceilDiv(1000);
+        SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), amountTreasury);
+
+        uint256 amountROI = _amountToken.mul(ROIPercentage).div(1000);
+        SafeERC20.safeTransferFrom(_token, msg.sender, ROI, amountROI);
+
+        uint256 amountHQ = _amountToken.mul(HQPercentage).div(1000);
+        SafeERC20.safeTransferFrom(_token, msg.sender, HQ, amountHQ);
 
         stabl3.transferFrom(address(treasury), msg.sender, amountStabl3);
 
         emit Buy(msg.sender, amountStabl3, _token, _amountToken);
-        treasury.update();
+        treasury.updatePool(BUY_POOL, _token, amountTreasury, amountROI, amountHQ, true);
+        treasury.updateRate();
     }
 
     function exchange(IERC20 _exchangingToken, IERC20 _token, uint256 _amountToken) external {
@@ -172,9 +150,11 @@ contract Stabl3PublicSale is Ownable {
         uint256 fee = (_amountToken * exchangeFee) / 1000;
         _amountToken -= fee;
 
+        SafeERC20.safeTransferFrom(_token, msg.sender, ROI, fee);
+
         uint256 amountExchangingToken;
-        uint256 decimalsExchangingToken = treasury.getDecimalsReservedToken(_exchangingToken);
-        uint256 decimalsToken = treasury.getDecimalsReservedToken(_token);
+        uint256 decimalsExchangingToken = _exchangingToken.decimals();
+        uint256 decimalsToken = _token.decimals();
         if (decimalsExchangingToken > decimalsToken) {
             amountExchangingToken = _amountToken * (10 ** (decimalsExchangingToken - decimalsToken));
         }
@@ -185,47 +165,20 @@ contract Stabl3PublicSale is Ownable {
             amountExchangingToken = _amountToken;
         }
 
-        SafeERC20.safeTransferFrom(_token, msg.sender, ROI, fee);
+        uint256 amountTreasury = _amountToken.mul(treasuryPercentage).ceilDiv(1000);
+        SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), amountTreasury);
 
-        _distributeFunds(_token, _amountToken, 0);
+        uint256 amountROI = _amountToken.mul(ROIPercentage).div(1000);
+        SafeERC20.safeTransferFrom(_token, msg.sender, ROI, amountROI);
+
+        uint256 amountHQ = _amountToken.mul(HQPercentage).div(1000);
+        SafeERC20.safeTransferFrom(_token, msg.sender, HQ, amountHQ);
 
         SafeERC20.safeTransferFrom(_exchangingToken, address(treasury), msg.sender, amountExchangingToken);
 
         emit Exchanged(msg.sender, _exchangingToken, amountExchangingToken, fee, _token, _amountToken);
-        treasury.update();
+        treasury.updatePool(BUY_POOL, _token, amountTreasury, amountROI + fee, amountHQ, true);
+        treasury.updatePool(BUY_POOL, _exchangingToken, amountExchangingToken, 0, 0, false);
+        treasury.updateRate();
     }
-
-    // TODO
-    // function createBond(IERC20 _token, uint256 _amountToken) external {
-    //     require(saleState, "Stabl3PublicSale: Sale not yet started");
-    //     require(treasury.isReservedToken(_token), "Stabl3PublicSale: Token not reserved");
-    //     require(_amountToken > 0, "Stabl3PublicSale: Insufficient amount");
-
-    //     uint256 amountStabl3 = treasury.getAmountOut(_token, _amountToken);
-
-    //     amountStabl3 += (amountStabl3 * discount) / 1000;
-
-    //     Bond memory bond = Bond(getBonds[msg.sender].length, msg.sender, true, amountStabl3, _token, _amountToken, block.timestamp);
-    //     getBonds[msg.sender].push(bond);
-
-    //     _distributeFunds(_token, _amountToken, 1);
-
-    //     emit CreatedBond(bond.recipient, bond.index, bond.amountStabl3, bond.token, bond.amountToken);
-    //     treasury.update();
-    // }
-
-    // function claimBond(uint256 index) external {
-    //     require(saleState, "Stabl3PublicSale: Sale not yet started");
-    //     Bond storage bond = getBonds[msg.sender][index];
-
-    //     require(bond.status, "Stabl3PublicSale: Bond already claimed");
-    //     require(block.timestamp > bond.startTime + bondTime, "Stabl3PublicSale: Bond time not finished");
-
-    //     stabl3.transferFrom(address(treasury), msg.sender, bond.amountStabl3);
-
-    //     bond.status = false;
-
-    //     emit ClaimedBond(bond.recipient, bond.index, bond.amountStabl3, bond.token, bond.amountToken);
-    //     treasury.update();
-    // }
 }

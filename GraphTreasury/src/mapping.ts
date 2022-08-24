@@ -39,7 +39,6 @@ export function handleUpdatedReservedToken(event: UpdatedReservedTokenEvent): vo
   let entity = new UpdatedReservedToken(transaction.id)
   entity.transaction = transaction.id
   entity.token = event.params.token
-  entity.decimals = event.params.decimals
   entity.state = event.params.state
   entity.save()
 }

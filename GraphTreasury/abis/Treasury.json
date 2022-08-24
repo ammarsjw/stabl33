@@ -72,12 +72,6 @@
       },
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "decimals",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
         "internalType": "bool",
         "name": "state",
         "type": "bool"
@@ -107,6 +101,40 @@
         "internalType": "address",
         "name": "",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint8",
+        "name": "_type",
+        "type": "uint8"
+      },
+      {
+        "internalType": "contract IERC20",
+        "name": "_token",
+        "type": "address"
+      }
+    ],
+    "name": "allPools",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -168,19 +196,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "decimalsStabl3",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -231,12 +246,17 @@
   {
     "inputs": [
       {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
+      },
+      {
         "internalType": "contract IERC20",
-        "name": "_token",
+        "name": "",
         "type": "address"
       }
     ],
-    "name": "getDecimalsReservedToken",
+    "name": "getHQPool",
     "outputs": [
       {
         "internalType": "uint256",
@@ -251,16 +271,16 @@
     "inputs": [
       {
         "internalType": "uint8",
-        "name": "_type",
+        "name": "",
         "type": "uint8"
       },
       {
         "internalType": "contract IERC20",
-        "name": "_token",
+        "name": "",
         "type": "address"
       }
     ],
-    "name": "getPools",
+    "name": "getROIPool",
     "outputs": [
       {
         "internalType": "uint256",
@@ -272,8 +292,19 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "getRate",
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_amountStabl3Converted",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amountTokenConverted",
+        "type": "uint256"
+      }
+    ],
+    "name": "getRateImpact",
     "outputs": [
       {
         "internalType": "uint256",
@@ -285,8 +316,19 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "initialLiquidity",
+    "inputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
+      },
+      {
+        "internalType": "contract IERC20",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "getTreasuryPool",
     "outputs": [
       {
         "internalType": "uint256",
@@ -311,10 +353,23 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "initialSupply",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "contract IERC20",
-        "name": "_token",
+        "name": "",
         "type": "address"
       }
     ],
@@ -410,29 +465,6 @@
   {
     "inputs": [
       {
-        "internalType": "uint8",
-        "name": "_type",
-        "type": "uint8"
-      },
-      {
-        "internalType": "contract IERC20",
-        "name": "_token",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_amountToken",
-        "type": "uint256"
-      }
-    ],
-    "name": "update",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address",
         "name": "_contractAddress",
         "type": "address"
@@ -451,14 +483,54 @@
   {
     "inputs": [
       {
+        "internalType": "uint8",
+        "name": "_type",
+        "type": "uint8"
+      },
+      {
         "internalType": "contract IERC20",
         "name": "_token",
         "type": "address"
       },
       {
         "internalType": "uint256",
-        "name": "_decimals",
+        "name": "_amountTokenTreasury",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amountTokenROI",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amountTokenHQ",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "isIncrease",
+        "type": "bool"
+      }
+    ],
+    "name": "updatePool",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "updateRate",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract IERC20",
+        "name": "_token",
+        "type": "address"
       },
       {
         "internalType": "bool",

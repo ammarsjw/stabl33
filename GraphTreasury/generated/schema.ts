@@ -258,7 +258,6 @@ export class UpdatedReservedToken extends Entity {
 
     this.set("transaction", Value.fromString(""));
     this.set("token", Value.fromBytes(Bytes.empty()));
-    this.set("decimals", Value.fromBigInt(BigInt.zero()));
     this.set("state", Value.fromBoolean(false));
   }
 
@@ -305,15 +304,6 @@ export class UpdatedReservedToken extends Entity {
 
   set token(value: Bytes) {
     this.set("token", Value.fromBytes(value));
-  }
-
-  get decimals(): BigInt {
-    let value = this.get("decimals");
-    return value!.toBigInt();
-  }
-
-  set decimals(value: BigInt) {
-    this.set("decimals", Value.fromBigInt(value));
   }
 
   get state(): boolean {

@@ -93,12 +93,28 @@ export class UpdatedReservedToken__Params {
     return this._event.parameters[0].value.toAddress();
   }
 
-  get decimals(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
+  get state(): boolean {
+    return this._event.parameters[1].value.toBoolean();
+  }
+}
+
+export class Treasury__allPoolsResult {
+  value0: BigInt;
+  value1: BigInt;
+  value2: BigInt;
+
+  constructor(value0: BigInt, value1: BigInt, value2: BigInt) {
+    this.value0 = value0;
+    this.value1 = value1;
+    this.value2 = value2;
   }
 
-  get state(): boolean {
-    return this._event.parameters[2].value.toBoolean();
+  toMap(): TypedMap<string, ethereum.Value> {
+    let map = new TypedMap<string, ethereum.Value>();
+    map.set("value0", ethereum.Value.fromUnsignedBigInt(this.value0));
+    map.set("value1", ethereum.Value.fromUnsignedBigInt(this.value1));
+    map.set("value2", ethereum.Value.fromUnsignedBigInt(this.value2));
+    return map;
   }
 }
 
@@ -135,6 +151,48 @@ export class Treasury extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+
+  allPools(_type: i32, _token: Address): Treasury__allPoolsResult {
+    let result = super.call(
+      "allPools",
+      "allPools(uint8,address):(uint256,uint256,uint256)",
+      [
+        ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(_type)),
+        ethereum.Value.fromAddress(_token)
+      ]
+    );
+
+    return new Treasury__allPoolsResult(
+      result[0].toBigInt(),
+      result[1].toBigInt(),
+      result[2].toBigInt()
+    );
+  }
+
+  try_allPools(
+    _type: i32,
+    _token: Address
+  ): ethereum.CallResult<Treasury__allPoolsResult> {
+    let result = super.tryCall(
+      "allPools",
+      "allPools(uint8,address):(uint256,uint256,uint256)",
+      [
+        ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(_type)),
+        ethereum.Value.fromAddress(_token)
+      ]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(
+      new Treasury__allPoolsResult(
+        value[0].toBigInt(),
+        value[1].toBigInt(),
+        value[2].toBigInt()
+      )
+    );
   }
 
   allReservedTokens(param0: BigInt): Address {
@@ -174,25 +232,6 @@ export class Treasury extends ethereum.SmartContract {
     let result = super.tryCall(
       "allReservedTokensLength",
       "allReservedTokensLength():(uint256)",
-      []
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
-  decimalsStabl3(): BigInt {
-    let result = super.call("decimalsStabl3", "decimalsStabl3():(uint256)", []);
-
-    return result[0].toBigInt();
-  }
-
-  try_decimalsStabl3(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall(
-      "decimalsStabl3",
-      "decimalsStabl3():(uint256)",
       []
     );
     if (result.reverted) {
@@ -266,45 +305,22 @@ export class Treasury extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
-  getDecimalsReservedToken(_token: Address): BigInt {
-    let result = super.call(
-      "getDecimalsReservedToken",
-      "getDecimalsReservedToken(address):(uint256)",
-      [ethereum.Value.fromAddress(_token)]
-    );
-
-    return result[0].toBigInt();
-  }
-
-  try_getDecimalsReservedToken(_token: Address): ethereum.CallResult<BigInt> {
-    let result = super.tryCall(
-      "getDecimalsReservedToken",
-      "getDecimalsReservedToken(address):(uint256)",
-      [ethereum.Value.fromAddress(_token)]
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
-  getPools(_type: i32, _token: Address): BigInt {
-    let result = super.call("getPools", "getPools(uint8,address):(uint256)", [
-      ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(_type)),
-      ethereum.Value.fromAddress(_token)
+  getHQPool(param0: i32, param1: Address): BigInt {
+    let result = super.call("getHQPool", "getHQPool(uint8,address):(uint256)", [
+      ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(param0)),
+      ethereum.Value.fromAddress(param1)
     ]);
 
     return result[0].toBigInt();
   }
 
-  try_getPools(_type: i32, _token: Address): ethereum.CallResult<BigInt> {
+  try_getHQPool(param0: i32, param1: Address): ethereum.CallResult<BigInt> {
     let result = super.tryCall(
-      "getPools",
-      "getPools(uint8,address):(uint256)",
+      "getHQPool",
+      "getHQPool(uint8,address):(uint256)",
       [
-        ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(_type)),
-        ethereum.Value.fromAddress(_token)
+        ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(param0)),
+        ethereum.Value.fromAddress(param1)
       ]
     );
     if (result.reverted) {
@@ -314,14 +330,28 @@ export class Treasury extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
-  getRate(): BigInt {
-    let result = super.call("getRate", "getRate():(uint256)", []);
+  getROIPool(param0: i32, param1: Address): BigInt {
+    let result = super.call(
+      "getROIPool",
+      "getROIPool(uint8,address):(uint256)",
+      [
+        ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(param0)),
+        ethereum.Value.fromAddress(param1)
+      ]
+    );
 
     return result[0].toBigInt();
   }
 
-  try_getRate(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall("getRate", "getRate():(uint256)", []);
+  try_getROIPool(param0: i32, param1: Address): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "getROIPool",
+      "getROIPool(uint8,address):(uint256)",
+      [
+        ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(param0)),
+        ethereum.Value.fromAddress(param1)
+      ]
+    );
     if (result.reverted) {
       return new ethereum.CallResult();
     }
@@ -329,21 +359,65 @@ export class Treasury extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
-  initialLiquidity(): BigInt {
+  getRateImpact(
+    _amountStabl3Converted: BigInt,
+    _amountTokenConverted: BigInt
+  ): BigInt {
     let result = super.call(
-      "initialLiquidity",
-      "initialLiquidity():(uint256)",
-      []
+      "getRateImpact",
+      "getRateImpact(uint256,uint256):(uint256)",
+      [
+        ethereum.Value.fromUnsignedBigInt(_amountStabl3Converted),
+        ethereum.Value.fromUnsignedBigInt(_amountTokenConverted)
+      ]
     );
 
     return result[0].toBigInt();
   }
 
-  try_initialLiquidity(): ethereum.CallResult<BigInt> {
+  try_getRateImpact(
+    _amountStabl3Converted: BigInt,
+    _amountTokenConverted: BigInt
+  ): ethereum.CallResult<BigInt> {
     let result = super.tryCall(
-      "initialLiquidity",
-      "initialLiquidity():(uint256)",
-      []
+      "getRateImpact",
+      "getRateImpact(uint256,uint256):(uint256)",
+      [
+        ethereum.Value.fromUnsignedBigInt(_amountStabl3Converted),
+        ethereum.Value.fromUnsignedBigInt(_amountTokenConverted)
+      ]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
+  getTreasuryPool(param0: i32, param1: Address): BigInt {
+    let result = super.call(
+      "getTreasuryPool",
+      "getTreasuryPool(uint8,address):(uint256)",
+      [
+        ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(param0)),
+        ethereum.Value.fromAddress(param1)
+      ]
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_getTreasuryPool(
+    param0: i32,
+    param1: Address
+  ): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "getTreasuryPool",
+      "getTreasuryPool(uint8,address):(uint256)",
+      [
+        ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(param0)),
+        ethereum.Value.fromAddress(param1)
+      ]
     );
     if (result.reverted) {
       return new ethereum.CallResult();
@@ -367,21 +441,40 @@ export class Treasury extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
-  isReservedToken(_token: Address): boolean {
+  initialSupply(): BigInt {
+    let result = super.call("initialSupply", "initialSupply():(uint256)", []);
+
+    return result[0].toBigInt();
+  }
+
+  try_initialSupply(): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "initialSupply",
+      "initialSupply():(uint256)",
+      []
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
+  isReservedToken(param0: Address): boolean {
     let result = super.call(
       "isReservedToken",
       "isReservedToken(address):(bool)",
-      [ethereum.Value.fromAddress(_token)]
+      [ethereum.Value.fromAddress(param0)]
     );
 
     return result[0].toBoolean();
   }
 
-  try_isReservedToken(_token: Address): ethereum.CallResult<boolean> {
+  try_isReservedToken(param0: Address): ethereum.CallResult<boolean> {
     let result = super.tryCall(
       "isReservedToken",
       "isReservedToken(address):(bool)",
-      [ethereum.Value.fromAddress(_token)]
+      [ethereum.Value.fromAddress(param0)]
     );
     if (result.reverted) {
       return new ethereum.CallResult();
@@ -590,44 +683,6 @@ export class TransferOwnershipCall__Outputs {
   }
 }
 
-export class UpdateCall extends ethereum.Call {
-  get inputs(): UpdateCall__Inputs {
-    return new UpdateCall__Inputs(this);
-  }
-
-  get outputs(): UpdateCall__Outputs {
-    return new UpdateCall__Outputs(this);
-  }
-}
-
-export class UpdateCall__Inputs {
-  _call: UpdateCall;
-
-  constructor(call: UpdateCall) {
-    this._call = call;
-  }
-
-  get _type(): i32 {
-    return this._call.inputValues[0].value.toI32();
-  }
-
-  get _token(): Address {
-    return this._call.inputValues[1].value.toAddress();
-  }
-
-  get _amountToken(): BigInt {
-    return this._call.inputValues[2].value.toBigInt();
-  }
-}
-
-export class UpdateCall__Outputs {
-  _call: UpdateCall;
-
-  constructor(call: UpdateCall) {
-    this._call = call;
-  }
-}
-
 export class UpdatePermissionCall extends ethereum.Call {
   get inputs(): UpdatePermissionCall__Inputs {
     return new UpdatePermissionCall__Inputs(this);
@@ -662,6 +717,82 @@ export class UpdatePermissionCall__Outputs {
   }
 }
 
+export class UpdatePoolCall extends ethereum.Call {
+  get inputs(): UpdatePoolCall__Inputs {
+    return new UpdatePoolCall__Inputs(this);
+  }
+
+  get outputs(): UpdatePoolCall__Outputs {
+    return new UpdatePoolCall__Outputs(this);
+  }
+}
+
+export class UpdatePoolCall__Inputs {
+  _call: UpdatePoolCall;
+
+  constructor(call: UpdatePoolCall) {
+    this._call = call;
+  }
+
+  get _type(): i32 {
+    return this._call.inputValues[0].value.toI32();
+  }
+
+  get _token(): Address {
+    return this._call.inputValues[1].value.toAddress();
+  }
+
+  get _amountTokenTreasury(): BigInt {
+    return this._call.inputValues[2].value.toBigInt();
+  }
+
+  get _amountTokenROI(): BigInt {
+    return this._call.inputValues[3].value.toBigInt();
+  }
+
+  get _amountTokenHQ(): BigInt {
+    return this._call.inputValues[4].value.toBigInt();
+  }
+
+  get isIncrease(): boolean {
+    return this._call.inputValues[5].value.toBoolean();
+  }
+}
+
+export class UpdatePoolCall__Outputs {
+  _call: UpdatePoolCall;
+
+  constructor(call: UpdatePoolCall) {
+    this._call = call;
+  }
+}
+
+export class UpdateRateCall extends ethereum.Call {
+  get inputs(): UpdateRateCall__Inputs {
+    return new UpdateRateCall__Inputs(this);
+  }
+
+  get outputs(): UpdateRateCall__Outputs {
+    return new UpdateRateCall__Outputs(this);
+  }
+}
+
+export class UpdateRateCall__Inputs {
+  _call: UpdateRateCall;
+
+  constructor(call: UpdateRateCall) {
+    this._call = call;
+  }
+}
+
+export class UpdateRateCall__Outputs {
+  _call: UpdateRateCall;
+
+  constructor(call: UpdateRateCall) {
+    this._call = call;
+  }
+}
+
 export class UpdateReservedTokenCall extends ethereum.Call {
   get inputs(): UpdateReservedTokenCall__Inputs {
     return new UpdateReservedTokenCall__Inputs(this);
@@ -683,12 +814,8 @@ export class UpdateReservedTokenCall__Inputs {
     return this._call.inputValues[0].value.toAddress();
   }
 
-  get _decimals(): BigInt {
-    return this._call.inputValues[1].value.toBigInt();
-  }
-
   get _state(): boolean {
-    return this._call.inputValues[2].value.toBoolean();
+    return this._call.inputValues[1].value.toBoolean();
   }
 }
 

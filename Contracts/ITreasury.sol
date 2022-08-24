@@ -7,8 +7,6 @@ import "./IERC20.sol";
 interface ITreasury {
     function isReservedToken(IERC20 _token) external view returns (bool);
 
-    function decimalsReservedToken(IERC20 _token) external view returns (uint256);
-
     function allReservedTokens(uint) external view returns (IERC20);
 
     function getTreasuryPool(uint8, IERC20) external view returns (uint256);
@@ -21,22 +19,22 @@ interface ITreasury {
 
     function updateReservedToken(IERC20 _token, uint256 _decimals, bool _state) external;
 
-    function getDecimalsReservedToken(IERC20 _token) external view returns (uint256);
-
     function allReservedTokensLength() external view returns (uint256);
 
     function allPools(uint8 _type, IERC20 _token) external view returns (uint256, uint256, uint256);
 
-    function getRate() external view returns (uint256);
+    function getRateImpact(uint256 _amountStabl3Converted, uint256 _amountTokenConverted) external view returns (uint256);
 
     function getAmountOut(IERC20 _token, uint256 _amountToken) external view returns (uint256);
 
     function getAmountIn(uint256 _amountStabl3, IERC20 _token) external view returns (uint256);
 
-    function update(uint8 _type, IERC20 _token, uint256 _amountTokenTreasury, uint256 _amountTokenROI, uint256 _amountTokenHQ) external;
+    function updatePool(uint8 _type, IERC20 _token, uint256 _amountTokenTreasury, uint256 _amountTokenROI, uint256 _amountTokenHQ, bool isIncrease) external;
+
+    function updateRate() external;
 
     function approveTreasury(IERC20 _token, address _spender, bool _isApprove) external;
-            
+
     function withdrawFunds(IERC20 _token, uint256 _amountToken) external;
 
     function withdrawAllFunds(IERC20 _token) external;

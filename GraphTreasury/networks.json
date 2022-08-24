@@ -1,7 +1,7 @@
 {
-  "ropsten": {
+  "goerli": {
     "Treasury": {
-      "address": "0xeEEeE40251D07b400b9168d91B0462dE3B506527"
+      "address": "0x6e36ed03dF3318b183c50c0D0fB30ba530f6F183"
     }
   }
 }

@@ -27,7 +27,6 @@ type UpdatedReservedToken @entity {
   id: ID!
   transaction: Transaction!
   token: Bytes!
-  decimals: BigInt!
   state: Boolean!
 }
 

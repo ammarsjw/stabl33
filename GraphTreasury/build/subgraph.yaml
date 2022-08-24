@@ -4,11 +4,11 @@ schema:
 dataSources:
   - kind: ethereum
     name: Treasury
-    network: ropsten
+    network: goerli
     source:
-      address: "0xeEEeE40251D07b400b9168d91B0462dE3B506527"
+      address: "0x6e36ed03dF3318b183c50c0D0fB30ba530f6F183"
       abi: Treasury
-      startBlock: 12846254
+      startBlock: 7464039
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -28,6 +28,6 @@ dataSources:
           handler: handleRate
         - event: UpdatedPermission(address,bool)
           handler: handleUpdatedPermission
-        - event: UpdatedReservedToken(address,uint256,bool)
+        - event: UpdatedReservedToken(address,bool)
           handler: handleUpdatedReservedToken
       file: Treasury\Treasury.wasm
