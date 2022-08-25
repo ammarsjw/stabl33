@@ -12,17 +12,22 @@ import "./ITreasury.sol";
 contract Extra is Ownable {
     using SafeMathUpgradeable for uint256;
 
-    uint256 immutable MAX_INT = 2 ** 256 - 1;
+    uint256 private immutable MAX_INT = 2 ** 256 - 1;
 
-    uint8 constant INITIAL_POOL = 0;
-    uint8 constant BUY_POOL = 1;
-    uint8 constant BOND_POOL = 2;
-    uint8 constant STAKE_POOL = 3;
-    uint8 constant LEND_POOL = 4;
-    uint8 constant BORROW_POOL = 5;
-    uint8 constant EXCHANGE_POOL = 6;
+    uint8 private constant BUY_POOL = 0;
+    uint8 private constant BOND_POOL = 1;
+    uint8 private constant STAKE_POOL = 2;
+    uint8 private constant LEND_POOL = 3;
+    uint8 private constant BORROW_POOL = 4;
+    uint8 private constant EXCHANGE_POOL = 5;
 
     ITreasury public treasury;
+
+    // events
+
+    event UpdatedTreasury();
+
+    // constructor
 
     constructor(ITreasury _treasury) {
         treasury = _treasury;
@@ -55,7 +60,7 @@ contract Extra is Ownable {
                 buyAndBondAmountTreasury += treasury.getTreasuryPool(BOND_POOL, reservedToken);
                 exchangeAmountTreasury = treasury.getTreasuryPool(EXCHANGE_POOL, reservedToken);
 
-                decimals = treasury.decimalsReservedToken(reservedToken);
+                decimals = reservedToken.decimals();
 
                 if (decimals < 18) {
                     ROIReserves = ROIReserves * (10 ** (18 - decimals));
@@ -76,23 +81,23 @@ contract Extra is Ownable {
         uint256 totalAPY = (totalROIReserves * (10 ** 18)) / totalStakeAndLendAmountTreasury;
 
         uint256 collateralAPY;
-        uint256 APY;
+        uint256 currentAPY;
         if (totalExchangeAmountTreasury > totalBuyAndBondAmountTreasury) {
             uint256 collateralAmount = totalExchangeAmountTreasury - totalBuyAndBondAmountTreasury;
 
             collateralAPY = (collateralAmount * (10 ** 18)) / totalStakeAndLendAmountTreasury;
 
-            APY = totalAPY - collateralAPY;
+            currentAPY = totalAPY - collateralAPY;
         }
         else {
             uint256 collateralAmount = totalBuyAndBondAmountTreasury - totalExchangeAmountTreasury;
 
             collateralAPY = (collateralAmount * (10 ** 18)) / totalStakeAndLendAmountTreasury;
 
-            APY = totalAPY + collateralAPY;
+            currentAPY = totalAPY + collateralAPY;
         }
 
-        return APY;
+        return currentAPY;
     }
 
     function approveTreasury(IERC20 _token, address _spender, bool _isApprove) public onlyOwner {

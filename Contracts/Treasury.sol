@@ -3,21 +3,18 @@
 pragma solidity 0.8.16;
 
 import "./Ownable.sol";
-import "./SafeMathUpgradeable.sol";
 import "./SafeERC20.sol";
 
 contract Treasury is Ownable {
-    using SafeMathUpgradeable for uint256;
 
-    uint256 immutable MAX_INT = 2 ** 256 - 1;
+    uint256 private immutable MAX_INT = 2 ** 256 - 1;
 
-    uint8 constant INITIAL_POOL = 0;
-    uint8 constant BUY_POOL = 1;
-    uint8 constant BOND_POOL = 2;
-    uint8 constant STAKE_POOL = 3;
-    uint8 constant LEND_POOL = 4;
-    uint8 constant BORROW_POOL = 5;
-    uint8 constant EXCHANGE_POOL = 6;
+    uint8 private constant BUY_POOL = 0;
+    uint8 private constant BOND_POOL = 1;
+    uint8 private constant STAKE_POOL = 2;
+    uint8 private constant LEND_POOL = 3;
+    uint8 private constant BORROW_POOL = 4;
+    uint8 private constant EXCHANGE_POOL = 5;
 
     address public ROI;
     address public HQ;
@@ -47,30 +44,47 @@ contract Treasury is Ownable {
 
     // events
 
+    event UpdatedROI(address newROI, address oldROI);
+
+    event UpdatedHQ(address newHQ, address oldHQ);
+
     event UpdatedPermission(address contractAddress, bool state);
 
     event UpdatedReservedToken(IERC20 token, bool state);
 
-    event Rate(uint256 rate, uint256 blockTimestampLast);
+    event Rate(uint256 rate, uint256 reserves, uint256 blockTimestampLast);
 
     // constructor
 
     constructor() {
-        ROI = 0x3edCe801a3f1851675e68589844B1b412EAc6B07;
         HQ = 0x294d0487fdf7acecf342ae70AFc5549A6E90f3e0;
 
         // stabl3 = IERC20(0x20A91B0d2A5545BF05bcA96778e138E2E154e083);
-        stabl3 = IERC20(0x65a4c65BF67c914D8Af80B3D8f9974a1DF4d2f33);
+        stabl3 = IERC20(0xDf9c4990a8973b6cC069738592F27Ea54b27D569);
 
         initialRate = 0.0007 * (10 ** 18);
 
         // IERC20 USDC = IERC20(0x8Af5a6599BD2406C44588FCf84FD6Eb1bB2e0243);
         // IERC20 DAI = IERC20(0xA83a21816ae63D3315c540396f887F53cfF274fA);
-        IERC20 USDC = IERC20(0x9764B36C3eCd6EBcD0758e8E429e5D447142F25b);
-        IERC20 DAI = IERC20(0x5A83418BFd8c3908f8953Dc5d5802e386A9FCE74);
+        IERC20 USDC = IERC20(0x1092d50E8E14479bB769b687427B72BeE70c9534);
+        IERC20 DAI = IERC20(0x59f78fB97FB36adbaDCbB43Fa9031797faAad54A);
 
         updateReservedToken(USDC, true);
         updateReservedToken(DAI, true);
+
+        updateRate();
+    }
+
+    function updateROI(address _ROI) external onlyOwner {
+        require(ROI != _ROI, "Stabl3PublicSale: ROI is already this address");
+        emit UpdatedROI(_ROI, ROI);
+        ROI = _ROI;
+    }
+
+    function updateHQ(address _HQ) external onlyOwner {
+        require(HQ != _HQ, "Stabl3PublicSale: HQ is already this address");
+        emit UpdatedHQ(_HQ, HQ);
+        HQ = _HQ;
     }
 
     function provideInitialLiquidity(uint256 _amountStabl3) external onlyOwner {
@@ -87,17 +101,17 @@ contract Treasury is Ownable {
         permitted[_contractAddress] = _state;
 
         if (_state) {
-            approveTreasury(stabl3, _contractAddress, true);
+            delegateApprove(stabl3, _contractAddress, true);
 
             for (uint256 i = 0 ; i < allReservedTokens.length ; i++) {
-                approveTreasury(allReservedTokens[i], _contractAddress, true);
+                delegateApprove(allReservedTokens[i], _contractAddress, true);
             }
         }
         else {
-            approveTreasury(stabl3, _contractAddress, false);
+            delegateApprove(stabl3, _contractAddress, false);
 
             for (uint256 i = 0 ; i < allReservedTokens.length ; i++) {
-                approveTreasury(allReservedTokens[i], _contractAddress, false);
+                delegateApprove(allReservedTokens[i], _contractAddress, false);
             }
         }
 
@@ -123,9 +137,14 @@ contract Treasury is Ownable {
         );
     }
 
-    function _getReserves() internal view returns (uint256 totalReserves) {
-        uint256 decimals;
+    function sumOfAllPools(uint8 _type, IERC20 _token) external view returns (uint256) {
+        return getTreasuryPool[_type][_token] + getROIPool[_type][_token] + getHQPool[_type][_token];
+    }
+
+    function getReserves() public view returns (uint256) {
+        uint256 totalReserves;
         uint256 amount;
+        uint256 decimals;
         for (uint256 i = 0 ; i < allReservedTokens.length ; i++) {
             if (isReservedToken[allReservedTokens[i]]) {
                 amount = allReservedTokens[i].balanceOf(address(this));
@@ -144,24 +163,29 @@ contract Treasury is Ownable {
         }
 
         totalReserves;
+
+        return totalReserves;
     }
 
     // rate is in 18 decimals
-    function _getRate() internal view returns (uint256 rate) {
-        uint256 reserveIn = _getReserves(); // amount of backed tokens
+    function getRate() public view returns (uint256) {
+        uint256 reserveIn = getReserves(); // amount of backed tokens
         uint256 reserveOut = (initialSupply - stabl3.balanceOf(address(this))) * (10 ** (18 - stabl3.decimals())); // amount of stabl3
 
+        uint256 rate;
         if (reserveIn == 0) {
             rate = initialRate;
         }
         else {
             rate = (reserveIn * (10 ** 18)) / reserveOut;
         }
+
+        return rate;
     }
 
     // rate and both the arguments are in 18 decimals
     function getRateImpact(uint256 _amountStabl3Converted, uint256 _amountTokenConverted) public view returns (uint256) {
-        uint256 reserveIn = _getReserves(); // amount of backed tokens
+        uint256 reserveIn = getReserves(); // amount of backed tokens
         uint256 reserveOut = (initialSupply - stabl3.balanceOf(address(this))) * (10 ** (18 - stabl3.decimals())); // amount of stabl3
 
         uint256 rate = ((reserveIn + _amountTokenConverted) * (10 ** 18)) / (reserveOut + _amountStabl3Converted);
@@ -175,7 +199,7 @@ contract Treasury is Ownable {
 
         _amountToken *= 10 ** (18 - _token.decimals());
 
-        uint256 rate = _getRate();
+        uint256 rate = getRate();
 
         uint256 amountStabl3 = (_amountToken * (10 ** 18)) / rate;
 
@@ -193,7 +217,7 @@ contract Treasury is Ownable {
 
         _amountStabl3 *= 10 ** (18 - stabl3.decimals());
 
-        uint256 rate = _getRate();
+        uint256 rate = getRate();
 
         uint256 amountToken = (_amountStabl3 * rate) / 10 ** 18;
 
@@ -219,13 +243,15 @@ contract Treasury is Ownable {
         }
     }
 
-    function updateRate() external lock permission {
-        uint256 rate = _getRate();
+    function updateRate() public lock permission {
+        uint256 rate = getRate();
 
-        emit Rate(rate, block.timestamp);
+        uint256 reserves = getReserves();
+
+        emit Rate(rate, reserves, block.timestamp);
     }
 
-    function approveTreasury(IERC20 _token, address _spender, bool _isApprove) public onlyOwner {
+    function delegateApprove(IERC20 _token, address _spender, bool _isApprove) public onlyOwner {
         if (_isApprove) {
             SafeERC20.safeApprove(_token, _spender, MAX_INT);
         }

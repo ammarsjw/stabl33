@@ -28,47 +28,28 @@ contract Stabl3PublicSale is Ownable {
 
     bool public saleState;
 
-    // structs
-
-    struct Bond {
-        uint256 index;
-        address recipient;
-        bool status;
-        uint256 amountStabl3;
-        IERC20 token;
-        uint256 amountToken;
-        uint256 startTime;
-    }
-
-    // mappings
-
-    // ongoing bonds
-    mapping (address => Bond[]) public getBonds;
-
     // events
 
+    event UpdatedTreasury(address newTreasury, address oldTreasury);
+
+    event UpdatedROI(address newROI, address oldROI);
+
+    event UpdatedHQ(address newHQ, address oldHQ);
+
     event UpdatedExchangeFee(uint256 newExchangeFee, uint256 oldExchangeFee);
-
-    event UpdatedDiscount(uint256 newDiscount, uint256 oldDiscount);
-
-    event UpdatedBondTime(uint256 newBondTime,uint256 oldBondTime);
 
     event Buy(address indexed recipient, uint256 amountStabl3, IERC20 token, uint256 amountToken);
 
     event Exchanged(address indexed recipient, IERC20 exchangingToken, uint256 amountExchangingToken, uint256 fee, IERC20 token, uint256 amountToken);
 
-    event CreatedBond(address indexed recipient, uint256 index, uint256 amountStabl3, IERC20 token, uint256 amountToken);
-
-    event ClaimedBond(address indexed recipient, uint256 index, uint256 amountStabl3, IERC20 token, uint256 amountToken);
-
     // constructor
 
-    constructor(ITreasury _treasury) {
+    constructor(ITreasury _treasury, address _ROI) {
         treasury = _treasury;
-        ROI = 0x3edCe801a3f1851675e68589844B1b412EAc6B07;
+        ROI = _ROI;
         HQ = 0x294d0487fdf7acecf342ae70AFc5549A6E90f3e0;
 
-        stabl3 = IERC20(0x20A91B0d2A5545BF05bcA96778e138E2E154e083);
+        stabl3 = IERC20(0xDf9c4990a8973b6cC069738592F27Ea54b27D569);
 
         treasuryPercentage = 800;
         ROIPercentage = 161;
@@ -78,16 +59,20 @@ contract Stabl3PublicSale is Ownable {
     }
 
     function updateTreasury(ITreasury _treasury) external onlyOwner {
+        require(treasury != _treasury, "Stabl3PublicSale: Treasury is already this address");
+        emit UpdatedTreasury(address(_treasury), address(treasury));
         treasury = _treasury;
     }
 
     function updateROI(address _ROI) external onlyOwner {
         require(ROI != _ROI, "Stabl3PublicSale: ROI is already this address");
+        emit UpdatedROI(_ROI, ROI);
         ROI = _ROI;
     }
 
     function updateHQ(address _HQ) external onlyOwner {
         require(HQ != _HQ, "Stabl3PublicSale: HQ is already this address");
+        emit UpdatedHQ(_HQ, HQ);
         HQ = _HQ;
     }
 
@@ -97,7 +82,7 @@ contract Stabl3PublicSale is Ownable {
         uint256 _HQPercentage
     ) external onlyOwner {
         require(_treasuryPercentage + _ROIPercentage + _HQPercentage == 1000,
-            "STABL3: Sum of magnified buy percentages should equal 1000");
+            "STABL3: Sum of magnified percentages should equal 1000");
 
         treasuryPercentage = _treasuryPercentage;
         ROIPercentage = _ROIPercentage;

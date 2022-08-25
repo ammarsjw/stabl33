@@ -3,14 +3,29 @@ Questions:
 Q. Do staking and lending share the same pool (current/max pool)
 A. Yes. For current pool exceeds checker we add both pools and compare it with max pool
 Q. How to calculate APY? (refer to excel sheet maybe)
-A. 
+A. ROI Pool / ((Staking + Lending(minus the xy% portion for purchasing STABL3))
+   So basically, everything what is in the ROI Pool is distributed based on all supplied liquidity from Lenders and Stakers over one year.
 Q. 5% tax when unstaking or what?
 A. Distribute stake/lend amounts to all 3 but when unstaking take stakedAmount from Treasury and rewardAmount from ROI and cut 5% from stakedAmount
+Q. Is the price calculated from the total amount currently in the treasury, ROI, HQ + Simulated?
+A. Yes, that’s correct. I am describing it like this:
+   NAL = Newly Added Liquidity (The amount new users want to purchase STABL3 with)
+   NCS = Newly Added Circulating Supply (The quantity of STABL3 users receive when purchasing that is newly entering into circulation)
+   Market Price = (Total Current Liquidity + NAL) / (Circulating Supply + NCS)
 Q. Price depriciation when unstaking and exchaning UCD?
-A. 
+A. ...
 Q. Are we going to use the APY at the time of unstaking or staking to calculate rewards?
-A. 
+A. Profit withdrawable daily, staked amount withdrawable after stake period. Use APR at the time of profit withdrawal for profit calculation
 Q. Are we compounding once per month?
-A. 
+A. Daily compounding
 Q. The max possible pool for staking + lending is the amount of valuation received from (buy + bond) * 0.7 in the treasury or the whole amount
+A. The Treasury is correct. Max (staking+lendig) = (Buy & Bond Liquidity – ROI Pool Portion – HQ Fees)*0,7
+Q. What factor differentiates both the Lending and Staking APR if we are using the same formula for both?
 A. 
+Q. Would it be fine if used the APR calculation from the excel sheet?
+A. 
+
+TODOs:
+
+// TODO figure out if borrowing mechanics be handled by Treasury, ROI or the Other Contract including minting UCD -> Other Contract
+// TODO figure out if APR mechanics should be handled by Treasury, ROI or the Other Contract -> ROI
