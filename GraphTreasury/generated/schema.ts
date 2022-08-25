@@ -323,6 +323,7 @@ export class Rate extends Entity {
 
     this.set("transaction", Value.fromString(""));
     this.set("rate", Value.fromBigInt(BigInt.zero()));
+    this.set("reserves", Value.fromBigInt(BigInt.zero()));
     this.set("blockTimestampLast", Value.fromBigInt(BigInt.zero()));
   }
 
@@ -369,6 +370,15 @@ export class Rate extends Entity {
     this.set("rate", Value.fromBigInt(value));
   }
 
+  get reserves(): BigInt {
+    let value = this.get("reserves");
+    return value!.toBigInt();
+  }
+
+  set reserves(value: BigInt) {
+    this.set("reserves", Value.fromBigInt(value));
+  }
+
   get blockTimestampLast(): BigInt {
     let value = this.get("blockTimestampLast");
     return value!.toBigInt();
@@ -376,5 +386,131 @@ export class Rate extends Entity {
 
   set blockTimestampLast(value: BigInt) {
     this.set("blockTimestampLast", Value.fromBigInt(value));
+  }
+}
+
+export class UpdatedROI extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+
+    this.set("transaction", Value.fromString(""));
+    this.set("newROI", Value.fromBytes(Bytes.empty()));
+    this.set("oldROI", Value.fromBytes(Bytes.empty()));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save UpdatedROI entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type UpdatedROI must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("UpdatedROI", id.toString(), this);
+    }
+  }
+
+  static load(id: string): UpdatedROI | null {
+    return changetype<UpdatedROI | null>(store.get("UpdatedROI", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get transaction(): string {
+    let value = this.get("transaction");
+    return value!.toString();
+  }
+
+  set transaction(value: string) {
+    this.set("transaction", Value.fromString(value));
+  }
+
+  get newROI(): Bytes {
+    let value = this.get("newROI");
+    return value!.toBytes();
+  }
+
+  set newROI(value: Bytes) {
+    this.set("newROI", Value.fromBytes(value));
+  }
+
+  get oldROI(): Bytes {
+    let value = this.get("oldROI");
+    return value!.toBytes();
+  }
+
+  set oldROI(value: Bytes) {
+    this.set("oldROI", Value.fromBytes(value));
+  }
+}
+
+export class UpdatedHQ extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+
+    this.set("transaction", Value.fromString(""));
+    this.set("newHQ", Value.fromBytes(Bytes.empty()));
+    this.set("oldHQ", Value.fromBytes(Bytes.empty()));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save UpdatedHQ entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type UpdatedHQ must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("UpdatedHQ", id.toString(), this);
+    }
+  }
+
+  static load(id: string): UpdatedHQ | null {
+    return changetype<UpdatedHQ | null>(store.get("UpdatedHQ", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get transaction(): string {
+    let value = this.get("transaction");
+    return value!.toString();
+  }
+
+  set transaction(value: string) {
+    this.set("transaction", Value.fromString(value));
+  }
+
+  get newHQ(): Bytes {
+    let value = this.get("newHQ");
+    return value!.toBytes();
+  }
+
+  set newHQ(value: Bytes) {
+    this.set("newHQ", Value.fromBytes(value));
+  }
+
+  get oldHQ(): Bytes {
+    let value = this.get("oldHQ");
+    return value!.toBytes();
+  }
+
+  set oldHQ(value: Bytes) {
+    this.set("oldHQ", Value.fromBytes(value));
   }
 }

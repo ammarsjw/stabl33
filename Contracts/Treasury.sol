@@ -59,30 +59,25 @@ contract Treasury is Ownable {
     constructor() {
         HQ = 0x294d0487fdf7acecf342ae70AFc5549A6E90f3e0;
 
-        // stabl3 = IERC20(0x20A91B0d2A5545BF05bcA96778e138E2E154e083);
         stabl3 = IERC20(0xDf9c4990a8973b6cC069738592F27Ea54b27D569);
 
         initialRate = 0.0007 * (10 ** 18);
 
-        // IERC20 USDC = IERC20(0x8Af5a6599BD2406C44588FCf84FD6Eb1bB2e0243);
-        // IERC20 DAI = IERC20(0xA83a21816ae63D3315c540396f887F53cfF274fA);
         IERC20 USDC = IERC20(0x1092d50E8E14479bB769b687427B72BeE70c9534);
         IERC20 DAI = IERC20(0x59f78fB97FB36adbaDCbB43Fa9031797faAad54A);
 
         updateReservedToken(USDC, true);
         updateReservedToken(DAI, true);
-
-        updateRate();
     }
 
     function updateROI(address _ROI) external onlyOwner {
-        require(ROI != _ROI, "Stabl3PublicSale: ROI is already this address");
+        require(ROI != _ROI, "Treasury: ROI is already this address");
         emit UpdatedROI(_ROI, ROI);
         ROI = _ROI;
     }
 
     function updateHQ(address _HQ) external onlyOwner {
-        require(HQ != _HQ, "Stabl3PublicSale: HQ is already this address");
+        require(HQ != _HQ, "Treasury: HQ is already this address");
         emit UpdatedHQ(_HQ, HQ);
         HQ = _HQ;
     }
@@ -161,8 +156,6 @@ contract Treasury is Ownable {
                 totalReserves += amount;
             }
         }
-
-        totalReserves;
 
         return totalReserves;
     }

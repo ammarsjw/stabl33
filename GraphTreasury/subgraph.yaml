@@ -6,9 +6,9 @@ dataSources:
     name: Treasury
     network: goerli
     source:
-      address: "0x6e36ed03dF3318b183c50c0D0fB30ba530f6F183"
+      address: "0x30327efdA3B58bC0C9000aa84AF36354Cd4534B0"
       abi: Treasury
-      startBlock: 7464039
+      startBlock: 7469434
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -24,10 +24,14 @@ dataSources:
       eventHandlers:
         - event: OwnershipTransferred(indexed address,indexed address)
           handler: handleOwnershipTransferred
-        - event: Rate(uint256,uint256)
+        - event: Rate(uint256,uint256,uint256)
           handler: handleRate
         - event: UpdatedPermission(address,bool)
           handler: handleUpdatedPermission
         - event: UpdatedReservedToken(address,bool)
           handler: handleUpdatedReservedToken
+        - event: UpdatedROI(address,address)
+          handler: handleUpdatedROI
+        - event: UpdatedHQ(address,address)
+          handler: handleUpdatedHQ
       file: ./src/mapping.ts

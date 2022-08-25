@@ -35,11 +35,36 @@
       {
         "indexed": false,
         "internalType": "uint256",
+        "name": "reserves",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
         "name": "blockTimestampLast",
         "type": "uint256"
       }
     ],
     "name": "Rate",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "newHQ",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "oldHQ",
+        "type": "address"
+      }
+    ],
+    "name": "UpdatedHQ",
     "type": "event"
   },
   {
@@ -59,6 +84,25 @@
       }
     ],
     "name": "UpdatedPermission",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "newROI",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "oldROI",
+        "type": "address"
+      }
+    ],
+    "name": "UpdatedROI",
     "type": "event"
   },
   {
@@ -190,7 +234,7 @@
         "type": "bool"
       }
     ],
-    "name": "approveTreasury",
+    "name": "delegateApprove",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -292,6 +336,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "getRate",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -305,6 +362,19 @@
       }
     ],
     "name": "getRateImpact",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getReserves",
     "outputs": [
       {
         "internalType": "uint256",
@@ -452,12 +522,49 @@
   {
     "inputs": [
       {
+        "internalType": "uint8",
+        "name": "_type",
+        "type": "uint8"
+      },
+      {
+        "internalType": "contract IERC20",
+        "name": "_token",
+        "type": "address"
+      }
+    ],
+    "name": "sumOfAllPools",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "newOwner",
         "type": "address"
       }
     ],
     "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_HQ",
+        "type": "address"
+      }
+    ],
+    "name": "updateHQ",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -514,6 +621,19 @@
       }
     ],
     "name": "updatePool",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_ROI",
+        "type": "address"
+      }
+    ],
+    "name": "updateROI",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

@@ -49,8 +49,34 @@ export class Rate__Params {
     return this._event.parameters[0].value.toBigInt();
   }
 
-  get blockTimestampLast(): BigInt {
+  get reserves(): BigInt {
     return this._event.parameters[1].value.toBigInt();
+  }
+
+  get blockTimestampLast(): BigInt {
+    return this._event.parameters[2].value.toBigInt();
+  }
+}
+
+export class UpdatedHQ extends ethereum.Event {
+  get params(): UpdatedHQ__Params {
+    return new UpdatedHQ__Params(this);
+  }
+}
+
+export class UpdatedHQ__Params {
+  _event: UpdatedHQ;
+
+  constructor(event: UpdatedHQ) {
+    this._event = event;
+  }
+
+  get newHQ(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+
+  get oldHQ(): Address {
+    return this._event.parameters[1].value.toAddress();
   }
 }
 
@@ -73,6 +99,28 @@ export class UpdatedPermission__Params {
 
   get state(): boolean {
     return this._event.parameters[1].value.toBoolean();
+  }
+}
+
+export class UpdatedROI extends ethereum.Event {
+  get params(): UpdatedROI__Params {
+    return new UpdatedROI__Params(this);
+  }
+}
+
+export class UpdatedROI__Params {
+  _event: UpdatedROI;
+
+  constructor(event: UpdatedROI) {
+    this._event = event;
+  }
+
+  get newROI(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+
+  get oldROI(): Address {
+    return this._event.parameters[1].value.toAddress();
   }
 }
 
@@ -359,6 +407,21 @@ export class Treasury extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
+  getRate(): BigInt {
+    let result = super.call("getRate", "getRate():(uint256)", []);
+
+    return result[0].toBigInt();
+  }
+
+  try_getRate(): ethereum.CallResult<BigInt> {
+    let result = super.tryCall("getRate", "getRate():(uint256)", []);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
   getRateImpact(
     _amountStabl3Converted: BigInt,
     _amountTokenConverted: BigInt
@@ -387,6 +450,21 @@ export class Treasury extends ethereum.SmartContract {
         ethereum.Value.fromUnsignedBigInt(_amountTokenConverted)
       ]
     );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
+  getReserves(): BigInt {
+    let result = super.call("getReserves", "getReserves():(uint256)", []);
+
+    return result[0].toBigInt();
+  }
+
+  try_getReserves(): ethereum.CallResult<BigInt> {
+    let result = super.tryCall("getReserves", "getReserves():(uint256)", []);
     if (result.reverted) {
       return new ethereum.CallResult();
     }
@@ -531,6 +609,35 @@ export class Treasury extends ethereum.SmartContract {
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toAddress());
   }
+
+  sumOfAllPools(_type: i32, _token: Address): BigInt {
+    let result = super.call(
+      "sumOfAllPools",
+      "sumOfAllPools(uint8,address):(uint256)",
+      [
+        ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(_type)),
+        ethereum.Value.fromAddress(_token)
+      ]
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_sumOfAllPools(_type: i32, _token: Address): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "sumOfAllPools",
+      "sumOfAllPools(uint8,address):(uint256)",
+      [
+        ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(_type)),
+        ethereum.Value.fromAddress(_token)
+      ]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
 }
 
 export class ConstructorCall extends ethereum.Call {
@@ -559,20 +666,20 @@ export class ConstructorCall__Outputs {
   }
 }
 
-export class ApproveTreasuryCall extends ethereum.Call {
-  get inputs(): ApproveTreasuryCall__Inputs {
-    return new ApproveTreasuryCall__Inputs(this);
+export class DelegateApproveCall extends ethereum.Call {
+  get inputs(): DelegateApproveCall__Inputs {
+    return new DelegateApproveCall__Inputs(this);
   }
 
-  get outputs(): ApproveTreasuryCall__Outputs {
-    return new ApproveTreasuryCall__Outputs(this);
+  get outputs(): DelegateApproveCall__Outputs {
+    return new DelegateApproveCall__Outputs(this);
   }
 }
 
-export class ApproveTreasuryCall__Inputs {
-  _call: ApproveTreasuryCall;
+export class DelegateApproveCall__Inputs {
+  _call: DelegateApproveCall;
 
-  constructor(call: ApproveTreasuryCall) {
+  constructor(call: DelegateApproveCall) {
     this._call = call;
   }
 
@@ -589,10 +696,10 @@ export class ApproveTreasuryCall__Inputs {
   }
 }
 
-export class ApproveTreasuryCall__Outputs {
-  _call: ApproveTreasuryCall;
+export class DelegateApproveCall__Outputs {
+  _call: DelegateApproveCall;
 
-  constructor(call: ApproveTreasuryCall) {
+  constructor(call: DelegateApproveCall) {
     this._call = call;
   }
 }
@@ -683,6 +790,36 @@ export class TransferOwnershipCall__Outputs {
   }
 }
 
+export class UpdateHQCall extends ethereum.Call {
+  get inputs(): UpdateHQCall__Inputs {
+    return new UpdateHQCall__Inputs(this);
+  }
+
+  get outputs(): UpdateHQCall__Outputs {
+    return new UpdateHQCall__Outputs(this);
+  }
+}
+
+export class UpdateHQCall__Inputs {
+  _call: UpdateHQCall;
+
+  constructor(call: UpdateHQCall) {
+    this._call = call;
+  }
+
+  get _HQ(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+}
+
+export class UpdateHQCall__Outputs {
+  _call: UpdateHQCall;
+
+  constructor(call: UpdateHQCall) {
+    this._call = call;
+  }
+}
+
 export class UpdatePermissionCall extends ethereum.Call {
   get inputs(): UpdatePermissionCall__Inputs {
     return new UpdatePermissionCall__Inputs(this);
@@ -763,6 +900,36 @@ export class UpdatePoolCall__Outputs {
   _call: UpdatePoolCall;
 
   constructor(call: UpdatePoolCall) {
+    this._call = call;
+  }
+}
+
+export class UpdateROICall extends ethereum.Call {
+  get inputs(): UpdateROICall__Inputs {
+    return new UpdateROICall__Inputs(this);
+  }
+
+  get outputs(): UpdateROICall__Outputs {
+    return new UpdateROICall__Outputs(this);
+  }
+}
+
+export class UpdateROICall__Inputs {
+  _call: UpdateROICall;
+
+  constructor(call: UpdateROICall) {
+    this._call = call;
+  }
+
+  get _ROI(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+}
+
+export class UpdateROICall__Outputs {
+  _call: UpdateROICall;
+
+  constructor(call: UpdateROICall) {
     this._call = call;
   }
 }

@@ -31,19 +31,16 @@ contract ROI is Ownable {
 
     event UpdatedPermission(address contractAddress, bool state);
 
-    event APR(uint256 rate, uint256 blockTimestampLast);
+    event APR(uint256 rate, uint256 reserves, uint256 blockTimestampLast);
 
     // constructor
 
     constructor(ITreasury _treasury) {
         treasury = _treasury;
 
-        updatePermission(address(_treasury), true);
-
-        // stabl3 = IERC20(0x20A91B0d2A5545BF05bcA96778e138E2E154e083);
         stabl3 = IERC20(0xDf9c4990a8973b6cC069738592F27Ea54b27D569);
 
-        updateAPR();
+        updatePermission(address(_treasury), true);
     }
 
     function updateTreasury(ITreasury _treasury) external onlyOwner {
@@ -76,34 +73,51 @@ contract ROI is Ownable {
         emit UpdatedPermission(_contractAddress, _state);
     }
 
+    function getReserves() public view returns (uint256) {
+        IERC20 reservedToken;
+        uint256 totalReserves;
+        uint256 amount;
+        uint256 decimals;
+        for (uint256 i = 0 ; i < treasury.allReservedTokensLength() ; i++) {
+            reservedToken = treasury.allReservedTokens(i);
+            if (treasury.isReservedToken(reservedToken)) {
+                amount = reservedToken.balanceOf(address(this));
+
+                decimals = reservedToken.decimals();
+
+                if (decimals < 18) {
+                    amount = amount * (10 ** (18 - decimals));
+                }
+
+                totalReserves += amount;
+            }
+        }
+
+        return totalReserves;
+    }
+
     function getAPR() public view returns (uint256) {
-        uint256 totalROIReserves;
+        uint256 totalROIReserves = getReserves();
 
         uint256 totalStakedAmount;
         uint256 totalLendedAmountTreasury;
 
         IERC20 reservedToken;
         uint256 decimals;
-        uint256 ROIReserves;
         uint256 stakedAmount;
         uint256 lendedAmountTreasury;
         for (uint256 i = 0 ; i < treasury.allReservedTokensLength() ; i++) {
             reservedToken = treasury.allReservedTokens(i);
             if (treasury.isReservedToken(reservedToken)) {
-                ROIReserves = reservedToken.balanceOf(address(this));
-
                 stakedAmount = treasury.sumOfAllPools(STAKE_POOL, reservedToken);
                 lendedAmountTreasury += treasury.getTreasuryPool(LEND_POOL, reservedToken);
 
                 decimals = reservedToken.decimals();
 
                 if (decimals < 18) {
-                    ROIReserves = ROIReserves * (10 ** (18 - decimals));
                     stakedAmount = stakedAmount * (10 ** (18 - decimals));
                     lendedAmountTreasury = lendedAmountTreasury * (10 ** (18 - decimals));
                 }
-
-                totalROIReserves += ROIReserves;
 
                 totalStakedAmount += stakedAmount;
                 totalLendedAmountTreasury += lendedAmountTreasury;
@@ -124,7 +138,9 @@ contract ROI is Ownable {
     function updateAPR() public lock permission {
         uint256 currentAPR = getAPR();
 
-        emit APR(currentAPR, block.timestamp);
+        uint256 reserves = getReserves();
+
+        emit APR(currentAPR, reserves, block.timestamp);
     }
 
     function delegateApprove(IERC20 _token, address _spender, bool _isApprove) public onlyOwner {
