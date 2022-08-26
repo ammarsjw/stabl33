@@ -22,8 +22,8 @@ contract Treasury is Ownable {
     IERC20 public stabl3;
 
     uint256 public initialRate;
-    uint256 public initialLiquidity;
     uint256 public totalSupply;
+    uint256 public initialLiquidity;
 
     uint256 private unlocked = 1;
 
@@ -89,9 +89,9 @@ contract Treasury is Ownable {
 
         stabl3.transferFrom(owner(), address(this), _amountStabl3);
 
-        totalSupply = _amountStabl3;
+        totalSupply = _amountStabl3 + (99000000000 * (10 ** 6));
 
-        initialLiquidity = (_amountStabl3 * initialRate) / 10 ** 6;
+        initialLiquidity = (totalSupply * initialRate) / 10 ** 6;
     }
 
     function updatePermission(address _contractAddress, bool _state) external onlyOwner {
