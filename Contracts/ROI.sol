@@ -96,6 +96,7 @@ contract ROI is Ownable {
         return totalReserves;
     }
 
+    // APR is in 18 decimals
     function getAPR() public view returns (uint256) {
         uint256 totalROIReserves = getReserves();
 
@@ -129,7 +130,7 @@ contract ROI is Ownable {
             currentAPR = 0;
         }
         else {
-            currentAPR = totalROIReserves / (totalStakedAmount + totalLendedAmountTreasury);
+            currentAPR = (totalROIReserves * (10 ** 18)) / (totalStakedAmount + totalLendedAmountTreasury);
         }
 
         return currentAPR;

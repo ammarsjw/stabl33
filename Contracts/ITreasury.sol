@@ -13,7 +13,11 @@ interface ITreasury {
     function getROIPool(uint8, IERC20) external view returns (uint256);
     function getHQPool(uint8, IERC20) external view returns (uint256);
 
-    function provideInitialLiquidity(uint256 _amountStabl3) external;
+    function updateROI(address _ROI) external;
+
+    function updateHQ(address _HQ) external;
+
+    function provideInitialSupply(uint256 _amountStabl3) external;
 
     function updatePermission(address _contractAddress, bool _state) external;
 

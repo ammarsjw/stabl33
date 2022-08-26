@@ -22,7 +22,8 @@ contract Treasury is Ownable {
     IERC20 public stabl3;
 
     uint256 public initialRate;
-    uint256 public initialSupply;
+    uint256 public initialLiquidity;
+    uint256 public totalSupply;
 
     uint256 private unlocked = 1;
 
@@ -88,7 +89,9 @@ contract Treasury is Ownable {
 
         stabl3.transferFrom(owner(), address(this), _amountStabl3);
 
-        initialSupply = _amountStabl3;
+        totalSupply = _amountStabl3;
+
+        initialLiquidity = (_amountStabl3 * initialRate) / 10 ** 6;
     }
 
     function updatePermission(address _contractAddress, bool _state) external onlyOwner {
@@ -157,34 +160,30 @@ contract Treasury is Ownable {
             }
         }
 
-        return totalReserves;
+        return totalReserves + initialLiquidity;
     }
 
     // rate is in 18 decimals
     function getRate() public view returns (uint256) {
         uint256 reserveIn = getReserves(); // amount of backed tokens
-        uint256 reserveOut = (initialSupply - stabl3.balanceOf(address(this))) * (10 ** (18 - stabl3.decimals())); // amount of stabl3
+        uint256 reserveOut = totalSupply * (10 ** (18 - stabl3.decimals())); // amount of stabl3
 
-        uint256 rate;
-        if (reserveIn == 0) {
-            rate = initialRate;
-        }
-        else {
-            rate = (reserveIn * (10 ** 18)) / reserveOut;
-        }
+        require(reserveIn != 0 && reserveOut != 0, "Treasury: Insufficient Liquidity");
+
+        uint256 rate = (reserveIn * (10 ** 18)) / reserveOut;
 
         return rate;
     }
 
     // rate and both the arguments are in 18 decimals
-    function getRateImpact(uint256 _amountStabl3Converted, uint256 _amountTokenConverted) public view returns (uint256) {
-        uint256 reserveIn = getReserves(); // amount of backed tokens
-        uint256 reserveOut = (initialSupply - stabl3.balanceOf(address(this))) * (10 ** (18 - stabl3.decimals())); // amount of stabl3
+    // function getRateSimulated(uint256 _amountStabl3Converted, uint256 _amountTokenConverted) public view returns (uint256) {
+    //     uint256 reserveIn = getReserves(); // amount of backed tokens
+    //     uint256 reserveOut = stabl3.balanceOf(address(this)) * (10 ** (18 - stabl3.decimals())); // amount of stabl3
 
-        uint256 rate = ((reserveIn + _amountTokenConverted) * (10 ** 18)) / (reserveOut + _amountStabl3Converted);
+    //     uint256 rate = ((reserveIn + _amountTokenConverted) * (10 ** 18)) / (reserveOut + _amountStabl3Converted);
 
-        return rate;
-    }
+    //     return rate;
+    // }
 
     function getAmountOut(IERC20 _token, uint256 _amountToken) external view returns (uint256) {
         require(isReservedToken[_token], "Treasury: Token not reserved");
@@ -196,9 +195,9 @@ contract Treasury is Ownable {
 
         uint256 amountStabl3 = (_amountToken * (10 ** 18)) / rate;
 
-        rate = getRateImpact(amountStabl3, _amountToken);
+        // rate = getRateImpact(amountStabl3, _amountToken);
 
-        amountStabl3 = (_amountToken * (10 ** 18)) / rate;
+        // amountStabl3 = (_amountToken * (10 ** 18)) / rate;
 
         amountStabl3 /= 10 ** (18 - stabl3.decimals());
 
@@ -214,9 +213,9 @@ contract Treasury is Ownable {
 
         uint256 amountToken = (_amountStabl3 * rate) / 10 ** 18;
 
-        rate = getRateImpact(_amountStabl3, amountToken);
+        // rate = getRateImpact(_amountStabl3, amountToken);
 
-        amountToken = (_amountStabl3 * rate) / 10 ** 18;
+        // amountToken = (_amountStabl3 * rate) / 10 ** 18;
 
         amountToken /= 10 ** (18 - _token.decimals());
 
