@@ -39,7 +39,14 @@ interface ITreasury {
 
     function getAmountIn(uint256 _amountStabl3, IERC20 _token) external view returns (uint256);
 
-    function updatePool(uint8 _type, IERC20 _token, uint256 _amountTokenTreasury, uint256 _amountTokenROI, uint256 _amountTokenHQ, bool isIncrease) external;
+    function updatePool(
+        uint8 _type,
+        IERC20 _token,
+        uint256 _amountTokenTreasury,
+        uint256 _amountTokenROI,
+        uint256 _amountTokenHQ,
+        bool _isIncrease
+    ) external;
 
     function updateRate() external;
 

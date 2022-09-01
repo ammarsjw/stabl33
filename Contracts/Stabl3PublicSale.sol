@@ -44,8 +44,8 @@ contract Stabl3PublicSale is Ownable {
 
     // constructor
 
-    constructor(ITreasury _treasury, address _ROI) {
-        treasury = _treasury;
+    constructor(address _treasury, address _ROI) {
+        treasury = ITreasury(_treasury);
         ROI = _ROI;
         HQ = 0x294d0487fdf7acecf342ae70AFc5549A6E90f3e0;
 
@@ -58,10 +58,10 @@ contract Stabl3PublicSale is Ownable {
         exchangeFee = 3;
     }
 
-    function updateTreasury(ITreasury _treasury) external onlyOwner {
-        require(treasury != _treasury, "Stabl3PublicSale: Treasury is already this address");
-        emit UpdatedTreasury(address(_treasury), address(treasury));
-        treasury = _treasury;
+    function updateTreasury(address _treasury) external onlyOwner {
+        require(address(treasury) != _treasury, "Stabl3PublicSale: Treasury is already this address");
+        emit UpdatedTreasury(_treasury, address(treasury));
+        treasury = ITreasury(_treasury);
     }
 
     function updateROI(address _ROI) external onlyOwner {
@@ -90,6 +90,7 @@ contract Stabl3PublicSale is Ownable {
     }
 
     function updateExchangeFee(uint256 _exchangeFee) external onlyOwner {
+        require(exchangeFee != _exchangeFee, "Stabl3PublicSale: Exchange Fee is already this value");
         emit UpdatedExchangeFee(_exchangeFee, exchangeFee);
         exchangeFee = _exchangeFee;
     }

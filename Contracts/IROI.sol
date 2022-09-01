@@ -1,0 +1,23 @@
+// SPDX-License-Identifier: GNU GPLv3
+
+pragma solidity 0.8.16;
+
+import "./IERC20.sol";
+
+interface IROI {
+    function updateTreasury(address _treasury) external;
+
+    function updatePermission(address _contractAddress, bool _state) external;
+
+    function getReserves() external view returns (uint256);
+
+    function getAPR() external view returns (uint256);
+
+    function updateAPR() external;
+
+    function delegateApprove(IERC20 _token, address _spender, bool _isApprove) external;
+
+    function withdrawFunds(IERC20 _token, uint256 _amountToken) external;
+
+    function withdrawAllFunds(IERC20 _token) external;
+}

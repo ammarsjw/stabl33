@@ -223,8 +223,15 @@ contract Treasury is Ownable {
         return amountToken;
     }
 
-    function updatePool(uint8 _type, IERC20 _token, uint256 _amountTokenTreasury, uint256 _amountTokenROI, uint256 _amountTokenHQ, bool isIncrease) external lock permission {
-        if (isIncrease) {
+    function updatePool(
+        uint8 _type,
+        IERC20 _token,
+        uint256 _amountTokenTreasury,
+        uint256 _amountTokenROI,
+        uint256 _amountTokenHQ,
+        bool _isIncrease
+    ) external lock permission {
+        if (_isIncrease) {
             getTreasuryPool[_type][_token] += _amountTokenTreasury;
             getROIPool[_type][_token] += _amountTokenROI;
             getHQPool[_type][_token] += _amountTokenHQ;

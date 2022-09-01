@@ -43,12 +43,12 @@ contract ROI is Ownable {
         updatePermission(address(_treasury), true);
     }
 
-    function updateTreasury(ITreasury _treasury) external onlyOwner {
-        require(treasury != _treasury, "ROI: Treasury is already this address");
+    function updateTreasury(address _treasury) external onlyOwner {
+        require(address(treasury) != _treasury, "ROI: Treasury is already this address");
         updatePermission(address(treasury), false);
-        updatePermission(address(_treasury), true);
-        emit UpdatedTreasury(address(_treasury), address(treasury));
-        treasury = _treasury;
+        updatePermission(_treasury, true);
+        emit UpdatedTreasury(_treasury, address(treasury));
+        treasury = ITreasury(_treasury);
     }
 
     function updatePermission(address _contractAddress, bool _state) public onlyOwner {
@@ -101,36 +101,37 @@ contract ROI is Ownable {
         uint256 totalROIReserves = getReserves();
 
         uint256 totalStakedAmount;
-        uint256 totalLendedAmountTreasury;
+        uint256 totalLendedAmount;
 
         IERC20 reservedToken;
-        uint256 decimals;
+        uint256 decimalsReservedToken;
         uint256 stakedAmount;
-        uint256 lendedAmountTreasury;
+        uint256 lendedAmount;
         for (uint256 i = 0 ; i < treasury.allReservedTokensLength() ; i++) {
             reservedToken = treasury.allReservedTokens(i);
             if (treasury.isReservedToken(reservedToken)) {
                 stakedAmount = treasury.sumOfAllPools(STAKE_POOL, reservedToken);
-                lendedAmountTreasury += treasury.getTreasuryPool(LEND_POOL, reservedToken);
+                lendedAmount = treasury.getTreasuryPool(LEND_POOL, reservedToken);
+                lendedAmount += treasury.getHQPool(LEND_POOL, reservedToken);
 
-                decimals = reservedToken.decimals();
+                decimalsReservedToken = reservedToken.decimals();
 
-                if (decimals < 18) {
-                    stakedAmount = stakedAmount * (10 ** (18 - decimals));
-                    lendedAmountTreasury = lendedAmountTreasury * (10 ** (18 - decimals));
+                if (decimalsReservedToken < 18) {
+                    stakedAmount = stakedAmount * (10 ** (18 - decimalsReservedToken));
+                    lendedAmount = lendedAmount * (10 ** (18 - decimalsReservedToken));
                 }
 
                 totalStakedAmount += stakedAmount;
-                totalLendedAmountTreasury += lendedAmountTreasury;
+                totalLendedAmount += lendedAmount;
             }
         }
 
         uint256 currentAPR;
-        if (totalStakedAmount == 0 && totalLendedAmountTreasury == 0) {
+        if (totalStakedAmount == 0 && totalLendedAmount == 0) {
             currentAPR = 0;
         }
         else {
-            currentAPR = (totalROIReserves * (10 ** 18)) / (totalStakedAmount + totalLendedAmountTreasury);
+            currentAPR = (totalROIReserves * (10 ** 18)) / (totalStakedAmount + totalLendedAmount);
         }
 
         return currentAPR;
