@@ -175,7 +175,7 @@ contract ROI is Ownable {
         require(permitted[msg.sender] || msg.sender == owner(), "ROI: Not permitted");
         _;
     }
-    
+
     modifier reserved(IERC20 _token) {
         require(treasury.isReservedToken(_token), "ROI: Not a reserved token");
         _;

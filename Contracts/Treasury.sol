@@ -4,7 +4,6 @@ pragma solidity 0.8.16;
 
 import "./Ownable.sol";
 import "./SafeMathUpgradeable.sol";
-import "./ABDKMath64x64.sol";
 import "./SafeERC20.sol";
 
 contract Treasury is Ownable {
@@ -331,9 +330,9 @@ contract Treasury is Ownable {
             getHQPool[_type][_token] += _amountTokenHQ;
         }
         else {
-            getTreasuryPool[_type][_token] -= _amountTokenTreasury;
-            getROIPool[_type][_token] -= _amountTokenROI;
-            getHQPool[_type][_token] -= _amountTokenHQ;
+            getTreasuryPool[_type][_token].safeSub(_amountTokenTreasury);
+            getROIPool[_type][_token].safeSub(_amountTokenROI);
+            getHQPool[_type][_token].safeSub(_amountTokenHQ);
         }
     }
 
@@ -410,16 +409,6 @@ contract Treasury is Ownable {
         uint256 accruedAmount = _principal.mul(_ratio).div(10 ** 18);
 
         return accruedAmount;
-    }
-
-    function _compound(uint256 _principal, uint256 _ratio, uint256 _exponent) internal pure returns (uint256) {
-        if (_exponent == 0) {
-            return 0;
-        }
-
-        uint256 accruedAmount = ABDKMath64x64.mulu(ABDKMath64x64.pow(ABDKMath64x64.add(ABDKMath64x64.fromUInt(1), ABDKMath64x64.divu(_ratio,10**18)), _exponent), _principal);
-
-        return accruedAmount.sub(_principal);
     }
 
     // modifiers

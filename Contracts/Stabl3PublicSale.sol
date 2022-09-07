@@ -95,14 +95,12 @@ contract Stabl3PublicSale is Ownable {
         exchangeFee = _exchangeFee;
     }
 
-    function updateSaleState(bool state) external onlyOwner {
-        require(saleState != state, "Stabl3PublicSale: Sale state is already of the value 'state'");
-        saleState = state;
+    function updateSaleState(bool _state) external onlyOwner {
+        require(saleState != _state, "Stabl3PublicSale: Sale state is already of the value 'state'");
+        saleState = _state;
     }
 
-    function buy(IERC20 _token, uint256 _amountToken) external {
-        require(saleState, "Stabl3PublicSale: Sale not yet started");
-        require(treasury.isReservedToken(_token), "Stabl3PublicSale: Token not reserved");
+    function buy(IERC20 _token, uint256 _amountToken) external saleActive reserved(_token) {
         require(_amountToken > 0, "Stabl3PublicSale: Insufficient amount");
 
         uint256 amountStabl3 = treasury.getAmountOut(_token, _amountToken);
@@ -123,13 +121,11 @@ contract Stabl3PublicSale is Ownable {
         treasury.updateRate(_token, _amountToken);
     }
 
-    function exchange(IERC20 _exchangingToken, IERC20 _token, uint256 _amountToken) external {
-        require(saleState, "Stabl3PublicSale: Sale not yet started");
-        require(
-            treasury.isReservedToken(_token) &&
-            treasury.isReservedToken(_exchangingToken),
-            "Stabl3PublicSale: Token(s) not reserved"
-        );
+    function exchange(
+        IERC20 _exchangingToken,
+        IERC20 _token,
+        uint256 _amountToken
+    ) external saleActive reserved(_exchangingToken) reserved(_token) {
         require(_exchangingToken != _token, "Stabl3PublicSale: Invalid exchange");
         require(_amountToken > 0, "Stabl3PublicSale: Insufficient amount");
 
@@ -173,5 +169,17 @@ contract Stabl3PublicSale is Ownable {
         emit Exchanged(msg.sender, _exchangingToken, amountExchangingToken, fee, _token, _amountToken);
         treasury.updatePool(BUY_POOL, _token, amountTreasury, amountROI, amountHQ, true);
         treasury.updatePool(BUY_POOL, _exchangingToken, amountExchangingToken, 0, 0, false);
+    }
+
+    // modifiers
+
+    modifier saleActive() {
+        require(saleState, "Stabl3PublicSale: Sale not yet started");
+        _;
+    }
+
+    modifier reserved(IERC20 _token) {
+        require(treasury.isReservedToken(_token), "Stabl3PublicSale: Not a reserved token");
+        _;
     }
 }
