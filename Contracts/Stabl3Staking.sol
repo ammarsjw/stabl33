@@ -48,7 +48,7 @@ contract Stabl3Staking is Ownable {
         address user;
         bool status;
         IERC20 token;
-        uint256 amountToken;
+        uint256 amountStakedToken;
         uint8 stakingType;
         uint256 startTime;
         uint256 rewardWithdrawn;
@@ -278,96 +278,15 @@ contract Stabl3Staking is Ownable {
 
         treasury.updatePool(poolType, _token, amountTreasury, amountROI, amountHQ, true);
 
-        emit Staked(staking.user, staking.index, staking.token, staking.amountToken, staking.stakingType, staking.isLending);
+        emit Staked(staking.user, staking.index, staking.token, staking.amountStakedToken, staking.stakingType, staking.isLending);
         ROI.updateAPR();
     }
 
-    function getWithdrawableRewardSingle(address _user, uint256 _index) public view stakeActive returns (uint256) {
-        Staking storage staking = getStakings[_user][_index];
-
-        if (staking.amountToken == 0 || !staking.status) {
-            return 0;
-        }
-
-        uint256 endTime = block.timestamp;
-
-        uint256 numberOfMinutes = (endTime - staking.rewardWithdrawTimeLast) / oneMinuteTime;
-
-        if (numberOfMinutes == 0) {
-            return 0;
-        }
-
-        uint256 ratio = ROI.getAPR() / 100;
-
-        uint256 rewardTotal = _compound(
-            staking.amountToken,
-            ratio,
-            1
-        );
-
-        uint256 reward = rewardTotal / 31536000 * oneMinuteTime * numberOfMinutes;
-
-        return reward;
-    }
-
-    function withdrawRewardSingle(uint256 _index) external {
-        Staking storage staking = getStakings[msg.sender][_index];
-
-        require(staking.amountToken > 0, "Stabl3Staking: No such stake or lend exists");
-        require(staking.status, "Stabl3Staking: Already unstaked");
-
-        uint256 reward = getWithdrawableRewardSingle(msg.sender, _index);
-
-        uint8 poolType;
-        if (staking.isLending) {
-            poolType = LEND_POOL;
-        }
-        else {
-            poolType = STAKE_POOL;
-        }
-
-        _balanceReward(staking.token, reward, poolType);
-
-        staking.rewardWithdrawn += reward;
-        staking.rewardWithdrawTimeLast = block.timestamp;
-
-        emit WithdrewReward(staking.user, staking.index, staking.token, reward, staking.rewardWithdrawTimeLast);
-        ROI.updateAPR();
-    }
-
-    function claimLendingStabl3(uint256 index) external stakeActive {
-        Staking storage staking = getStakings[msg.sender][index];
-
-        require(staking.amountToken > 0, "Stabl3Staking: No such lend exists");
-        require(staking.status, "Stabl3Staking: Already unstaked");
-        require(staking.isLending, "Stabl3Staking: Stabl3 can only be claimed when lending");
-        require(!staking.isClaimedLendingStabl3, "Stabl3Staking: Stabl3 already claimed");
-        require(block.timestamp > staking.startTime + lendingStabl3ClaimTime, "Stabl3Staking: Cannot claim Stabl3 before Claim Time");
-
-        _claimLendingStabl3(staking);
-    }
-
-    function _claimLendingStabl3(Staking storage _staking) internal {
-        stabl3.transferFrom(address(treasury), msg.sender, _staking.amountLendingStabl3);
-
-        _staking.isClaimedLendingStabl3 = true;
-
-        emit ClaimedLendingStabl3(
-            _staking.user,
-            _staking.index,
-            _staking.token,
-            _staking.amountLendingToken,
-            _staking.amountLendingStabl3
-        );
-        treasury.updatePool(BUY_POOL, _staking.token, 0, _staking.amountLendingToken, 0, true);
-        treasury.updateRate(_staking.token, _staking.amountLendingToken);
-        ROI.updateAPR();
-    }
-
+    // TODO different modules different unstakes
     function unstake(uint256 index) external stakeActive {
         Staking storage staking = getStakings[msg.sender][index];
 
-        require(staking.amountToken > 0, "Stabl3Staking: No such stake or lend exists");
+        require(staking.amountStakedToken > 0, "Stabl3Staking: No such stake or lend exists");
         require(staking.status, "Stabl3Staking: Already unstaked");
         require(block.timestamp > staking.startTime + lockTimes[staking.stakingType - 1], "Stabl3Staking: Cannot unstake before end time");
 
@@ -378,14 +297,14 @@ contract Stabl3Staking is Ownable {
         uint256 numberOfDays = (endTime - staking.rewardWithdrawTimeLast) / oneMinuteTime;
 
         uint256 reward = _compound(
-            staking.amountToken,
+            staking.amountStakedToken,
             rewardPercentagePerDay,
             numberOfDays
         );
 
-        uint256 fee = staking.amountToken.mul(unstakeFeePercentage).div(1000);
+        uint256 fee = staking.amountStakedToken.mul(unstakeFeePercentage).div(1000);
 
-        uint256 amountTokenWithFee = staking.amountToken - fee;
+        uint256 amountTokenWithFee = staking.amountStakedToken - fee;
 
         if (staking.isLending && !staking.isClaimedLendingStabl3) {
             _claimLendingStabl3(staking);
@@ -418,6 +337,144 @@ contract Stabl3Staking is Ownable {
             staking.stakingType,
             staking.isLending
         );
+        ROI.updateAPR();
+    }
+
+    function getAmountRewardAll(address _user, bool _isLending) public view stakeActive returns (uint256) {
+        uint256 totalReward;
+
+        Staking memory staking;
+        uint256 reward;
+        for (uint256 i = 0 ; i < getStakings[_user].length ; i++) {
+            staking = getStakings[_user][i];
+
+            if (staking.isLending == _isLending) {
+                if (staking.amountStakedToken > 0) {
+                    uint256 endTime = block.timestamp;
+
+                    uint256 numberOfMinutes = (endTime - staking.rewardWithdrawTimeLast) / oneMinuteTime;
+
+                    if (numberOfMinutes > 0) {
+                        uint256 ratio = ROI.getAPR() / 100;
+
+                        uint256 rewardTotal = _compound(
+                            staking.amountStakedToken,
+                            ratio,
+                            1
+                        );
+
+                        reward = rewardTotal / 31536000 * oneMinuteTime * numberOfMinutes;
+
+                        totalReward += reward;
+                    }
+                }
+            }
+        }
+
+        return totalReward;
+    }
+
+    function getAmountStakedAll(address _user, bool _isLending) public view stakeActive returns (uint256) {
+        uint256 totalAmountStakedToken;
+
+        Staking memory staking;
+        uint256 amountStakedToken;
+        for (uint256 i = 0 ; i < getStakings[_user].length ; i++) {
+            staking = getStakings[_user][i];
+
+            if (staking.isLending == _isLending) {
+                if (staking.amountStakedToken > 0) {
+                    amountStakedToken = staking.amountStakedToken;
+
+                    totalAmountStakedToken += amountStakedToken;
+                }
+            }
+        }
+
+        return totalAmountStakedToken;
+    }
+
+    // TODO match naming convention
+    function getWithdrawableRewardSingle(address _user, uint256 _index) public view stakeActive returns (uint256) {
+        Staking memory staking = getStakings[_user][_index];
+
+        if (staking.amountStakedToken == 0) {
+            return 0;
+        }
+
+        uint256 endTime = block.timestamp;
+
+        uint256 numberOfMinutes = (endTime - staking.rewardWithdrawTimeLast) / oneMinuteTime;
+
+        if (numberOfMinutes == 0) {
+            return 0;
+        }
+
+        uint256 ratio = ROI.getAPR() / 100;
+
+        uint256 rewardTotal = _compound(
+            staking.amountStakedToken,
+            ratio,
+            1
+        );
+
+        uint256 reward = rewardTotal / 31536000 * oneMinuteTime * numberOfMinutes;
+
+        return reward;
+    }
+
+    // TODO match naming convention
+    function withdrawRewardSingle(uint256 _index) external {
+        Staking storage staking = getStakings[msg.sender][_index];
+
+        require(staking.amountStakedToken > 0, "Stabl3Staking: No such stake or lend exists");
+        require(staking.status, "Stabl3Staking: Already unstaked");
+
+        uint256 reward = getWithdrawableRewardSingle(msg.sender, _index);
+
+        uint8 poolType;
+        if (staking.isLending) {
+            poolType = LEND_POOL;
+        }
+        else {
+            poolType = STAKE_POOL;
+        }
+
+        _balanceReward(staking.token, reward, poolType);
+
+        staking.rewardWithdrawn += reward;
+        staking.rewardWithdrawTimeLast = block.timestamp;
+
+        emit WithdrewReward(staking.user, staking.index, staking.token, reward, staking.rewardWithdrawTimeLast);
+        ROI.updateAPR();
+    }
+
+    function claimLendingStabl3(uint256 index) external stakeActive {
+        Staking storage staking = getStakings[msg.sender][index];
+
+        require(staking.amountStakedToken > 0, "Stabl3Staking: No such lend exists");
+        require(staking.status, "Stabl3Staking: Already unstaked");
+        require(staking.isLending, "Stabl3Staking: Stabl3 can only be claimed when lending");
+        require(!staking.isClaimedLendingStabl3, "Stabl3Staking: Stabl3 already claimed");
+        require(block.timestamp > staking.startTime + lendingStabl3ClaimTime, "Stabl3Staking: Cannot claim Stabl3 before Claim Time");
+
+        _claimLendingStabl3(staking);
+    }
+
+    function _claimLendingStabl3(Staking storage _staking) internal {
+        stabl3.transferFrom(address(treasury), msg.sender, _staking.amountLendingStabl3);
+
+        _staking.isClaimedLendingStabl3 = true;
+
+        emit ClaimedLendingStabl3(
+            _staking.user,
+            _staking.index,
+            _staking.token,
+            _staking.amountLendingToken,
+            _staking.amountLendingStabl3
+        );
+        treasury.updatePool(BUY_POOL, _staking.token, 0, _staking.amountLendingToken, 0, true);
+        treasury.updateRate(_staking.token, _staking.amountLendingToken);
         ROI.updateAPR();
     }
 
