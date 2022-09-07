@@ -19,7 +19,7 @@ interface ITreasury {
 
     function updatePermission(address _contractAddress, bool _state) external;
 
-    function updateReservedToken(IERC20 _token, uint256 _decimals, bool _state) external;
+    function updateReservedToken(IERC20 _token, bool _state) external;
 
     function allReservedTokensLength() external view returns (uint256);
 
