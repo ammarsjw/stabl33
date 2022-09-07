@@ -3,9 +3,12 @@
 pragma solidity 0.8.16;
 
 import "./Ownable.sol";
+import "./SafeMathUpgradeable.sol";
+import "./ABDKMath64x64.sol";
 import "./SafeERC20.sol";
 
 contract Treasury is Ownable {
+    using SafeMathUpgradeable for uint256;
 
     uint256 private immutable MAX_INT = 2 ** 256 - 1;
 
@@ -20,11 +23,21 @@ contract Treasury is Ownable {
     address public HQ;
 
     IERC20 public stabl3;
+    uint256 public initialTreasurySupply;
 
-    uint256 public initialRate;
-    uint256 public initialSupply;
+    RateInfo public rateInfo;
 
     uint256 private unlocked = 1;
+
+    // structs
+
+    struct RateInfo {
+        uint256 compoundPercentage;
+        uint256 rate;
+        uint256 tokenWindow;
+        uint256 stabl3Window;
+        uint256 tokenWindowConsumed;
+    }
 
     // mappings
 
@@ -61,7 +74,8 @@ contract Treasury is Ownable {
 
         stabl3 = IERC20(0xDf9c4990a8973b6cC069738592F27Ea54b27D569);
 
-        initialRate = 0.0007 * (10 ** 18);
+        rateInfo = RateInfo(1 * (10 ** 15), 0.0007 * (10 ** 18), 10000 * (10 ** 18), 0, 0);
+        rateInfo.stabl3Window = (rateInfo.tokenWindow * (10 ** 18)) / rateInfo.rate;
 
         IERC20 USDC = IERC20(0x1092d50E8E14479bB769b687427B72BeE70c9534);
         IERC20 DAI = IERC20(0x59f78fB97FB36adbaDCbB43Fa9031797faAad54A);
@@ -80,15 +94,6 @@ contract Treasury is Ownable {
         require(HQ != _HQ, "Treasury: HQ is already this address");
         emit UpdatedHQ(_HQ, HQ);
         HQ = _HQ;
-    }
-
-    function provideInitialSupply(uint256 _amountStabl3) external onlyOwner {
-        require(_amountStabl3 > 0, "Treasury: Insufficient amount");
-        require(stabl3.balanceOf(address(this)) == 0, "Treasury: Liquidty already set");
-
-        stabl3.transferFrom(owner(), address(this), _amountStabl3);
-
-        initialSupply = _amountStabl3;
     }
 
     function updatePermission(address _contractAddress, bool _state) external onlyOwner {
@@ -113,7 +118,7 @@ contract Treasury is Ownable {
         emit UpdatedPermission(_contractAddress, _state);
     }
 
-    function updateReservedToken(IERC20 _token, bool _state) public onlyOwner {
+    function updateReservedToken(IERC20 _token, bool _state) public reserved(_token) onlyOwner {
         require(isReservedToken[_token] != _state, "Treasury: Reserved token is already of the value 'state'");
         isReservedToken[_token] = _state;
         allReservedTokens.push(_token);
@@ -124,7 +129,7 @@ contract Treasury is Ownable {
         return allReservedTokens.length;
     }
 
-    function allPools(uint8 _type, IERC20 _token) external view returns (uint256, uint256, uint256) {
+    function allPools(uint8 _type, IERC20 _token) external view reserved(_token) returns (uint256, uint256, uint256) {
         return (
             getTreasuryPool[_type][_token],
             getROIPool[_type][_token],
@@ -132,8 +137,20 @@ contract Treasury is Ownable {
         );
     }
 
-    function sumOfAllPools(uint8 _type, IERC20 _token) external view returns (uint256) {
+    function sumOfAllPools(uint8 _type, IERC20 _token) external view reserved(_token) returns (uint256) {
         return getTreasuryPool[_type][_token] + getROIPool[_type][_token] + getHQPool[_type][_token];
+    }
+
+    function circulatingSupply() external view returns (uint256) {
+        return initialTreasurySupply - stabl3.balanceOf(address(this));
+    }
+
+    function provideInitialTreasurySupply(uint256 _amountStabl3) external onlyOwner {
+        require(stabl3.balanceOf(address(this)) == 0, "Treasury: Supply already provided");
+
+        initialTreasurySupply = _amountStabl3;
+
+        stabl3.transferFrom(owner(), address(this), _amountStabl3);
     }
 
     function getReserves() public view returns (uint256) {
@@ -162,63 +179,140 @@ contract Treasury is Ownable {
 
     // rate is in 18 decimals
     function getRate() public view returns (uint256) {
-        uint256 reserveIn = getReserves(); // amount of backed tokens
-        uint256 reserveOut = (initialSupply - stabl3.balanceOf(address(this))) * (10 ** (18 - stabl3.decimals())); // amount of stabl3
+        if (initialTreasurySupply == 0) {
+            return 0;
+        }
 
-        uint256 rate;
-        if (reserveIn == 0) {
-            rate = initialRate;
+        return rateInfo.rate;
+    }
+
+    function getRateImpact(IERC20 _token, uint256 _amountToken) external view reserved(_token) returns (uint256) {
+        if (initialTreasurySupply == 0) {
+            return 0;
+        }
+
+        uint256 amountTokenConverted = _amountToken;
+        if (_token.decimals() < 18) {
+            amountTokenConverted = amountTokenConverted * (10 ** (18 - _token.decimals()));
+        }
+
+        uint256 amountTokenToConsider = amountTokenConverted + rateInfo.tokenWindowConsumed;
+        if (amountTokenToConsider <= rateInfo.tokenWindow) {
+            return rateInfo.rate;
         }
         else {
-            rate = (reserveIn * (10 ** 18)) / reserveOut;
+            uint256 tokenWindowToConsider = rateInfo.tokenWindow;
+
+            uint256 rateToConsider = rateInfo.rate;
+
+            while (amountTokenToConsider > tokenWindowToConsider) {
+                tokenWindowToConsider += tokenWindowToConsider + _compoundSingle(tokenWindowToConsider, rateInfo.compoundPercentage);
+
+                rateToConsider += _compoundSingle(rateToConsider, rateInfo.compoundPercentage);
+            }
+
+            return rateToConsider;
+        }
+    }
+
+    function getAmountOut(IERC20 _token, uint256 _amountToken) external view reserved(_token) returns (uint256) {
+        require(_amountToken > 0, "Treasury: Insufficient input amount");
+        if (initialTreasurySupply == 0) {
+            return 0;
         }
 
-        return rate;
-    }
+        uint256 amountTokenConverted = _amountToken;
+        if (_token.decimals() < 18) {
+            amountTokenConverted = amountTokenConverted * (10 ** (18 - _token.decimals()));
+        }
 
-    // rate and both the arguments are in 18 decimals
-    function getRateImpact(uint256 _amountStabl3Converted, uint256 _amountTokenConverted) public view returns (uint256) {
-        uint256 reserveIn = getReserves(); // amount of backed tokens
-        uint256 reserveOut = (initialSupply - stabl3.balanceOf(address(this))) * (10 ** (18 - stabl3.decimals())); // amount of stabl3
+        uint256 amountStabl3;
+        if (amountTokenConverted + rateInfo.tokenWindowConsumed <= rateInfo.tokenWindow) {
+            amountStabl3 = (amountTokenConverted * rateInfo.stabl3Window) / rateInfo.tokenWindow;
+        }
+        else {
+            uint256 amountTokenToConsider = rateInfo.tokenWindow - rateInfo.tokenWindowConsumed;
 
-        uint256 rate = ((reserveIn + _amountTokenConverted) * (10 ** 18)) / (reserveOut + _amountStabl3Converted);
+            if (amountTokenToConsider != 0) {
+                amountStabl3 = (amountTokenToConsider * rateInfo.stabl3Window) / rateInfo.tokenWindow;
 
-        return rate;
-    }
+                amountTokenConverted -= amountTokenToConsider;
+            }
 
-    function getAmountOut(IERC20 _token, uint256 _amountToken) external view returns (uint256) {
-        require(isReservedToken[_token], "Treasury: Token not reserved");
-        require(_amountToken > 0, "Treasury: Insufficient input amount");
+            uint256 tokenWindowToConsider = rateInfo.tokenWindow + _compoundSingle(rateInfo.tokenWindow, rateInfo.compoundPercentage);
 
-        _amountToken *= 10 ** (18 - _token.decimals());
+            uint256 stabl3WindowToConsider = rateInfo.stabl3Window - _compoundSingle(rateInfo.stabl3Window, rateInfo.compoundPercentage);
 
-        uint256 rate = getRate();
+            while (amountTokenConverted > 0) {
+                if (amountTokenConverted > tokenWindowToConsider) {
+                    amountStabl3 += stabl3WindowToConsider;
 
-        uint256 amountStabl3 = (_amountToken * (10 ** 18)) / rate;
+                    amountTokenConverted -= tokenWindowToConsider;
 
-        rate = getRateImpact(amountStabl3, _amountToken);
+                    tokenWindowToConsider += _compoundSingle(tokenWindowToConsider, rateInfo.compoundPercentage);
 
-        amountStabl3 = (_amountToken * (10 ** 18)) / rate;
+                    stabl3WindowToConsider -= _compoundSingle(stabl3WindowToConsider, rateInfo.compoundPercentage);
+                }
+                else {
+                    amountStabl3 += (amountTokenConverted * stabl3WindowToConsider) / tokenWindowToConsider;
+
+                    amountTokenConverted = 0;
+                }
+            }
+        }
 
         amountStabl3 /= 10 ** (18 - stabl3.decimals());
 
         return amountStabl3;
     }
 
-    function getAmountIn(uint256 _amountStabl3, IERC20 _token) external view returns (uint256) {
+    function getAmountIn(uint256 _amountStabl3, IERC20 _token) external view reserved(_token) returns (uint256) {
         require(_amountStabl3 > 0, "Treasury: Insufficient input amount");
+        if (initialTreasurySupply == 0) {
+            return 0;
+        }
 
-        _amountStabl3 *= 10 ** (18 - stabl3.decimals());
+        uint256 amountStabl3Converted = _amountStabl3 * (10 ** (18 - stabl3.decimals()));
 
-        uint256 rate = getRate();
+        uint256 amountToken;
+        uint256 stabl3WindowConsumed = (rateInfo.tokenWindowConsumed * rateInfo.stabl3Window) / rateInfo.tokenWindow;
+        if (amountStabl3Converted + stabl3WindowConsumed <= rateInfo.stabl3Window) {
+            amountToken = (amountStabl3Converted * rateInfo.tokenWindow) / rateInfo.stabl3Window;
+        }
+        else {
+            uint256 amountStabl3ToConsider = rateInfo.stabl3Window - stabl3WindowConsumed;
 
-        uint256 amountToken = (_amountStabl3 * rate) / 10 ** 18;
+            if (amountStabl3ToConsider != 0) {
+                amountToken = (amountStabl3ToConsider * rateInfo.tokenWindow) / rateInfo.stabl3Window;
 
-        rate = getRateImpact(_amountStabl3, amountToken);
+                amountStabl3Converted -= amountStabl3ToConsider;
+            }
 
-        amountToken = (_amountStabl3 * rate) / 10 ** 18;
+            uint256 tokenWindowToConsider = rateInfo.tokenWindow + _compoundSingle(rateInfo.tokenWindow, rateInfo.compoundPercentage);
 
-        amountToken /= 10 ** (18 - _token.decimals());
+            uint256 stabl3WindowToConsider = rateInfo.stabl3Window - _compoundSingle(rateInfo.stabl3Window, rateInfo.compoundPercentage);
+
+            while (amountStabl3Converted > 0) {
+                if (amountStabl3Converted > stabl3WindowToConsider) {
+                    amountToken += tokenWindowToConsider;
+
+                    amountStabl3Converted -= stabl3WindowToConsider;
+
+                    tokenWindowToConsider += _compoundSingle(tokenWindowToConsider, rateInfo.compoundPercentage);
+
+                    stabl3WindowToConsider -= _compoundSingle(stabl3WindowToConsider, rateInfo.compoundPercentage);
+                }
+                else {
+                    amountToken += (amountStabl3Converted * tokenWindowToConsider) / stabl3WindowToConsider;
+
+                    amountStabl3Converted = 0;
+                }
+            }
+        }
+
+        if (_token.decimals() < 18) {
+            amountToken /= 10 ** (18 - _token.decimals());
+        }
 
         return amountToken;
     }
@@ -230,7 +324,7 @@ contract Treasury is Ownable {
         uint256 _amountTokenROI,
         uint256 _amountTokenHQ,
         bool _isIncrease
-    ) external lock permission {
+    ) external lock permission reserved(_token) {
         if (_isIncrease) {
             getTreasuryPool[_type][_token] += _amountTokenTreasury;
             getROIPool[_type][_token] += _amountTokenROI;
@@ -243,15 +337,59 @@ contract Treasury is Ownable {
         }
     }
 
-    function updateRate() public lock permission {
-        uint256 rate = getRate();
+    function updateRate(IERC20 _token, uint256 _amountTokenTotal) public lock permission reserved(_token) {
+        uint256 amountTokenConverted = _amountTokenTotal;
+        if (_token.decimals() < 18) {
+            amountTokenConverted = amountTokenConverted * (10 ** (18 - _token.decimals()));
+        }
+
+        if (amountTokenConverted + rateInfo.tokenWindowConsumed > rateInfo.tokenWindow) {
+            uint256 amountTokenToConsider = rateInfo.tokenWindow - rateInfo.tokenWindowConsumed;
+
+            if (amountTokenToConsider != 0) {
+                amountTokenConverted -= amountTokenToConsider;
+            }
+
+            uint256 rateToConsider = rateInfo.rate + _compoundSingle(rateInfo.rate, rateInfo.compoundPercentage);
+
+            uint256 tokenWindowToConsider = rateInfo.tokenWindow + _compoundSingle(rateInfo.tokenWindow, rateInfo.compoundPercentage);
+
+            uint256 stabl3WindowToConsider = rateInfo.stabl3Window - _compoundSingle(rateInfo.stabl3Window, rateInfo.compoundPercentage);
+
+            uint256 tokenWindowConsumedToConsider;
+
+            while (amountTokenConverted > 0) {
+                if (amountTokenConverted > tokenWindowToConsider) {
+                    amountTokenConverted -= tokenWindowToConsider;
+
+                    rateToConsider += _compoundSingle(rateToConsider, rateInfo.compoundPercentage);
+
+                    tokenWindowToConsider += _compoundSingle(tokenWindowToConsider, rateInfo.compoundPercentage);
+
+                    stabl3WindowToConsider -= _compoundSingle(stabl3WindowToConsider, rateInfo.compoundPercentage);
+                }
+                else {
+                    tokenWindowConsumedToConsider = amountTokenConverted;
+
+                    amountTokenConverted = 0;
+                }
+            }
+
+            rateInfo.rate = rateToConsider;
+
+            rateInfo.tokenWindow = tokenWindowToConsider;
+
+            rateInfo.stabl3Window = stabl3WindowToConsider;
+
+            rateInfo.tokenWindowConsumed = tokenWindowConsumedToConsider;
+        }
 
         uint256 reserves = getReserves();
 
-        emit Rate(rate, reserves, block.timestamp);
+        emit Rate(rateInfo.rate, reserves, block.timestamp);
     }
 
-    function delegateApprove(IERC20 _token, address _spender, bool _isApprove) public onlyOwner {
+    function delegateApprove(IERC20 _token, address _spender, bool _isApprove) public reserved(_token) onlyOwner {
         if (_isApprove) {
             SafeERC20.safeApprove(_token, _spender, MAX_INT);
         }
@@ -268,6 +406,22 @@ contract Treasury is Ownable {
         SafeERC20.safeTransfer(_token, owner(), _token.balanceOf(address(this)));
     }
 
+    function _compoundSingle(uint256 _principal, uint256 _ratio) internal pure returns (uint256) {
+        uint256 accruedAmount = _principal.mul(_ratio).div(10 ** 18);
+
+        return accruedAmount;
+    }
+
+    function _compound(uint256 _principal, uint256 _ratio, uint256 _exponent) internal pure returns (uint256) {
+        if (_exponent == 0) {
+            return 0;
+        }
+
+        uint256 accruedAmount = ABDKMath64x64.mulu(ABDKMath64x64.pow(ABDKMath64x64.add(ABDKMath64x64.fromUInt(1), ABDKMath64x64.divu(_ratio,10**18)), _exponent), _principal);
+
+        return accruedAmount.sub(_principal);
+    }
+
     // modifiers
 
     modifier lock() {
@@ -279,6 +433,11 @@ contract Treasury is Ownable {
 
     modifier permission() {
         require(permitted[msg.sender] || msg.sender == owner(), "Treasury: Not permitted");
+        _;
+    }
+
+    modifier reserved(IERC20 _token) {
+        require(isReservedToken[_token], "Treasury: Not a reserved token");
         _;
     }
 }

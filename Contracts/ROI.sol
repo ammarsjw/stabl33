@@ -145,7 +145,7 @@ contract ROI is Ownable {
         emit APR(currentAPR, reserves, block.timestamp);
     }
 
-    function delegateApprove(IERC20 _token, address _spender, bool _isApprove) public onlyOwner {
+    function delegateApprove(IERC20 _token, address _spender, bool _isApprove) public reserved(_token) onlyOwner {
         if (_isApprove) {
             SafeERC20.safeApprove(_token, _spender, MAX_INT);
         }
@@ -173,6 +173,11 @@ contract ROI is Ownable {
 
     modifier permission() {
         require(permitted[msg.sender] || msg.sender == owner(), "ROI: Not permitted");
+        _;
+    }
+    
+    modifier reserved(IERC20 _token) {
+        require(treasury.isReservedToken(_token), "ROI: Not a reserved token");
         _;
     }
 }

@@ -17,8 +17,6 @@ interface ITreasury {
 
     function updateHQ(address _HQ) external;
 
-    function provideInitialSupply(uint256 _amountStabl3) external;
-
     function updatePermission(address _contractAddress, bool _state) external;
 
     function updateReservedToken(IERC20 _token, uint256 _decimals, bool _state) external;
@@ -29,11 +27,15 @@ interface ITreasury {
 
     function sumOfAllPools(uint8 _type, IERC20 _token) external view returns (uint256);
 
+    function circulatingSupply() external view returns (uint256);
+
+    function provideInitialTreasurySupply(uint256 _amountStabl3) external;
+
     function getReserves() external view returns (uint256);
 
     function getRate() external view returns (uint256);
 
-    function getRateImpact(uint256 _amountStabl3Converted, uint256 _amountTokenConverted) external view returns (uint256);
+    function getRateImpact(IERC20 _token, uint256 _amountToken) external view returns (uint256);
 
     function getAmountOut(IERC20 _token, uint256 _amountToken) external view returns (uint256);
 
@@ -48,7 +50,7 @@ interface ITreasury {
         bool _isIncrease
     ) external;
 
-    function updateRate() external;
+    function updateRate(IERC20 _token, uint256 _amountTokenTotal) external;
 
     function delegateApprove(IERC20 _token, address _spender, bool _isApprove) external;
 

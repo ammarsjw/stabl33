@@ -29,13 +29,14 @@ contract Stabl3Staking is Ownable {
     uint256[] public ROIPercentages;
     uint256[] public HQPercentages;
 
-    uint256 public ROIFeePercentage;
+    uint256 public unstakeFeePercentage;
 
-    uint256 maxPoolPercentage;
+    uint256 public maxPoolPercentage;
 
     uint256 oneDayTime;
     uint256[] public lockTimes;
 
+    uint256 public lendingStabl3Percentage;
     uint256 public lendingStabl3ClaimTime;
 
     bool public stakeState;
@@ -54,7 +55,7 @@ contract Stabl3Staking is Ownable {
         uint256 rewardWithdrawTimeLast;
         bool isLending;
         bool isClaimedLendingStabl3;
-        uint256 amountClaimedLendingStabl3;
+        uint256 amountLendingStabl3;
     }
 
     // mappings
@@ -70,9 +71,13 @@ contract Stabl3Staking is Ownable {
 
     event UpdatedHQ(address newHQ, address oldHQ);
 
-    event UpdatedROIFeePercentage(uint256 newROIFeePercentage, uint256 oldROIFeePercentage);
+    event UpdatedUnstakeFeePercentage(uint256 newUnstakeFeePercentage, uint256 oldUnstakeFeePercentage);
 
-    event UpdatedRewardPercentage(uint256 newRewardPercentage, uint256 oldRewardPercentage); 
+    event UpdatedLockTimes(uint256[4] newLockTimes, uint256[] oldLockTimes);
+
+    event UpdatedLendingStabl3Percentage(uint256 newLendingStabl3Percentage, uint256 oldLendingStabl3Percentage);
+
+    event UpdatedLendingStabl3ClaimTime(uint256 newLendingStabl3ClaimTime, uint256 oldLendingStabl3ClaimTime);
 
     event Staked(address indexed user, uint256 index, IERC20 token, uint256 amountToken, uint8 stakingType, bool isLend);
 
@@ -95,13 +100,14 @@ contract Stabl3Staking is Ownable {
         ROIPercentages = [0, 175];
         HQPercentages = [25, 25];
 
-        ROIFeePercentage = 50;
+        unstakeFeePercentage = 50;
 
         maxPoolPercentage = 700;
 
         oneDayTime = 86400;
         lockTimes = [7776000, 15552000, 23328000, 31104000];   // 3, 6, 9 and 12 months time in seconds
 
+        lendingStabl3Percentage = 200;
         lendingStabl3ClaimTime = 2592000;
     }
 
@@ -138,10 +144,10 @@ contract Stabl3Staking is Ownable {
         HQPercentages = _HQPercentages;
     }
 
-    function updateROIFeePercentage(uint256 _ROIFeePercentage) external onlyOwner {
-        require(ROIFeePercentage != _ROIFeePercentage, "Stabl3Staking: Exchange Fee is already this value");
-        emit UpdatedROIFeePercentage(_ROIFeePercentage, ROIFeePercentage);
-        ROIFeePercentage = _ROIFeePercentage;
+    function updateUnstakeFeePercentage(uint256 _unstakeFeePercentage) external onlyOwner {
+        require(unstakeFeePercentage != _unstakeFeePercentage, "Stabl3Staking: Unstake Fee is already this value");
+        emit UpdatedUnstakeFeePercentage(_unstakeFeePercentage, unstakeFeePercentage);
+        unstakeFeePercentage = _unstakeFeePercentage;
     }
 
     function updateMaxPoolPercentage(uint256 _maxPoolPercentage) external onlyOwner {
@@ -149,6 +155,23 @@ contract Stabl3Staking is Ownable {
         maxPoolPercentage = _maxPoolPercentage;
     }
 
+    function updateLockTimes(uint256[4] memory _lockTimes) external onlyOwner {
+        emit UpdatedLockTimes(_lockTimes, lockTimes);
+        lockTimes = _lockTimes;
+    }
+
+    function updateLendingStabl3Percentage(uint256 _lendingStabl3Percentage) external onlyOwner {
+        require(lendingStabl3Percentage != _lendingStabl3Percentage, "Stabl3Staking: Lending Stabl3 Percentage is already this value");
+        emit UpdatedLendingStabl3Percentage(_lendingStabl3Percentage, lendingStabl3Percentage);
+        lendingStabl3Percentage = _lendingStabl3Percentage;
+    }
+
+    function updateLendingStabl3ClaimTime(uint256 _lendingStabl3ClaimTime) external onlyOwner {
+        require(lendingStabl3ClaimTime != _lendingStabl3ClaimTime, "Stabl3Staking: Lending Stabl3 Claim Time is already this value");
+        emit UpdatedLendingStabl3ClaimTime(_lendingStabl3ClaimTime, lendingStabl3ClaimTime);
+        lendingStabl3ClaimTime = _lendingStabl3ClaimTime;
+    }
+    
     function updateStakeState(bool state) external onlyOwner {
         require(stakeState != state, "Stabl3Staking: Stake State is already of the value 'state'");
         stakeState = state;
@@ -190,9 +213,8 @@ contract Stabl3Staking is Ownable {
 
         maxPool = maxPool.mul(maxPoolPercentage).div(1000);
 
-        uint256 decimalsToken = _token.decimals();
-        if (decimalsToken < 18) {
-            _amountToken = _amountToken.mul(10 ** (18 - decimalsToken));
+        if (_token.decimals() < 18) {
+            _amountToken = _amountToken.mul(10 ** (18 - _token.decimals()));
         }
 
         bool isValid = (currentPool + _amountToken) <= maxPool;
@@ -205,6 +227,9 @@ contract Stabl3Staking is Ownable {
         require(_amountToken > 0, "Stabl3Staking: Amount should be greater than zero");
         require(1 <= _stakingType && _stakingType <= 4, "Stabl3Staking: Incorrect staking type");
         require(validatePool(_token, _amountToken), "Stabl3Staking: Staking pool limit reached");
+
+        uint256 amountTokenToConsider = _amountToken.mul(200).div(1000);
+        uint256 amountLendingStabl3 = treasury.getAmountOut(_token, amountTokenToConsider);
 
         Staking memory staking = Staking(
             getStakings[msg.sender].length,
@@ -248,7 +273,6 @@ contract Stabl3Staking is Ownable {
         }
 
         emit Staked(staking.user, staking.index, staking.token, staking.amountToken, staking.stakingType, staking.isLending);
-        treasury.updateRate();
         ROI.updateAPR();
     }
 
@@ -271,16 +295,16 @@ contract Stabl3Staking is Ownable {
         stabl3.transferFrom(address(treasury), msg.sender, amountStabl3);
 
         _staking.isClaimedLendingStabl3 = true;
-        _staking.amountClaimedLendingStabl3 = amountStabl3;
+        _staking.amountLendingStabl3 = amountStabl3;
 
         emit ClaimedLendingStabl3(
             _staking.user,
             _staking.index,
             _staking.token,
             amountHQ,
-            _staking.amountClaimedLendingStabl3
+            _staking.amountLendingStabl3
         );
-        treasury.updateRate();
+        // treasury.updateRate();
         ROI.updateAPR();
     }
 
@@ -321,7 +345,6 @@ contract Stabl3Staking is Ownable {
         staking.rewardWithdrawTimeLast = block.timestamp;
 
         emit WithdrewRewards(staking.user, staking.index, reward, staking.rewardWithdrawTimeLast);
-        treasury.updateRate();
         ROI.updateAPR();
     }
 
@@ -373,7 +396,7 @@ contract Stabl3Staking is Ownable {
             numberOfDays
         );
 
-        uint256 fee = staking.amountToken.mul(ROIFeePercentage).div(1000);
+        uint256 fee = staking.amountToken.mul(unstakeFeePercentage).div(1000);
 
         uint256 amountTokenWithFee = staking.amountToken - fee;
 
@@ -408,7 +431,6 @@ contract Stabl3Staking is Ownable {
             staking.stakingType,
             staking.isLending
         );
-        treasury.updateRate();
         ROI.updateAPR();
     }
 

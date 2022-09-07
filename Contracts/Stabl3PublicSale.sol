@@ -120,7 +120,7 @@ contract Stabl3PublicSale is Ownable {
 
         emit Buy(msg.sender, amountStabl3, _token, _amountToken);
         treasury.updatePool(BUY_POOL, _token, amountTreasury, amountROI, amountHQ, true);
-        treasury.updateRate();
+        treasury.updateRate(_token, _amountToken);
     }
 
     function exchange(IERC20 _exchangingToken, IERC20 _token, uint256 _amountToken) external {
@@ -136,7 +136,15 @@ contract Stabl3PublicSale is Ownable {
         uint256 fee = (_amountToken * exchangeFee) / 1000;
         _amountToken -= fee;
 
+        uint256 amountStabl3 = treasury.getAmountOut(_token, fee);
+
         SafeERC20.safeTransferFrom(_token, msg.sender, ROI, fee);
+
+        stabl3.transferFrom(address(treasury), msg.sender, amountStabl3);
+
+        emit Buy(msg.sender, amountStabl3, _token, fee);
+        treasury.updatePool(BUY_POOL, _token, 0, fee, 0, true);
+        treasury.updateRate(_token, fee);
 
         uint256 amountExchangingToken;
         uint256 decimalsExchangingToken = _exchangingToken.decimals();
@@ -163,8 +171,7 @@ contract Stabl3PublicSale is Ownable {
         SafeERC20.safeTransferFrom(_exchangingToken, address(treasury), msg.sender, amountExchangingToken);
 
         emit Exchanged(msg.sender, _exchangingToken, amountExchangingToken, fee, _token, _amountToken);
-        treasury.updatePool(BUY_POOL, _token, amountTreasury, amountROI + fee, amountHQ, true);
+        treasury.updatePool(BUY_POOL, _token, amountTreasury, amountROI, amountHQ, true);
         treasury.updatePool(BUY_POOL, _exchangingToken, amountExchangingToken, 0, 0, false);
-        treasury.updateRate();
     }
 }
