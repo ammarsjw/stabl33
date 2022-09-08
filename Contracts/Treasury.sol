@@ -18,6 +18,11 @@ contract Treasury is Ownable {
     uint8 private constant BORROW_POOL = 4;
     uint8 private constant EXCHANGE_POOL = 5;
 
+    uint8 private constant STAKE_REWARD_DISTRIBUTED = 6;
+    uint8 private constant LEND_REWARD_DISTRIBUTED = 7;
+
+    uint8 private constant COLLATERAL_STABL3_POOL = 8;
+
     address public ROI;
     address public HQ;
 
@@ -128,7 +133,7 @@ contract Treasury is Ownable {
         return allReservedTokens.length;
     }
 
-    function allPools(uint8 _type, IERC20 _token) external view reserved(_token) returns (uint256, uint256, uint256) {
+    function allPools(uint8 _type, IERC20 _token) external view returns (uint256, uint256, uint256) {
         return (
             getTreasuryPool[_type][_token],
             getROIPool[_type][_token],
@@ -136,7 +141,7 @@ contract Treasury is Ownable {
         );
     }
 
-    function sumOfAllPools(uint8 _type, IERC20 _token) external view reserved(_token) returns (uint256) {
+    function sumOfAllPools(uint8 _type, IERC20 _token) external view returns (uint256) {
         return getTreasuryPool[_type][_token] + getROIPool[_type][_token] + getHQPool[_type][_token];
     }
 
@@ -322,7 +327,7 @@ contract Treasury is Ownable {
         uint256 _amountTokenROI,
         uint256 _amountTokenHQ,
         bool _isIncrease
-    ) external lock permission reserved(_token) {
+    ) external lock permission {
         if (_isIncrease) {
             getTreasuryPool[_type][_token] += _amountTokenTreasury;
             getROIPool[_type][_token] += _amountTokenROI;
