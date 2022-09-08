@@ -74,16 +74,14 @@ contract ROI is Ownable {
     }
 
     function getReserves() public view returns (uint256) {
-        IERC20 reservedToken;
         uint256 totalReserves;
-        uint256 amount;
-        uint256 decimals;
-        for (uint256 i = 0 ; i < treasury.allReservedTokensLength() ; i++) {
-            reservedToken = treasury.allReservedTokens(i);
-            if (treasury.isReservedToken(reservedToken)) {
-                amount = reservedToken.balanceOf(address(this));
 
-                decimals = reservedToken.decimals();
+        for (uint256 i = 0 ; i < treasury.allReservedTokensLength() ; i++) {
+            IERC20 reservedToken = treasury.allReservedTokens(i);
+            if (treasury.isReservedToken(reservedToken)) {
+                uint256 amount = reservedToken.balanceOf(address(this));
+
+                uint256 decimals = reservedToken.decimals();
 
                 if (decimals < 18) {
                     amount *= 10 ** (18 - decimals);
@@ -103,18 +101,14 @@ contract ROI is Ownable {
         uint256 totalStakedAmount;
         uint256 totalLendedAmount;
 
-        IERC20 reservedToken;
-        uint256 decimalsReservedToken;
-        uint256 stakedAmount;
-        uint256 lendedAmount;
         for (uint256 i = 0 ; i < treasury.allReservedTokensLength() ; i++) {
-            reservedToken = treasury.allReservedTokens(i);
+            IERC20 reservedToken = treasury.allReservedTokens(i);
             if (treasury.isReservedToken(reservedToken)) {
-                stakedAmount = treasury.sumOfAllPools(STAKE_POOL, reservedToken);
-                lendedAmount = treasury.getTreasuryPool(LEND_POOL, reservedToken);
+                uint256 stakedAmount = treasury.sumOfAllPools(STAKE_POOL, reservedToken);
+                uint256 lendedAmount = treasury.getTreasuryPool(LEND_POOL, reservedToken);
                 lendedAmount += treasury.getHQPool(LEND_POOL, reservedToken);
 
-                decimalsReservedToken = reservedToken.decimals();
+                uint256 decimalsReservedToken = reservedToken.decimals();
 
                 if (decimalsReservedToken < 18) {
                     stakedAmount *= 10 ** (18 - decimalsReservedToken);

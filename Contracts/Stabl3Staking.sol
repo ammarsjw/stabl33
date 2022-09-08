@@ -182,23 +182,16 @@ contract Stabl3Staking is Ownable {
         uint256 maxPool;
         uint256 currentPool;
 
-        IERC20 reservedToken;
-        uint256 decimalsReservedToken;
-        uint256 boughtAmountReservedToken;
-        uint256 bondedAmountReservedToken;
-
-        uint256 stakedAmountReservedToken;
-        uint256 lendedAmountReservedToken;
         for (uint256 i = 0 ; i < treasury.allReservedTokensLength() ; i++) {
-            reservedToken = treasury.allReservedTokens(i);
+            IERC20 reservedToken = treasury.allReservedTokens(i);
             if (treasury.isReservedToken(reservedToken)) {
-                boughtAmountReservedToken = treasury.getTreasuryPool(BUY_POOL, reservedToken);
-                bondedAmountReservedToken = treasury.getTreasuryPool(BOND_POOL, reservedToken);
+                uint256 boughtAmountReservedToken = treasury.getTreasuryPool(BUY_POOL, reservedToken);
+                uint256 bondedAmountReservedToken = treasury.getTreasuryPool(BOND_POOL, reservedToken);
 
-                stakedAmountReservedToken = treasury.sumOfAllPools(STAKE_POOL, reservedToken);
-                lendedAmountReservedToken = treasury.sumOfAllPools(LEND_POOL, reservedToken);
+                uint256 stakedAmountReservedToken = treasury.sumOfAllPools(STAKE_POOL, reservedToken);
+                uint256 lendedAmountReservedToken = treasury.sumOfAllPools(LEND_POOL, reservedToken);
 
-                decimalsReservedToken = reservedToken.decimals();
+                uint256 decimalsReservedToken = reservedToken.decimals();
 
                 if (decimalsReservedToken < 18) {
                     boughtAmountReservedToken = boughtAmountReservedToken * (10 ** (18 - decimalsReservedToken));
@@ -340,40 +333,57 @@ contract Stabl3Staking is Ownable {
         ROI.updateAPR();
     }
 
+    function getAmountRewardSingle(address _user, uint256 _index) external view stakeActive returns (uint256) {
+        uint256 timestampToConsider = block.timestamp;
+
+        uint256 reward = _getAmountRewardSingle(_user, _index, timestampToConsider);
+
+        return reward;
+    }
+
+    function _getAmountRewardSingle(address _user, uint256 _index, uint256 _timestamp) internal view returns (uint256) {
+        uint256 reward;
+
+        Staking memory staking = getStakings[_user][_index];
+
+        if (staking.amountTokenStaked > 0) {
+            uint256 numberOfMinutes = (_timestamp - staking.rewardWithdrawTimeLast) / oneMinuteTime;
+
+            if (numberOfMinutes > 0) {
+                uint256 ratio = ROI.getAPR() / 100;
+
+                uint256 rewardTotal = _compound(
+                    staking.amountTokenStaked,
+                    ratio,
+                    1
+                );
+
+                reward = rewardTotal / 31536000 * oneMinuteTime * numberOfMinutes;
+            }
+        }
+
+        return reward;
+    }
+
     function getAmountRewardAll(address _user, bool _isLending) public view stakeActive returns (uint256) {
         uint256 totalReward;
 
-        Staking memory staking;
-        uint256 reward;
-        uint256 decimals;
+        uint256 timestampToConsider = block.timestamp;
+
         for (uint256 i = 0 ; i < getStakings[_user].length ; i++) {
-            staking = getStakings[_user][i];
+            Staking memory staking = getStakings[_user][i];
 
             if (staking.isLending == _isLending) {
-                if (staking.amountTokenStaked > 0) {
-                    uint256 endTime = block.timestamp;
+                uint256 reward = _getAmountRewardSingle(_user, i, timestampToConsider);
 
-                    uint256 numberOfMinutes = (endTime - staking.rewardWithdrawTimeLast) / oneMinuteTime;
+                if (reward > 0) {
+                    uint256 decimals = staking.token.decimals();
 
-                    if (numberOfMinutes > 0) {
-                        uint256 ratio = ROI.getAPR() / 100;
-
-                        uint256 rewardTotal = _compound(
-                            staking.amountTokenStaked,
-                            ratio,
-                            1
-                        );
-
-                        reward = rewardTotal / 31536000 * oneMinuteTime * numberOfMinutes;
-
-                        decimals = staking.token.decimals();
-
-                        if (decimals < 18) {
-                            reward *= 10 ** (18 - decimals);
-                        }
-
-                        totalReward += reward;
+                    if (decimals < 18) {
+                        reward *= 10 ** (18 - decimals);
                     }
+
+                    totalReward += reward;
                 }
             }
         }
@@ -385,13 +395,19 @@ contract Stabl3Staking is Ownable {
         uint256 totalAmountTokenStaked;
 
         Staking memory staking;
-        uint256 amountTokenStaked;
+
         for (uint256 i = 0 ; i < getStakings[_user].length ; i++) {
             staking = getStakings[_user][i];
 
             if (staking.isLending == _isLending) {
                 if (staking.amountTokenStaked > 0) {
-                    amountTokenStaked = staking.amountTokenStaked;
+                    uint256 amountTokenStaked = staking.amountTokenStaked;
+
+                    uint256 decimals = staking.token.decimals();
+
+                    if (decimals < 18) {
+                        amountTokenStaked *= 10 ** (18 - decimals);
+                    }
 
                     totalAmountTokenStaked += amountTokenStaked;
                 }
@@ -402,42 +418,15 @@ contract Stabl3Staking is Ownable {
     }
 
     // TODO match naming convention
-    function getWithdrawableRewardSingle(address _user, uint256 _index) public view stakeActive returns (uint256) {
-        Staking memory staking = getStakings[_user][_index];
-
-        if (staking.amountTokenStaked == 0) {
-            return 0;
-        }
-
-        uint256 endTime = block.timestamp;
-
-        uint256 numberOfMinutes = (endTime - staking.rewardWithdrawTimeLast) / oneMinuteTime;
-
-        if (numberOfMinutes == 0) {
-            return 0;
-        }
-
-        uint256 ratio = ROI.getAPR() / 100;
-
-        uint256 rewardTotal = _compound(
-            staking.amountTokenStaked,
-            ratio,
-            1
-        );
-
-        uint256 reward = rewardTotal / 31536000 * oneMinuteTime * numberOfMinutes;
-
-        return reward;
-    }
-
-    // TODO match naming convention
     function withdrawRewardSingle(uint256 _index) external {
         Staking storage staking = getStakings[msg.sender][_index];
 
         require(staking.amountTokenStaked > 0, "Stabl3Staking: No such stake or lend exists");
         require(staking.status, "Stabl3Staking: Already unstaked");
 
-        uint256 reward = getWithdrawableRewardSingle(msg.sender, _index);
+        uint256 timestampToConsider = block.timestamp;
+
+        uint256 reward = _getAmountRewardSingle(msg.sender, _index, timestampToConsider);
 
         uint8 poolType;
         if (staking.isLending) {
@@ -498,22 +487,20 @@ contract Stabl3Staking is Ownable {
                 treasury.updatePool(_poolType, _returnToken, amountReturnTokenTreasury, 0, 0, false);
             }
 
-            IERC20 reservedToken;
-            uint256 amountReservedTokenTreasury;
-            uint256 amountReturnTokenConverted;
-            uint256 decimalsReservedToken;
             uint256 decimalsReturnToken = _returnToken.decimals();
+
             for (uint256 i = 0 ; i < treasury.allReservedTokensLength() ; i++) {
-                reservedToken = treasury.allReservedTokens(i);
+                IERC20 reservedToken = treasury.allReservedTokens(i);
                 if (
                     treasury.isReservedToken(reservedToken) &&
                     reservedToken != _returnToken &&
                     _amountReturnToken != 0
                 ) {
-                    amountReservedTokenTreasury = reservedToken.balanceOf(address(treasury));
+                    uint256 amountReservedTokenTreasury = reservedToken.balanceOf(address(treasury));
 
-                    decimalsReservedToken = reservedToken.decimals();
+                    uint256 decimalsReservedToken = reservedToken.decimals();
 
+                    uint256 amountReturnTokenConverted;
                     if (decimalsReturnToken > decimalsReservedToken) {
                         amountReturnTokenConverted = _amountReturnToken / (10 ** (decimalsReturnToken - decimalsReservedToken));
                     }

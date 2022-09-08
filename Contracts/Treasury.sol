@@ -154,16 +154,15 @@ contract Treasury is Ownable {
 
     function getReserves() public view returns (uint256) {
         uint256 totalReserves;
-        uint256 amount;
-        uint256 decimals;
+
         for (uint256 i = 0 ; i < allReservedTokens.length ; i++) {
             if (isReservedToken[allReservedTokens[i]]) {
-                amount = allReservedTokens[i].balanceOf(address(this));
+                uint256 amount = allReservedTokens[i].balanceOf(address(this));
 
                 amount += allReservedTokens[i].balanceOf(ROI);
                 amount += allReservedTokens[i].balanceOf(HQ);
 
-                decimals = allReservedTokens[i].decimals();
+                uint256 decimals = allReservedTokens[i].decimals();
 
                 if (decimals < 18) {
                     amount *= 10 ** (18 - decimals);
