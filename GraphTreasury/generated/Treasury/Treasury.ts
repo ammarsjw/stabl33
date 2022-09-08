@@ -166,6 +166,38 @@ export class Treasury__allPoolsResult {
   }
 }
 
+export class Treasury__rateInfoResult {
+  value0: BigInt;
+  value1: BigInt;
+  value2: BigInt;
+  value3: BigInt;
+  value4: BigInt;
+
+  constructor(
+    value0: BigInt,
+    value1: BigInt,
+    value2: BigInt,
+    value3: BigInt,
+    value4: BigInt
+  ) {
+    this.value0 = value0;
+    this.value1 = value1;
+    this.value2 = value2;
+    this.value3 = value3;
+    this.value4 = value4;
+  }
+
+  toMap(): TypedMap<string, ethereum.Value> {
+    let map = new TypedMap<string, ethereum.Value>();
+    map.set("value0", ethereum.Value.fromUnsignedBigInt(this.value0));
+    map.set("value1", ethereum.Value.fromUnsignedBigInt(this.value1));
+    map.set("value2", ethereum.Value.fromUnsignedBigInt(this.value2));
+    map.set("value3", ethereum.Value.fromUnsignedBigInt(this.value3));
+    map.set("value4", ethereum.Value.fromUnsignedBigInt(this.value4));
+    return map;
+  }
+}
+
 export class Treasury extends ethereum.SmartContract {
   static bind(address: Address): Treasury {
     return new Treasury("Treasury", address);
@@ -280,6 +312,29 @@ export class Treasury extends ethereum.SmartContract {
     let result = super.tryCall(
       "allReservedTokensLength",
       "allReservedTokensLength():(uint256)",
+      []
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
+  circulatingSupply(): BigInt {
+    let result = super.call(
+      "circulatingSupply",
+      "circulatingSupply():(uint256)",
+      []
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_circulatingSupply(): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "circulatingSupply",
+      "circulatingSupply():(uint256)",
       []
     );
     if (result.reverted) {
@@ -422,16 +477,13 @@ export class Treasury extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
-  getRateImpact(
-    _amountStabl3Converted: BigInt,
-    _amountTokenConverted: BigInt
-  ): BigInt {
+  getRateImpact(_token: Address, _amountToken: BigInt): BigInt {
     let result = super.call(
       "getRateImpact",
-      "getRateImpact(uint256,uint256):(uint256)",
+      "getRateImpact(address,uint256):(uint256)",
       [
-        ethereum.Value.fromUnsignedBigInt(_amountStabl3Converted),
-        ethereum.Value.fromUnsignedBigInt(_amountTokenConverted)
+        ethereum.Value.fromAddress(_token),
+        ethereum.Value.fromUnsignedBigInt(_amountToken)
       ]
     );
 
@@ -439,15 +491,15 @@ export class Treasury extends ethereum.SmartContract {
   }
 
   try_getRateImpact(
-    _amountStabl3Converted: BigInt,
-    _amountTokenConverted: BigInt
+    _token: Address,
+    _amountToken: BigInt
   ): ethereum.CallResult<BigInt> {
     let result = super.tryCall(
       "getRateImpact",
-      "getRateImpact(uint256,uint256):(uint256)",
+      "getRateImpact(address,uint256):(uint256)",
       [
-        ethereum.Value.fromUnsignedBigInt(_amountStabl3Converted),
-        ethereum.Value.fromUnsignedBigInt(_amountTokenConverted)
+        ethereum.Value.fromAddress(_token),
+        ethereum.Value.fromUnsignedBigInt(_amountToken)
       ]
     );
     if (result.reverted) {
@@ -504,31 +556,20 @@ export class Treasury extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
-  initialRate(): BigInt {
-    let result = super.call("initialRate", "initialRate():(uint256)", []);
+  initialTreasurySupply(): BigInt {
+    let result = super.call(
+      "initialTreasurySupply",
+      "initialTreasurySupply():(uint256)",
+      []
+    );
 
     return result[0].toBigInt();
   }
 
-  try_initialRate(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall("initialRate", "initialRate():(uint256)", []);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
-  initialSupply(): BigInt {
-    let result = super.call("initialSupply", "initialSupply():(uint256)", []);
-
-    return result[0].toBigInt();
-  }
-
-  try_initialSupply(): ethereum.CallResult<BigInt> {
+  try_initialTreasurySupply(): ethereum.CallResult<BigInt> {
     let result = super.tryCall(
-      "initialSupply",
-      "initialSupply():(uint256)",
+      "initialTreasurySupply",
+      "initialTreasurySupply():(uint256)",
       []
     );
     if (result.reverted) {
@@ -593,6 +634,43 @@ export class Treasury extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toBoolean());
+  }
+
+  rateInfo(): Treasury__rateInfoResult {
+    let result = super.call(
+      "rateInfo",
+      "rateInfo():(uint256,uint256,uint256,uint256,uint256)",
+      []
+    );
+
+    return new Treasury__rateInfoResult(
+      result[0].toBigInt(),
+      result[1].toBigInt(),
+      result[2].toBigInt(),
+      result[3].toBigInt(),
+      result[4].toBigInt()
+    );
+  }
+
+  try_rateInfo(): ethereum.CallResult<Treasury__rateInfoResult> {
+    let result = super.tryCall(
+      "rateInfo",
+      "rateInfo():(uint256,uint256,uint256,uint256,uint256)",
+      []
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(
+      new Treasury__rateInfoResult(
+        value[0].toBigInt(),
+        value[1].toBigInt(),
+        value[2].toBigInt(),
+        value[3].toBigInt(),
+        value[4].toBigInt()
+      )
+    );
   }
 
   stabl3(): Address {
@@ -704,20 +782,20 @@ export class DelegateApproveCall__Outputs {
   }
 }
 
-export class ProvideInitialLiquidityCall extends ethereum.Call {
-  get inputs(): ProvideInitialLiquidityCall__Inputs {
-    return new ProvideInitialLiquidityCall__Inputs(this);
+export class ProvideInitialTreasurySupplyCall extends ethereum.Call {
+  get inputs(): ProvideInitialTreasurySupplyCall__Inputs {
+    return new ProvideInitialTreasurySupplyCall__Inputs(this);
   }
 
-  get outputs(): ProvideInitialLiquidityCall__Outputs {
-    return new ProvideInitialLiquidityCall__Outputs(this);
+  get outputs(): ProvideInitialTreasurySupplyCall__Outputs {
+    return new ProvideInitialTreasurySupplyCall__Outputs(this);
   }
 }
 
-export class ProvideInitialLiquidityCall__Inputs {
-  _call: ProvideInitialLiquidityCall;
+export class ProvideInitialTreasurySupplyCall__Inputs {
+  _call: ProvideInitialTreasurySupplyCall;
 
-  constructor(call: ProvideInitialLiquidityCall) {
+  constructor(call: ProvideInitialTreasurySupplyCall) {
     this._call = call;
   }
 
@@ -726,10 +804,10 @@ export class ProvideInitialLiquidityCall__Inputs {
   }
 }
 
-export class ProvideInitialLiquidityCall__Outputs {
-  _call: ProvideInitialLiquidityCall;
+export class ProvideInitialTreasurySupplyCall__Outputs {
+  _call: ProvideInitialTreasurySupplyCall;
 
-  constructor(call: ProvideInitialLiquidityCall) {
+  constructor(call: ProvideInitialTreasurySupplyCall) {
     this._call = call;
   }
 }
@@ -891,7 +969,7 @@ export class UpdatePoolCall__Inputs {
     return this._call.inputValues[4].value.toBigInt();
   }
 
-  get isIncrease(): boolean {
+  get _isIncrease(): boolean {
     return this._call.inputValues[5].value.toBoolean();
   }
 }
@@ -949,6 +1027,14 @@ export class UpdateRateCall__Inputs {
 
   constructor(call: UpdateRateCall) {
     this._call = call;
+  }
+
+  get _token(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+
+  get _amountTokenTotal(): BigInt {
+    return this._call.inputValues[1].value.toBigInt();
   }
 }
 

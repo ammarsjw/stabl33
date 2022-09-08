@@ -117,7 +117,7 @@ contract Treasury is Ownable {
         emit UpdatedPermission(_contractAddress, _state);
     }
 
-    function updateReservedToken(IERC20 _token, bool _state) public reserved(_token) onlyOwner {
+    function updateReservedToken(IERC20 _token, bool _state) public onlyOwner {
         require(isReservedToken[_token] != _state, "Treasury: Reserved token is already of the value 'state'");
         isReservedToken[_token] = _state;
         allReservedTokens.push(_token);
@@ -387,7 +387,7 @@ contract Treasury is Ownable {
         emit Rate(rateInfo.rate, reserves, block.timestamp);
     }
 
-    function delegateApprove(IERC20 _token, address _spender, bool _isApprove) public reserved(_token) onlyOwner {
+    function delegateApprove(IERC20 _token, address _spender, bool _isApprove) public onlyOwner {
         if (_isApprove) {
             SafeERC20.safeApprove(_token, _spender, MAX_INT);
         }

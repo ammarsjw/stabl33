@@ -350,7 +350,7 @@ contract Stabl3Staking is Ownable {
             uint256 numberOfMinutes = (_timestamp - staking.rewardWithdrawTimeLast) / oneMinuteTime;
 
             if (numberOfMinutes > 0) {
-                uint256 ratio = ROI.getAPR() / 100;
+                uint256 ratio = ROI.getAPR();
 
                 uint256 rewardTotal = _compound(
                     staking.amountTokenStaked,

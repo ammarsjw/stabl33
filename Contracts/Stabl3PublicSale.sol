@@ -143,13 +143,12 @@ contract Stabl3PublicSale is Ownable {
         treasury.updateRate(_token, fee);
 
         uint256 amountExchangingToken;
-        uint256 decimalsExchangingToken = _exchangingToken.decimals();
-        uint256 decimalsToken = _token.decimals();
-        if (decimalsExchangingToken > decimalsToken) {
-            amountExchangingToken = _amountToken * (10 ** (decimalsExchangingToken - decimalsToken));
+
+        if (_exchangingToken.decimals() > _token.decimals()) {
+            amountExchangingToken = _amountToken * (10 ** (_exchangingToken.decimals() - _token.decimals()));
         }
-        else if (decimalsToken > decimalsExchangingToken) {
-            amountExchangingToken = _amountToken / (10 ** (decimalsToken - decimalsExchangingToken));
+        else if (_token.decimals() > _exchangingToken.decimals()) {
+            amountExchangingToken = _amountToken / (10 ** (_token.decimals() - _exchangingToken.decimals()));
         }
         else {
             amountExchangingToken = _amountToken;
