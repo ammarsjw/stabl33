@@ -386,6 +386,9 @@ contract Treasury is Ownable {
 
             rateInfo.tokenWindowConsumed = tokenWindowConsumedToConsider;
         }
+        else {
+            rateInfo.tokenWindowConsumed += amountTokenConverted;
+        }
 
         uint256 reserves = getReserves();
 
