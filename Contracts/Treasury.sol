@@ -166,7 +166,7 @@ contract Treasury is Ownable {
                 decimals = allReservedTokens[i].decimals();
 
                 if (decimals < 18) {
-                    amount = amount * (10 ** (18 - decimals));
+                    amount *= 10 ** (18 - decimals);
                 }
 
                 totalReserves += amount;
@@ -192,7 +192,7 @@ contract Treasury is Ownable {
 
         uint256 amountTokenConverted = _amountToken;
         if (_token.decimals() < 18) {
-            amountTokenConverted = amountTokenConverted * (10 ** (18 - _token.decimals()));
+            amountTokenConverted *= 10 ** (18 - _token.decimals());
         }
 
         uint256 amountTokenToConsider = amountTokenConverted + rateInfo.tokenWindowConsumed;
@@ -222,7 +222,7 @@ contract Treasury is Ownable {
 
         uint256 amountTokenConverted = _amountToken;
         if (_token.decimals() < 18) {
-            amountTokenConverted = amountTokenConverted * (10 ** (18 - _token.decimals()));
+            amountTokenConverted *= (10 ** (18 - _token.decimals()));
         }
 
         uint256 amountStabl3;
@@ -339,7 +339,7 @@ contract Treasury is Ownable {
     function updateRate(IERC20 _token, uint256 _amountTokenTotal) public lock permission reserved(_token) {
         uint256 amountTokenConverted = _amountTokenTotal;
         if (_token.decimals() < 18) {
-            amountTokenConverted = amountTokenConverted * (10 ** (18 - _token.decimals()));
+            amountTokenConverted *= 10 ** (18 - _token.decimals());
         }
 
         if (amountTokenConverted + rateInfo.tokenWindowConsumed > rateInfo.tokenWindow) {

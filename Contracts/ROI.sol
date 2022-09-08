@@ -86,7 +86,7 @@ contract ROI is Ownable {
                 decimals = reservedToken.decimals();
 
                 if (decimals < 18) {
-                    amount = amount * (10 ** (18 - decimals));
+                    amount *= 10 ** (18 - decimals);
                 }
 
                 totalReserves += amount;
@@ -117,8 +117,8 @@ contract ROI is Ownable {
                 decimalsReservedToken = reservedToken.decimals();
 
                 if (decimalsReservedToken < 18) {
-                    stakedAmount = stakedAmount * (10 ** (18 - decimalsReservedToken));
-                    lendedAmount = lendedAmount * (10 ** (18 - decimalsReservedToken));
+                    stakedAmount *= 10 ** (18 - decimalsReservedToken);
+                    lendedAmount *= 10 ** (18 - decimalsReservedToken);
                 }
 
                 totalStakedAmount += stakedAmount;
