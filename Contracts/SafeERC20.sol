@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Unlicense
 
-pragma solidity 0.8.16;
+pragma solidity 0.8.17;
 
 import "./Address.sol";
 import "./IERC20.sol";

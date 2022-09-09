@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GNU GPLv3
 
-pragma solidity 0.8.16;
+pragma solidity 0.8.17;
 
 import "./Ownable.sol";
 import "./SafeMathUpgradeable.sol";
@@ -37,7 +37,7 @@ contract Stabl3Staking is Ownable {
     uint256 public maxPoolPercentage;
 
     uint256 oneMinuteTime;
-    uint256[] public lockTimes;
+    uint256[4] public lockTimes;
 
     uint256 public lendingStabl3Percentage;
     uint256 public lendingStabl3ClaimTime;
@@ -52,6 +52,7 @@ contract Stabl3Staking is Ownable {
         bool status;
         IERC20 token;
         uint256 amountTokenStaked;
+        uint256 amountTokenStakedInitial;
         uint8 stakingType;
         uint256 startTime;
         uint256 rewardWithdrawn;
@@ -77,7 +78,7 @@ contract Stabl3Staking is Ownable {
 
     event UpdatedUnstakeFeePercentage(uint256 newUnstakeFeePercentage, uint256 oldUnstakeFeePercentage);
 
-    event UpdatedLockTimes(uint256[4] newLockTimes, uint256[] oldLockTimes);
+    event UpdatedLockTimes(uint256[4] newLockTimes, uint256[4] oldLockTimes);
 
     event UpdatedLendingStabl3Percentage(uint256 newLendingStabl3Percentage, uint256 oldLendingStabl3Percentage);
 
@@ -86,6 +87,8 @@ contract Stabl3Staking is Ownable {
     event Staked(address indexed user, uint256 index, IERC20 token, uint256 amountToken, uint8 stakingType, bool isLend);
 
     event WithdrewReward(address indexed user, uint256 index, IERC20 token, uint256 reward, uint256 rewardWithdrawTimeLast);
+
+    event WithdrewAmountStaked(address indexed user, uint256 index, IERC20 token, uint256 amountWithdrawn);
 
     event Unstaked(address indexed user, uint256 index, IERC20 token, uint256 amountToken, uint256 reward, uint8 stakingType, bool isLend);
 
@@ -237,6 +240,7 @@ contract Stabl3Staking is Ownable {
             true,
             _token,
             _amountToken,
+            0,
             _stakingType,
             block.timestamp,
             0,
@@ -249,18 +253,14 @@ contract Stabl3Staking is Ownable {
 
         getStakings[msg.sender].push(staking);
 
-        uint256 percentageDistributionIndex;
-        uint8 poolType;
+        uint256 percentageDistributionIndex = 0;
+        uint8 poolType = STAKE_POOL;
         if (_isLending) {
             percentageDistributionIndex = 1;
             poolType = LEND_POOL;
         }
-        else {
-            percentageDistributionIndex = 0;
-            poolType = STAKE_POOL;
-        }
 
-        uint256 amountTreasury = _amountToken.mul(treasuryPercentages[percentageDistributionIndex]).ceilDiv(1000);
+        uint256 amountTreasury = _amountToken.mul(treasuryPercentages[percentageDistributionIndex]).div(1000).add(1);
         SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), amountTreasury);
 
         uint256 amountROI;
@@ -336,22 +336,19 @@ contract Stabl3Staking is Ownable {
         return totalReward;
     }
 
-    function withdrawAmountRewardAll(address _user, bool _isLending) external stakeActive {
+    function withdrawAmountRewardAll(bool _isLending) external stakeActive {
         uint256 timestampToConsider = block.timestamp;
 
-        for (uint256 i = 0 ; i < getStakings[_user].length ; i++) {
-            Staking storage staking = getStakings[_user][i];
+        for (uint256 i = 0 ; i < getStakings[msg.sender].length ; i++) {
+            Staking storage staking = getStakings[msg.sender][i];
 
             if (staking.isLending == _isLending) {
-                uint256 reward = _getAmountRewardSingle(_user, i, timestampToConsider);
+                uint256 reward = _getAmountRewardSingle(msg.sender, i, timestampToConsider);
 
                 if (reward > 0) {
-                    uint8 poolType;
+                    uint8 poolType = STAKE_POOL;
                     if (staking.isLending) {
                         poolType = LEND_POOL;
-                    }
-                    else {
-                        poolType = STAKE_POOL;
                     }
 
                     _evaluateReward(staking.token, reward, poolType);
@@ -401,6 +398,9 @@ contract Stabl3Staking is Ownable {
         }
 
         return totalClaimableStabl3Lending;
+    }
+
+    function _claimStabl3LendingSingle(uint256 _index, uint256 _timestamp) internal {
     }
 
     function claimStabl3LendingAll() external stakeActive {
@@ -454,12 +454,120 @@ contract Stabl3Staking is Ownable {
         return totalAmountTokenStaked;
     }
 
+    function _withdrawAmountStakedSingle(uint256 _index, uint256 _amountToWithdraw) internal {
+        Staking memory staking = getStakings[msg.sender][_index];
+
+        uint256 fee = _amountToWithdraw.mul(unstakeFeePercentage).div(1000);
+
+        uint256 amountToWithdrawWithFee = _amountToWithdraw - fee;
+
+        uint8 poolType = STAKE_POOL;
+        if (staking.isLending) {
+            poolType = LEND_POOL;
+        }
+
+        SafeERC20.safeTransferFrom(staking.token, address(treasury), address(ROI), fee);
+        SafeERC20.safeTransferFrom(staking.token, address(treasury), msg.sender, amountToWithdrawWithFee);
+        treasury.updatePool(poolType, staking.token, amountToWithdrawWithFee + fee, 0, 0, false);
+        treasury.updatePool(poolType, staking.token, 0, fee, 0, true);
+    }
+
+    function withdrawAmountStakedSingle(uint256 _index, uint256 _amountToWithdraw) external stakeActive {
+        Staking storage staking = getStakings[msg.sender][_index];
+
+        require(staking.amountTokenStaked > 0, "Stabl3Staking: No such stake or lend active");
+        require(block.timestamp > staking.startTime + lockTimes[staking.stakingType - 1], "Stabl3Staking: Cannot unstake before end time");
+        require(_amountToWithdraw < staking.amountTokenStaked, "Stabl3Staking: Incorrect amount");
+
+        _withdrawAmountStakedSingle(_index, _amountToWithdraw);
+
+        staking.amountTokenStaked -= _amountToWithdraw;
+
+        emit WithdrewAmountStaked(msg.sender, _index, staking.token, _amountToWithdraw);
+
+        ROI.updateAPR();
+    }
+
+    // function withdrawAmountStakedMultiple(uint256[] memory _indexes, uint256[] memory _amountsToWithdraw) external stakeActive {
+    //     require(_indexes.length == _amountToWithdraw.length, "Stabl3Staking: Incorrect array lengths");
+
+    //     for (uint256 i = 0 ; i < _indexes.length ; i++) {
+    //         Staking storage staking = getStakings[msg.sender][_index];
+    //     }
+    // }
+
+    function unstakeSingle(uint256 _index) external stakeActive {
+        Staking storage staking = getStakings[msg.sender][_index];
+
+        require(staking.status, "Stabl3Staking: Already unstaked");
+        require(staking.amountTokenStaked > 0, "Stabl3Staking: No such stake or lend active");
+        require(block.timestamp > staking.startTime + lockTimes[staking.stakingType - 1], "Stabl3Staking: Cannot unstake before end time");
+
+        uint256 timestampToConsider = block.timestamp;
+
+        if (staking.isLending) {
+            uint256 claimableStabl3Lending = _getClaimableStabl3LendingSingle(msg.sender, _index, timestampToConsider);
+
+            if (claimableStabl3Lending > 0) {
+                stabl3.transferFrom(address(treasury), msg.sender, claimableStabl3Lending);
+
+                staking.isClaimedStabl3Lending = true;
+
+                emit ClaimedLendingStabl3(
+                    staking.user,
+                    staking.index,
+                    staking.token,
+                    staking.amountTokenLending,
+                    staking.amountStabl3Lending
+                );
+                treasury.updatePool(BUY_POOL, staking.token, staking.amountTokenLending, 0, 0, true);
+                treasury.updateRate(staking.token, staking.amountTokenLending);
+                ROI.updateAPR();
+            }
+        }
+
+        _withdrawAmountStakedSingle(_index, staking.amountTokenStaked);
+
+        uint256 reward = _getAmountRewardSingle(msg.sender, _index, timestampToConsider);
+
+        if (reward > 0) {
+            _evaluateReward(staking.token, reward, poolType);
+
+            staking.rewardWithdrawn += reward;
+            staking.rewardWithdrawTimeLast = timestampToConsider;
+
+            emit WithdrewReward(staking.user, staking.index, staking.token, reward, staking.rewardWithdrawTimeLast);
+            ROI.updateAPR();
+        }
+
+        emit Unstaked(
+            staking.user,
+            staking.index,
+            staking.token,
+            staking.amountTokenStaked,
+            staking.rewardWithdrawn,
+            staking.stakingType,
+            staking.isLending
+        );
+
+        staking.status = false;
+        staking.amountTokenStaked = 0;
+
+        ROI.updateAPR();
+    }
+
+    function unstakeMultiple(uint256[] memory _indexes) external stakeActive {
+    }
+
+    // function unstakeAll(bool _isLending) external stakeActive {
+    // }
+
     // TODO different modules different unstakes
     function unstake(uint256 index) external stakeActive {
         Staking storage staking = getStakings[msg.sender][index];
 
-        require(staking.amountTokenStaked > 0, "Stabl3Staking: No such stake or lend exists");
         require(staking.status, "Stabl3Staking: Already unstaked");
+        require(staking.amountTokenStaked > 0, "Stabl3Staking: No such stake or lend exists");
         require(block.timestamp > staking.startTime + lockTimes[staking.stakingType - 1], "Stabl3Staking: Cannot unstake before end time");
 
         uint256 endTime = staking.startTime + lockTimes[staking.stakingType - 1];
@@ -482,12 +590,9 @@ contract Stabl3Staking is Ownable {
             // _claimStabl3Lending(staking);
         }
 
-        uint8 poolType;
+        uint8 poolType = STAKE_POOL;
         if (staking.isLending) {
             poolType = LEND_POOL;
-        }
-        else {
-            poolType = STAKE_POOL;
         }
 
         SafeERC20.safeTransferFrom(staking.token, address(treasury), address(ROI), fee);
@@ -518,7 +623,6 @@ contract Stabl3Staking is Ownable {
         uint256 amountRewardTokenROI = _rewardToken.balanceOf(address(ROI));
 
         if (_amountRewardToken > amountRewardTokenROI) {
-
             if (amountRewardTokenROI != 0) {
                 SafeERC20.safeTransferFrom(_rewardToken, address(ROI), msg.sender, amountRewardTokenROI);
 

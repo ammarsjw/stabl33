@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GNU GPLv3
 
-pragma solidity 0.8.16;
+pragma solidity 0.8.17;
 
 import "./Ownable.sol";
 import "./SafeMathUpgradeable.sol";
@@ -105,7 +105,7 @@ contract Stabl3PublicSale is Ownable {
 
         uint256 amountStabl3 = treasury.getAmountOut(_token, _amountToken);
 
-        uint256 amountTreasury = _amountToken.mul(treasuryPercentage).ceilDiv(1000);
+        uint256 amountTreasury = _amountToken.mul(treasuryPercentage).div(1000).add(1);
         SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), amountTreasury);
 
         uint256 amountROI = _amountToken.mul(ROIPercentage).div(1000);
@@ -154,7 +154,7 @@ contract Stabl3PublicSale is Ownable {
             amountExchangingToken = _amountToken;
         }
 
-        uint256 amountTreasury = _amountToken.mul(treasuryPercentage).ceilDiv(1000);
+        uint256 amountTreasury = _amountToken.mul(treasuryPercentage).div(1000).add(1);
         SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), amountTreasury);
 
         uint256 amountROI = _amountToken.mul(ROIPercentage).div(1000);
