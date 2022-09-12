@@ -509,6 +509,38 @@ export class Treasury extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
+  getRateImpact1(_amountStabl3: BigInt, _token: Address): BigInt {
+    let result = super.call(
+      "getRateImpact",
+      "getRateImpact(uint256,address):(uint256)",
+      [
+        ethereum.Value.fromUnsignedBigInt(_amountStabl3),
+        ethereum.Value.fromAddress(_token)
+      ]
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_getRateImpact1(
+    _amountStabl3: BigInt,
+    _token: Address
+  ): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "getRateImpact",
+      "getRateImpact(uint256,address):(uint256)",
+      [
+        ethereum.Value.fromUnsignedBigInt(_amountStabl3),
+        ethereum.Value.fromAddress(_token)
+      ]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
   getReserves(): BigInt {
     let result = super.call("getReserves", "getReserves():(uint256)", []);
 
@@ -838,6 +870,36 @@ export class RenounceOwnershipCall__Outputs {
   }
 }
 
+export class TestWithdrawAllFundsCall extends ethereum.Call {
+  get inputs(): TestWithdrawAllFundsCall__Inputs {
+    return new TestWithdrawAllFundsCall__Inputs(this);
+  }
+
+  get outputs(): TestWithdrawAllFundsCall__Outputs {
+    return new TestWithdrawAllFundsCall__Outputs(this);
+  }
+}
+
+export class TestWithdrawAllFundsCall__Inputs {
+  _call: TestWithdrawAllFundsCall;
+
+  constructor(call: TestWithdrawAllFundsCall) {
+    this._call = call;
+  }
+
+  get _token(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+}
+
+export class TestWithdrawAllFundsCall__Outputs {
+  _call: TestWithdrawAllFundsCall;
+
+  constructor(call: TestWithdrawAllFundsCall) {
+    this._call = call;
+  }
+}
+
 export class TransferOwnershipCall extends ethereum.Call {
   get inputs(): TransferOwnershipCall__Inputs {
     return new TransferOwnershipCall__Inputs(this);
@@ -1033,7 +1095,7 @@ export class UpdateRateCall__Inputs {
     return this._call.inputValues[0].value.toAddress();
   }
 
-  get _amountTokenTotal(): BigInt {
+  get _amountToken(): BigInt {
     return this._call.inputValues[1].value.toBigInt();
   }
 }
