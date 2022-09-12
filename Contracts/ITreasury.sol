@@ -37,6 +37,8 @@ interface ITreasury {
 
     function getRateImpact(IERC20 _token, uint256 _amountToken) external view returns (uint256);
 
+    function getRateImpact(uint256 _amountStabl3, IERC20 _token) external view returns (uint256);
+
     function getAmountOut(IERC20 _token, uint256 _amountToken) external view returns (uint256);
 
     function getAmountIn(uint256 _amountStabl3, IERC20 _token) external view returns (uint256);
@@ -50,7 +52,7 @@ interface ITreasury {
         bool _isIncrease
     ) external;
 
-    function updateRate(IERC20 _token, uint256 _amountTokenTotal) external;
+    function updateRate(IERC20 _token, uint256 _amountToken) external;
 
     function delegateApprove(IERC20 _token, address _spender, bool _isApprove) external;
 

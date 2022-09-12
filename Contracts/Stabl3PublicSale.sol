@@ -40,7 +40,14 @@ contract Stabl3PublicSale is Ownable {
 
     event Buy(address indexed recipient, uint256 amountStabl3, IERC20 token, uint256 amountToken);
 
-    event Exchanged(address indexed recipient, IERC20 exchangingToken, uint256 amountExchangingToken, uint256 fee, IERC20 token, uint256 amountToken);
+    event Exchanged(
+        address indexed recipient,
+        IERC20 exchangingToken,
+        uint256 amountExchangingToken,
+        uint256 fee,
+        IERC20 token,
+        uint256 amountToken
+    );
 
     // constructor
 
@@ -154,19 +161,12 @@ contract Stabl3PublicSale is Ownable {
             amountExchangingToken = _amountToken;
         }
 
-        uint256 amountTreasury = _amountToken.mul(treasuryPercentage).div(1000).add(1);
-        SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), amountTreasury);
-
-        uint256 amountROI = _amountToken.mul(ROIPercentage).div(1000);
-        SafeERC20.safeTransferFrom(_token, msg.sender, ROI, amountROI);
-
-        uint256 amountHQ = _amountToken.mul(HQPercentage).div(1000);
-        SafeERC20.safeTransferFrom(_token, msg.sender, HQ, amountHQ);
+        SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), _amountToken);
 
         SafeERC20.safeTransferFrom(_exchangingToken, address(treasury), msg.sender, amountExchangingToken);
 
         emit Exchanged(msg.sender, _exchangingToken, amountExchangingToken, fee, _token, _amountToken);
-        treasury.updatePool(BUY_POOL, _token, amountTreasury, amountROI, amountHQ, true);
+        treasury.updatePool(BUY_POOL, _token, _amountToken, 0, 0, true);
         treasury.updatePool(BUY_POOL, _exchangingToken, amountExchangingToken, 0, 0, false);
     }
 

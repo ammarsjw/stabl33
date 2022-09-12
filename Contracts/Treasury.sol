@@ -79,7 +79,7 @@ contract Treasury is Ownable {
         stabl3 = IERC20(0xDf9c4990a8973b6cC069738592F27Ea54b27D569);
 
         rateInfo = RateInfo(1 * (10 ** 15), 0.0007 * (10 ** 18), 10000 * (10 ** 18), 0, 0);
-        rateInfo.stabl3Window = (rateInfo.tokenWindow * (10 ** 18)) / rateInfo.rate;
+        rateInfo.stabl3Window = (rateInfo.tokenWindow * (10 ** 6)) / rateInfo.rate;
 
         IERC20 USDC = IERC20(0x1092d50E8E14479bB769b687427B72BeE70c9534);
         IERC20 DAI = IERC20(0x59f78fB97FB36adbaDCbB43Fa9031797faAad54A);
@@ -189,7 +189,7 @@ contract Treasury is Ownable {
         return rateInfo.rate;
     }
 
-    function getRateImpact(IERC20 _token, uint256 _amountToken) external view reserved(_token) returns (uint256) {
+    function getRateImpact(IERC20 _token, uint256 _amountToken) public view reserved(_token) returns (uint256) {
         if (initialTreasurySupply == 0) {
             return 0;
         }
@@ -206,65 +206,70 @@ contract Treasury is Ownable {
         else {
             uint256 tokenWindowToConsider = rateInfo.tokenWindow;
 
-            uint256 rateToConsider = rateInfo.rate;
+            uint256 stabl3WindowToConsider = rateInfo.stabl3Window;
 
-            while (amountTokenToConsider > tokenWindowToConsider) {
-                tokenWindowToConsider += tokenWindowToConsider + _compoundSingle(tokenWindowToConsider, rateInfo.compoundPercentage);
+            amountTokenToConsider = amountTokenToConsider.safeSub(tokenWindowToConsider);
 
-                rateToConsider += _compoundSingle(rateToConsider, rateInfo.compoundPercentage);
+            while (amountTokenToConsider > 0) {
+                tokenWindowToConsider += _compoundSingle(tokenWindowToConsider, rateInfo.compoundPercentage);
+
+                stabl3WindowToConsider -= _compoundSingle(stabl3WindowToConsider, rateInfo.compoundPercentage);
+
+                amountTokenToConsider = amountTokenToConsider.safeSub(tokenWindowToConsider);
             }
 
-            return rateToConsider;
+            uint256 rate = (tokenWindowToConsider * (10 ** 6)) / stabl3WindowToConsider;
+
+            return rate;
         }
     }
 
+    function getRateImpact(uint256 _amountStabl3, IERC20 _token) public view reserved(_token) returns (uint256) {
+        require(_amountStabl3 > 0, "Treasury: Insufficient input amount");
+        if (initialTreasurySupply == 0) {
+            return 0;
+        }
+
+        uint256 amountStabl3ToConsider = _amountStabl3 + ((rateInfo.tokenWindowConsumed * (10 ** 6)) / rateInfo.rate);
+        if (amountStabl3ToConsider <= rateInfo.stabl3Window) {
+            return rateInfo.rate;
+        }
+        else {
+            uint256 tokenWindowToConsider = rateInfo.tokenWindow;
+
+            uint256 stabl3WindowToConsider = rateInfo.stabl3Window;
+
+            amountStabl3ToConsider = amountStabl3ToConsider.safeSub(stabl3WindowToConsider);
+
+            while (amountStabl3ToConsider > 0) {
+                tokenWindowToConsider += _compoundSingle(tokenWindowToConsider, rateInfo.compoundPercentage);
+
+                stabl3WindowToConsider -= _compoundSingle(stabl3WindowToConsider, rateInfo.compoundPercentage);
+
+                amountStabl3ToConsider = amountStabl3ToConsider.safeSub(stabl3WindowToConsider);
+            }
+
+            uint256 rate = (tokenWindowToConsider * (10 ** 6)) / stabl3WindowToConsider;
+
+            return rate;
+        }
+    }
+
+    // TODO FE -> call get rate for price in landing page call get rate impact for price in exchange
     function getAmountOut(IERC20 _token, uint256 _amountToken) external view reserved(_token) returns (uint256) {
         require(_amountToken > 0, "Treasury: Insufficient input amount");
         if (initialTreasurySupply == 0) {
             return 0;
         }
 
+        uint256 rate = getRateImpact(_token, _amountToken);
+
         uint256 amountTokenConverted = _amountToken;
         if (_token.decimals() < 18) {
             amountTokenConverted *= (10 ** (18 - _token.decimals()));
         }
 
-        uint256 amountStabl3;
-        if (amountTokenConverted + rateInfo.tokenWindowConsumed <= rateInfo.tokenWindow) {
-            amountStabl3 = (amountTokenConverted * rateInfo.stabl3Window) / rateInfo.tokenWindow;
-        }
-        else {
-            uint256 amountTokenToConsider = rateInfo.tokenWindow - rateInfo.tokenWindowConsumed;
-
-            if (amountTokenToConsider != 0) {
-                amountStabl3 = (amountTokenToConsider * rateInfo.stabl3Window) / rateInfo.tokenWindow;
-
-                amountTokenConverted -= amountTokenToConsider;
-            }
-
-            uint256 tokenWindowToConsider = rateInfo.tokenWindow + _compoundSingle(rateInfo.tokenWindow, rateInfo.compoundPercentage);
-
-            uint256 stabl3WindowToConsider = rateInfo.stabl3Window - _compoundSingle(rateInfo.stabl3Window, rateInfo.compoundPercentage);
-
-            while (amountTokenConverted > 0) {
-                if (amountTokenConverted > tokenWindowToConsider) {
-                    amountStabl3 += stabl3WindowToConsider;
-
-                    amountTokenConverted -= tokenWindowToConsider;
-
-                    tokenWindowToConsider += _compoundSingle(tokenWindowToConsider, rateInfo.compoundPercentage);
-
-                    stabl3WindowToConsider -= _compoundSingle(stabl3WindowToConsider, rateInfo.compoundPercentage);
-                }
-                else {
-                    amountStabl3 += (amountTokenConverted * stabl3WindowToConsider) / tokenWindowToConsider;
-
-                    amountTokenConverted = 0;
-                }
-            }
-        }
-
-        amountStabl3 /= 10 ** (18 - stabl3.decimals());
+        uint256 amountStabl3 = (amountTokenConverted  * (10 ** 6)) / rate;
 
         return amountStabl3;
     }
@@ -275,43 +280,9 @@ contract Treasury is Ownable {
             return 0;
         }
 
-        uint256 amountStabl3Converted = _amountStabl3 * (10 ** (18 - stabl3.decimals()));
+        uint256 rate = getRateImpact(_amountStabl3, _token);
 
-        uint256 amountToken;
-        uint256 stabl3WindowConsumed = (rateInfo.tokenWindowConsumed * rateInfo.stabl3Window) / rateInfo.tokenWindow;
-        if (amountStabl3Converted + stabl3WindowConsumed <= rateInfo.stabl3Window) {
-            amountToken = (amountStabl3Converted * rateInfo.tokenWindow) / rateInfo.stabl3Window;
-        }
-        else {
-            uint256 amountStabl3ToConsider = rateInfo.stabl3Window - stabl3WindowConsumed;
-
-            if (amountStabl3ToConsider != 0) {
-                amountToken = (amountStabl3ToConsider * rateInfo.tokenWindow) / rateInfo.stabl3Window;
-
-                amountStabl3Converted -= amountStabl3ToConsider;
-            }
-
-            uint256 tokenWindowToConsider = rateInfo.tokenWindow + _compoundSingle(rateInfo.tokenWindow, rateInfo.compoundPercentage);
-
-            uint256 stabl3WindowToConsider = rateInfo.stabl3Window - _compoundSingle(rateInfo.stabl3Window, rateInfo.compoundPercentage);
-
-            while (amountStabl3Converted > 0) {
-                if (amountStabl3Converted > stabl3WindowToConsider) {
-                    amountToken += tokenWindowToConsider;
-
-                    amountStabl3Converted -= stabl3WindowToConsider;
-
-                    tokenWindowToConsider += _compoundSingle(tokenWindowToConsider, rateInfo.compoundPercentage);
-
-                    stabl3WindowToConsider -= _compoundSingle(stabl3WindowToConsider, rateInfo.compoundPercentage);
-                }
-                else {
-                    amountToken += (amountStabl3Converted * tokenWindowToConsider) / stabl3WindowToConsider;
-
-                    amountStabl3Converted = 0;
-                }
-            }
-        }
+        uint256 amountToken = (_amountStabl3 * rate) / 10 ** 6;
 
         if (_token.decimals() < 18) {
             amountToken /= 10 ** (18 - _token.decimals());
@@ -340,45 +311,33 @@ contract Treasury is Ownable {
         }
     }
 
-    function updateRate(IERC20 _token, uint256 _amountTokenTotal) public lock permission reserved(_token) {
-        uint256 amountTokenConverted = _amountTokenTotal;
+    function updateRate(IERC20 _token, uint256 _amountToken) public lock permission reserved(_token) {
+        uint256 amountTokenConverted = _amountToken;
         if (_token.decimals() < 18) {
             amountTokenConverted *= 10 ** (18 - _token.decimals());
         }
 
-        if (amountTokenConverted + rateInfo.tokenWindowConsumed > rateInfo.tokenWindow) {
-            uint256 amountTokenToConsider = rateInfo.tokenWindow - rateInfo.tokenWindowConsumed;
+        uint256 amountTokenToConsider = amountTokenConverted + rateInfo.tokenWindowConsumed;
+        if (amountTokenToConsider > rateInfo.tokenWindow) {
+            uint256 tokenWindowToConsider = rateInfo.tokenWindow;
 
-            if (amountTokenToConsider != 0) {
-                amountTokenConverted -= amountTokenToConsider;
+            uint256 stabl3WindowToConsider = rateInfo.stabl3Window;
+
+            uint256 tokenWindowConsumedToConsider = rateInfo.tokenWindowConsumed;
+
+            amountTokenToConsider = amountTokenToConsider.safeSub(tokenWindowToConsider);
+
+            while (amountTokenToConsider > 0) {
+                tokenWindowToConsider += _compoundSingle(tokenWindowToConsider, rateInfo.compoundPercentage);
+
+                stabl3WindowToConsider -= _compoundSingle(stabl3WindowToConsider, rateInfo.compoundPercentage);
+
+                tokenWindowConsumedToConsider = amountTokenToConsider;
+
+                amountTokenToConsider = amountTokenToConsider.safeSub(tokenWindowToConsider);
             }
 
-            uint256 rateToConsider = rateInfo.rate + _compoundSingle(rateInfo.rate, rateInfo.compoundPercentage);
-
-            uint256 tokenWindowToConsider = rateInfo.tokenWindow + _compoundSingle(rateInfo.tokenWindow, rateInfo.compoundPercentage);
-
-            uint256 stabl3WindowToConsider = rateInfo.stabl3Window - _compoundSingle(rateInfo.stabl3Window, rateInfo.compoundPercentage);
-
-            uint256 tokenWindowConsumedToConsider;
-
-            while (amountTokenConverted > 0) {
-                if (amountTokenConverted > tokenWindowToConsider) {
-                    amountTokenConverted -= tokenWindowToConsider;
-
-                    rateToConsider += _compoundSingle(rateToConsider, rateInfo.compoundPercentage);
-
-                    tokenWindowToConsider += _compoundSingle(tokenWindowToConsider, rateInfo.compoundPercentage);
-
-                    stabl3WindowToConsider -= _compoundSingle(stabl3WindowToConsider, rateInfo.compoundPercentage);
-                }
-                else {
-                    tokenWindowConsumedToConsider = amountTokenConverted;
-
-                    amountTokenConverted = 0;
-                }
-            }
-
-            rateInfo.rate = rateToConsider;
+            rateInfo.rate = (tokenWindowToConsider * (10 ** 6)) / stabl3WindowToConsider;
 
             rateInfo.tokenWindow = tokenWindowToConsider;
 
