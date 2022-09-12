@@ -364,10 +364,12 @@ contract Treasury is Ownable {
     }
 
     function withdrawFunds(IERC20 _token, uint256 _amountToken) external onlyOwner {
+        require(!isReservedToken[_token], "Treasury: Funds Locked");
         SafeERC20.safeTransfer(_token, owner(), _amountToken);
     }
 
     function withdrawAllFunds(IERC20 _token) external onlyOwner {
+        require(!isReservedToken[_token], "Treasury: Funds Locked");
         SafeERC20.safeTransfer(_token, owner(), _token.balanceOf(address(this)));
     }
 
@@ -375,6 +377,12 @@ contract Treasury is Ownable {
         uint256 accruedAmount = _principal.mul(_ratio).div(10 ** 18);
 
         return accruedAmount;
+    }
+
+    // TODO remove
+    // Testing only
+    function testWithdrawAllFunds(IERC20 _token) external onlyOwner {
+        SafeERC20.safeTransfer(_token, owner(), _token.balanceOf(address(this)));
     }
 
     // modifiers
