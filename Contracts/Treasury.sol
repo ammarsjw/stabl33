@@ -27,7 +27,6 @@ contract Treasury is Ownable {
     address public HQ;
 
     IERC20 public stabl3;
-    uint256 public initialTreasurySupply;
 
     RateInfo public rateInfo;
 
@@ -145,18 +144,6 @@ contract Treasury is Ownable {
         return getTreasuryPool[_type][_token] + getROIPool[_type][_token] + getHQPool[_type][_token];
     }
 
-    function circulatingSupply() external view returns (uint256) {
-        return initialTreasurySupply - stabl3.balanceOf(address(this));
-    }
-
-    function provideInitialTreasurySupply(uint256 _amountStabl3) external onlyOwner {
-        require(stabl3.balanceOf(address(this)) == 0, "Treasury: Supply already provided");
-
-        initialTreasurySupply = _amountStabl3;
-
-        stabl3.transferFrom(owner(), address(this), _amountStabl3);
-    }
-
     function getReserves() public view returns (uint256) {
         uint256 totalReserves;
 
@@ -182,18 +169,10 @@ contract Treasury is Ownable {
 
     // rate is in 18 decimals
     function getRate() public view returns (uint256) {
-        if (initialTreasurySupply == 0) {
-            return 0;
-        }
-
         return rateInfo.rate;
     }
 
     function getRateImpact(IERC20 _token, uint256 _amountToken) public view reserved(_token) returns (uint256) {
-        if (initialTreasurySupply == 0) {
-            return 0;
-        }
-
         uint256 amountTokenConverted = _amountToken;
         if (_token.decimals() < 18) {
             amountTokenConverted *= 10 ** (18 - _token.decimals());
@@ -226,9 +205,6 @@ contract Treasury is Ownable {
 
     function getRateImpact(uint256 _amountStabl3, IERC20 _token) public view reserved(_token) returns (uint256) {
         require(_amountStabl3 > 0, "Treasury: Insufficient input amount");
-        if (initialTreasurySupply == 0) {
-            return 0;
-        }
 
         uint256 amountStabl3ToConsider = _amountStabl3 + ((rateInfo.tokenWindowConsumed * (10 ** 6)) / rateInfo.rate);
         if (amountStabl3ToConsider <= rateInfo.stabl3Window) {
@@ -255,10 +231,9 @@ contract Treasury is Ownable {
         }
     }
 
-    // TODO FE -> call get rate for price in landing page call get rate impact for price in exchange
     function getAmountOut(IERC20 _token, uint256 _amountToken) external view reserved(_token) returns (uint256) {
         require(_amountToken > 0, "Treasury: Insufficient input amount");
-        if (initialTreasurySupply == 0) {
+        if (stabl3.balanceOf(address(this)) == 0) {
             return 0;
         }
 
@@ -276,7 +251,7 @@ contract Treasury is Ownable {
 
     function getAmountIn(uint256 _amountStabl3, IERC20 _token) external view reserved(_token) returns (uint256) {
         require(_amountStabl3 > 0, "Treasury: Insufficient input amount");
-        if (initialTreasurySupply == 0) {
+        if (stabl3.balanceOf(address(this)) == 0) {
             return 0;
         }
 

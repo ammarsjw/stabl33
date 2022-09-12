@@ -231,7 +231,15 @@ contract Stabl3Staking is Ownable {
         uint256 amountStabl3Lending;
         if (_isLending) {
             amountTokenLending = _amountToken.mul(lendingStabl3Percentage).div(1000);
+
             amountStabl3Lending = treasury.getAmountOut(_token, amountTokenLending);
+
+            _amountToken -= amountTokenLending;
+
+            SafeERC20.safeTransferFrom(_token, msg.sender, address(ROI), amountTokenLending);
+
+            treasury.updatePool(BUY_POOL, _token, 0, amountTokenLending, 0, true);
+            treasury.updateRate(_token, amountTokenLending);
         }
 
         Staking memory staking = Staking(
@@ -421,8 +429,6 @@ contract Stabl3Staking is Ownable {
                 staking.amountTokenLending,
                 staking.amountStabl3Lending
             );
-            treasury.updatePool(BUY_POOL, staking.token, staking.amountTokenLending, 0, 0, true);
-            treasury.updateRate(staking.token, staking.amountTokenLending);
         }
     }
 

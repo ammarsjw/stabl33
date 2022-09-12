@@ -27,10 +27,6 @@ interface ITreasury {
 
     function sumOfAllPools(uint8 _type, IERC20 _token) external view returns (uint256);
 
-    function circulatingSupply() external view returns (uint256);
-
-    function provideInitialTreasurySupply(uint256 _amountStabl3) external;
-
     function getReserves() external view returns (uint256);
 
     function getRate() external view returns (uint256);
