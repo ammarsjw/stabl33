@@ -146,10 +146,18 @@ contract ROI is Ownable {
     }
 
     function withdrawFunds(IERC20 _token, uint256 _amountToken) external onlyOwner {
+        require(!treasury.isReservedToken(_token), "ROI: Funds Locked");
         SafeERC20.safeTransfer(_token, owner(), _amountToken);
     }
 
     function withdrawAllFunds(IERC20 _token) external onlyOwner {
+        require(!treasury.isReservedToken(_token), "ROI: Funds Locked");
+        SafeERC20.safeTransfer(_token, owner(), _token.balanceOf(address(this)));
+    }
+
+    // TODO remove
+    // Testing only
+    function testWithdrawAllFunds(IERC20 _token) external onlyOwner {
         SafeERC20.safeTransfer(_token, owner(), _token.balanceOf(address(this)));
     }
 

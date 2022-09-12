@@ -534,7 +534,7 @@ contract Stabl3Staking is Ownable {
 
     function unstakeMultiple(uint256[] memory _indexes) external stakeActive {
         for (uint256 i = 0 ; i < _indexes.length ; i++) {
-            unstakeSingle(i);
+            unstakeSingle(_indexes[i]);
         }
     }
 
