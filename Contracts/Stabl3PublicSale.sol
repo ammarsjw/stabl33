@@ -38,15 +38,16 @@ contract Stabl3PublicSale is Ownable {
 
     event UpdatedExchangeFee(uint256 newExchangeFee, uint256 oldExchangeFee);
 
-    event Buy(address indexed recipient, uint256 amountStabl3, IERC20 token, uint256 amountToken);
+    event Buy(address indexed recipient, uint256 amountStabl3, IERC20 token, uint256 amountToken, uint256 timestamp);
 
-    event Exchanged(
+    event Exchange(
         address indexed recipient,
         IERC20 exchangingToken,
         uint256 amountExchangingToken,
         uint256 fee,
         IERC20 token,
-        uint256 amountToken
+        uint256 amountToken,
+        uint256 timestamp
     );
 
     // constructor
@@ -123,7 +124,7 @@ contract Stabl3PublicSale is Ownable {
 
         stabl3.transferFrom(address(treasury), msg.sender, amountStabl3);
 
-        emit Buy(msg.sender, amountStabl3, _token, _amountToken);
+        emit Buy(msg.sender, amountStabl3, _token, _amountToken, block.timestamp);
         treasury.updatePool(BUY_POOL, _token, amountTreasury, amountROI, amountHQ, true);
         treasury.updateRate(_token, _amountToken);
     }
@@ -145,7 +146,7 @@ contract Stabl3PublicSale is Ownable {
 
         stabl3.transferFrom(address(treasury), msg.sender, amountStabl3);
 
-        emit Buy(msg.sender, amountStabl3, _token, fee);
+        emit Buy(msg.sender, amountStabl3, _token, fee, block.timestamp);
         treasury.updatePool(BUY_POOL, _token, 0, fee, 0, true);
         treasury.updateRate(_token, fee);
 
@@ -165,7 +166,7 @@ contract Stabl3PublicSale is Ownable {
 
         SafeERC20.safeTransferFrom(_exchangingToken, address(treasury), msg.sender, amountExchangingToken);
 
-        emit Exchanged(msg.sender, _exchangingToken, amountExchangingToken, fee, _token, _amountToken);
+        emit Exchange(msg.sender, _exchangingToken, amountExchangingToken, fee, _token, _amountToken, block.timestamp);
         treasury.updatePool(BUY_POOL, _token, _amountToken, 0, 0, true);
         treasury.updatePool(BUY_POOL, _exchangingToken, amountExchangingToken, 0, 0, false);
     }

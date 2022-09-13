@@ -129,35 +129,35 @@ contract Extra is Ownable {
 }
 
 // TODO
-    // function createBond(IERC20 _token, uint256 _amountToken) external {
-    //     require(saleState, "Stabl3PublicSale: Sale not yet started");
-    //     require(treasury.isReservedToken(_token), "Stabl3PublicSale: Token not reserved");
-    //     require(_amountToken > 0, "Stabl3PublicSale: Insufficient amount");
+// function createBond(IERC20 _token, uint256 _amountToken) external {
+//     require(saleState, "Stabl3PublicSale: Sale not yet started");
+//     require(treasury.isReservedToken(_token), "Stabl3PublicSale: Token not reserved");
+//     require(_amountToken > 0, "Stabl3PublicSale: Insufficient amount");
 
-    //     uint256 amountStabl3 = treasury.getAmountOut(_token, _amountToken);
+//     uint256 amountStabl3 = treasury.getAmountOut(_token, _amountToken);
 
-    //     amountStabl3 += (amountStabl3 * discount) / 1000;
+//     amountStabl3 += (amountStabl3 * discount) / 1000;
 
-    //     Bond memory bond = Bond(getBonds[msg.sender].length, msg.sender, true, amountStabl3, _token, _amountToken, block.timestamp);
-    //     getBonds[msg.sender].push(bond);
+//     Bond memory bond = Bond(getBonds[msg.sender].length, msg.sender, true, amountStabl3, _token, _amountToken, block.timestamp);
+//     getBonds[msg.sender].push(bond);
 
-    //     _distributeFunds(_token, _amountToken, 1);
+//     _distributeFunds(_token, _amountToken, 1);
 
-    //     emit CreatedBond(bond.recipient, bond.index, bond.amountStabl3, bond.token, bond.amountToken);
-    //     treasury.update();
-    // }
+//     emit CreatedBond(bond.recipient, bond.index, bond.amountStabl3, bond.token, bond.amountToken);
+//     treasury.update();
+// }
 
-    // function claimBond(uint256 index) external {
-    //     require(saleState, "Stabl3PublicSale: Sale not yet started");
-    //     Bond storage bond = getBonds[msg.sender][index];
+// function claimBond(uint256 index) external {
+//     require(saleState, "Stabl3PublicSale: Sale not yet started");
+//     Bond storage bond = getBonds[msg.sender][index];
 
-    //     require(bond.status, "Stabl3PublicSale: Bond already claimed");
-    //     require(block.timestamp > bond.startTime + bondTime, "Stabl3PublicSale: Bond time not finished");
+//     require(bond.status, "Stabl3PublicSale: Bond already claimed");
+//     require(block.timestamp > bond.startTime + bondTime, "Stabl3PublicSale: Bond time not finished");
 
-    //     stabl3.transferFrom(address(treasury), msg.sender, bond.amountStabl3);
+//     stabl3.transferFrom(address(treasury), msg.sender, bond.amountStabl3);
 
-    //     bond.status = false;
+//     bond.status = false;
 
-    //     emit ClaimedBond(bond.recipient, bond.index, bond.amountStabl3, bond.token, bond.amountToken);
-    //     treasury.update();
-    // }
+//     emit ClaimedBond(bond.recipient, bond.index, bond.amountStabl3, bond.token, bond.amountToken);
+//     treasury.update();
+// }
