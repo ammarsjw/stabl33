@@ -11,17 +11,17 @@ contract Treasury is Ownable {
 
     uint256 private immutable MAX_INT = 2 ** 256 - 1;
 
-    uint8 private constant BUY_POOL = 0;
-    uint8 private constant BOND_POOL = 1;
-    uint8 private constant STAKE_POOL = 2;
-    uint8 private constant LEND_POOL = 3;
-    uint8 private constant BORROW_POOL = 4;
-    uint8 private constant EXCHANGE_POOL = 5;
+    // uint8 private constant BUY_POOL = 0;
+    // uint8 private constant BOND_POOL = 1;
+    // uint8 private constant STAKE_POOL = 2;
+    // uint8 private constant LEND_POOL = 3;
+    // uint8 private constant BORROW_POOL = 4;
+    // uint8 private constant EXCHANGE_POOL = 5;
 
-    uint8 private constant STAKE_REWARD_DISTRIBUTED = 6;
-    uint8 private constant LEND_REWARD_DISTRIBUTED = 7;
+    // uint8 private constant STAKE_REWARD_DISTRIBUTED = 6;
+    // uint8 private constant LEND_REWARD_DISTRIBUTED = 7;
 
-    uint8 private constant COLLATERAL_STABL3_POOL = 8;
+    // uint8 private constant COLLATERAL_STABL3_POOL = 8;
 
     address public ROI;
     address public HQ;
@@ -68,7 +68,7 @@ contract Treasury is Ownable {
 
     event UpdatedReservedToken(IERC20 token, bool state);
 
-    event Rate(uint256 rate, uint256 reserves, uint256 blockTimestampLast);
+    event Rate(uint256 rate, uint256 totalValueLocked, uint256 reserves, uint256 blockTimestampLast);
 
     // constructor
 
@@ -145,6 +145,26 @@ contract Treasury is Ownable {
     }
 
     function getReserves() public view returns (uint256) {
+        uint256 totalReserves;
+
+        for (uint256 i = 0 ; i < allReservedTokens.length ; i++) {
+            if (isReservedToken[allReservedTokens[i]]) {
+                uint256 amount = allReservedTokens[i].balanceOf(address(this));
+
+                uint256 decimals = allReservedTokens[i].decimals();
+
+                if (decimals < 18) {
+                    amount *= 10 ** (18 - decimals);
+                }
+
+                totalReserves += amount;
+            }
+        }
+
+        return totalReserves;
+    }
+
+    function getTotalValueLocked() public view returns (uint256) {
         uint256 totalReserves;
 
         for (uint256 i = 0 ; i < allReservedTokens.length ; i++) {
@@ -326,7 +346,9 @@ contract Treasury is Ownable {
 
         uint256 reserves = getReserves();
 
-        emit Rate(rateInfo.rate, reserves, block.timestamp);
+        uint256 totalValueLocked = getTotalValueLocked();
+
+        emit Rate(rateInfo.rate, totalValueLocked, reserves, block.timestamp);
     }
 
     function delegateApprove(IERC20 _token, address _spender, bool _isApprove) public onlyOwner {

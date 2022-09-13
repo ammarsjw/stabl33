@@ -29,6 +29,8 @@ interface ITreasury {
 
     function getReserves() external view returns (uint256);
 
+    function getTotalValueLocked() external view returns (uint256);
+
     function getRate() external view returns (uint256);
 
     function getRateImpact(IERC20 _token, uint256 _amountToken) external view returns (uint256);
