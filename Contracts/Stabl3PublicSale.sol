@@ -44,9 +44,9 @@ contract Stabl3PublicSale is Ownable {
         address indexed recipient,
         IERC20 exchangingToken,
         uint256 amountExchangingToken,
-        uint256 fee,
         IERC20 token,
         uint256 amountToken,
+        uint256 fee,
         uint256 timestamp
     );
 
@@ -113,7 +113,7 @@ contract Stabl3PublicSale is Ownable {
 
         uint256 amountStabl3 = treasury.getAmountOut(_token, _amountToken);
 
-        uint256 amountTreasury = _amountToken.mul(treasuryPercentage).div(1000).add(1);
+        uint256 amountTreasury = _amountToken.mul(treasuryPercentage).div(1000);
         SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), amountTreasury);
 
         uint256 amountROI = _amountToken.mul(ROIPercentage).div(1000);
@@ -121,6 +121,11 @@ contract Stabl3PublicSale is Ownable {
 
         uint256 amountHQ = _amountToken.mul(HQPercentage).div(1000);
         SafeERC20.safeTransferFrom(_token, msg.sender, HQ, amountHQ);
+
+        uint256 totalAmountDistributed = amountTreasury + amountROI + amountHQ;
+        if (_amountToken > totalAmountDistributed) {
+            amountTreasury += _amountToken - totalAmountDistributed;
+        }
 
         stabl3.transferFrom(address(treasury), msg.sender, amountStabl3);
 
@@ -138,7 +143,7 @@ contract Stabl3PublicSale is Ownable {
         require(_amountToken > 0, "Stabl3PublicSale: Insufficient amount");
 
         uint256 fee = (_amountToken * exchangeFee) / 1000;
-        _amountToken -= fee;
+        uint256 amountTokenWithFee = _amountToken - fee;
 
         uint256 amountStabl3 = treasury.getAmountOut(_token, fee);
 
@@ -153,21 +158,21 @@ contract Stabl3PublicSale is Ownable {
         uint256 amountExchangingToken;
 
         if (_exchangingToken.decimals() > _token.decimals()) {
-            amountExchangingToken = _amountToken * (10 ** (_exchangingToken.decimals() - _token.decimals()));
+            amountExchangingToken = amountTokenWithFee * (10 ** (_exchangingToken.decimals() - _token.decimals()));
         }
         else if (_token.decimals() > _exchangingToken.decimals()) {
-            amountExchangingToken = _amountToken / (10 ** (_token.decimals() - _exchangingToken.decimals()));
+            amountExchangingToken = amountTokenWithFee / (10 ** (_token.decimals() - _exchangingToken.decimals()));
         }
         else {
-            amountExchangingToken = _amountToken;
+            amountExchangingToken = amountTokenWithFee;
         }
 
-        SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), _amountToken);
+        SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), amountTokenWithFee);
 
         SafeERC20.safeTransferFrom(_exchangingToken, address(treasury), msg.sender, amountExchangingToken);
 
-        emit Exchange(msg.sender, _exchangingToken, amountExchangingToken, fee, _token, _amountToken, block.timestamp);
-        treasury.updatePool(BUY_POOL, _token, _amountToken, 0, 0, true);
+        emit Exchange(msg.sender, _exchangingToken, amountExchangingToken, _token, amountTokenWithFee, fee, block.timestamp);
+        treasury.updatePool(BUY_POOL, _token, amountTokenWithFee, 0, 0, true);
         treasury.updatePool(BUY_POOL, _exchangingToken, amountExchangingToken, 0, 0, false);
     }
 

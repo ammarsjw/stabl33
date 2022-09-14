@@ -221,11 +221,21 @@ contract Stabl3Staking is Ownable {
     function allStakings(
         address _user
     ) external view returns (
-        Staking[] memory unlockedLending,
-        Staking[] memory lockedLending,
-        Staking[] memory unlockedStaking,
-        Staking[] memory lockedStaking
+        Staking[] memory tempUnlockedLending,
+        Staking[] memory tempLockedLending,
+        Staking[] memory tempUnlockedStaking,
+        Staking[] memory tempLockedStaking
     ) {
+        tempUnlockedLending = new Staking[](getStakings[_user].length);
+        tempLockedLending = new Staking[](getStakings[_user].length);
+        tempUnlockedStaking = new Staking[](getStakings[_user].length);
+        tempLockedStaking = new Staking[](getStakings[_user].length);
+
+        uint256 unlockedLendingLength;
+        uint256 lockedLendingLength;
+        uint256 unlockedStakingLength;
+        uint256 lockedStakingLength;
+
         for (uint256 i = 0 ; i < getStakings[_user].length ; i++) {
             Staking memory staking = getStakings[_user][i];
 
@@ -234,22 +244,61 @@ contract Stabl3Staking is Ownable {
 
                 if (block.timestamp >= endTime) {
                     if (staking.isLending) {
-                        unlockedLending[unlockedLending.length] = staking;
+                        tempUnlockedLending[unlockedLendingLength] = staking;
+                        unlockedLendingLength++;
                     }
                     else {
-                        unlockedStaking[unlockedStaking.length] = staking;
+                        tempUnlockedStaking[unlockedStakingLength] = staking;
+                        unlockedStakingLength++;
                     }
                 }
                 else {
                     if (staking.isLending) {
-                        lockedLending[lockedLending.length] = staking;
+                        tempLockedLending[lockedLendingLength] = staking;
+                        lockedLendingLength++;
                     }
                     else {
-                        lockedStaking[lockedStaking.length] = staking;
+                        tempLockedStaking[lockedStakingLength] = staking;
+                        lockedStakingLength++;
                     }
                 }
             }
         }
+
+        Staking[] memory unlockedLending = new Staking[](unlockedLendingLength);
+        Staking[] memory lockedLending = new Staking[](lockedLendingLength);
+        Staking[] memory unlockedStaking = new Staking[](unlockedStakingLength);
+        Staking[] memory lockedStaking = new Staking[](lockedStakingLength);
+
+        for (uint256 i = 0 ; i < getStakings[_user].length ; i++) {
+            bool checker;
+
+            if (i < unlockedLendingLength) {
+                unlockedLending[i] = tempUnlockedLending[i];
+                checker = true;
+            }
+
+            if (i < lockedLendingLength) {
+                lockedLending[i] = tempLockedLending[i];
+                checker = true;
+            }
+
+            if (i < unlockedStakingLength) {
+                unlockedStaking[i] = tempUnlockedStaking[i];
+                checker = true;
+            }
+
+            if (i < lockedStakingLength) {
+                lockedStaking[i] = tempLockedStaking[i];
+                checker = true;
+            }
+
+            if (!checker) {
+                break;
+            }
+        }
+
+        return (unlockedLending, lockedLending, unlockedStaking, lockedStaking);
     }
 
     function validatePool(IERC20 _token, uint256 _amountToken) public view stakeActive reserved(_token) returns (bool) {
@@ -299,17 +348,22 @@ contract Stabl3Staking is Ownable {
         uint256 amountStabl3Lending;
 
         if (_isLending) {
-            uint256 amountTreasury = _amountToken.mul(treasuryPercentages[1]).div(1000).add(1);
+            uint256 amountTreasury = _amountToken.mul(treasuryPercentages[1]).div(1000);
             SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), amountTreasury);
 
+            // TODO take stabl3 put it into staking contract, update rate and then just transfer from staking to user
             uint256 amountROI = _amountToken.mul(ROIPercentages[1]).div(1000);
             amountStabl3Lending = treasury.getAmountOut(_token, amountROI);
-            _amountToken -= amountROI;
             SafeERC20.safeTransferFrom(_token, msg.sender, address(ROI), amountROI);
             amountTokenLending = amountROI;
 
             uint256 amountHQ = _amountToken.mul(HQPercentages[1]).div(1000);
             SafeERC20.safeTransferFrom(_token, msg.sender, HQ, amountHQ);
+
+            uint256 totalAmountDistributed = amountTreasury + amountROI + amountHQ;
+            if (_amountToken > totalAmountDistributed) {
+                amountTreasury += _amountToken - totalAmountDistributed;
+            }
 
             _amountToken = amountTreasury + amountHQ;
 
@@ -317,7 +371,7 @@ contract Stabl3Staking is Ownable {
             treasury.updateRate(_token, amountROI);
         }
         else {
-            uint256 amountTreasury = _amountToken.mul(treasuryPercentages[0]).div(1000).add(1);
+            uint256 amountTreasury = _amountToken.mul(treasuryPercentages[0]).div(1000);
             SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), amountTreasury);
 
             uint256 amountROI = _amountToken.mul(ROIPercentages[0]).div(1000);
@@ -325,6 +379,11 @@ contract Stabl3Staking is Ownable {
 
             uint256 amountHQ = _amountToken.mul(HQPercentages[0]).div(1000);
             SafeERC20.safeTransferFrom(_token, msg.sender, HQ, amountHQ);
+
+            uint256 totalAmountDistributed = amountTreasury + amountROI + amountHQ;
+            if (_amountToken > totalAmountDistributed) {
+                amountTreasury += _amountToken - totalAmountDistributed;
+            }
 
             treasury.updatePool(STAKE_POOL, _token, amountTreasury, amountROI, amountHQ, true);
         }
@@ -338,7 +397,7 @@ contract Stabl3Staking is Ownable {
             _stakingType,
             _token,
             _amountToken,
-            0,
+            _amountToken,
             timestampToConsider,
             0,
             timestampToConsider,
@@ -731,7 +790,7 @@ contract Stabl3Staking is Ownable {
 
         return accruedReward.sub(_principal);
     }
-    
+
     // modifiers
 
     modifier stakeActive() {
