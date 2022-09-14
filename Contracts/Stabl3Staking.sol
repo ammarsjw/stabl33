@@ -19,9 +19,6 @@ contract Stabl3Staking is Ownable {
     uint8 private constant STAKE_POOL = 2;
     uint8 private constant LEND_POOL = 3;
 
-    uint8 private constant STAKE_REWARD_DISTRIBUTED = 6;
-    uint8 private constant LEND_REWARD_DISTRIBUTED = 7;
-
     ITreasury public treasury;
     IROI public ROI;
     address public HQ;
@@ -144,11 +141,17 @@ contract Stabl3Staking is Ownable {
 
         maxPoolPercentage = 700;
 
-        oneMinuteTime = 60;
-        oneYearTime = 31536000;
-        lockTimes = [7776000, 15552000, 23328000, 31104000];   // 3, 6, 9 and 12 months time in seconds
+        // TODO remove
+        oneMinuteTime = 30;
+        oneYearTime = 10800;
+        lockTimes = [2700, 5400, 8100, 10800];   // 0:45, 1:30, 2:15 and 3:00 hours time in seconds
+        // oneMinuteTime = 60;
+        // oneYearTime = 31104000;
+        // lockTimes = [7776000, 15552000, 23328000, 31104000];   // 3, 6, 9 and 12 months time in seconds
 
-        lendingStabl3ClaimTime = 2592000;
+        // TODO remove
+        lendingStabl3ClaimTime = 900; // 0:15 hours time in seconds
+        // lendingStabl3ClaimTime = 2592000; // 1 month time in seconds
     }
 
     function updateTreasury(address _treasury) external onlyOwner {
