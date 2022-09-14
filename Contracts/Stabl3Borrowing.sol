@@ -5,8 +5,9 @@ pragma solidity 0.8.17;
 import "./Ownable.sol";
 import "./SafeMathUpgradeable.sol";
 import "./SafeERC20.sol";
+import "./ReentrancyGuard.sol";
 
-contract Stabl3Borrowing is Ownable {
+contract Stabl3Borrowing is Ownable, ReentrancyGuard {
     using SafeMathUpgradeable for uint256;
 
     uint8 private constant BORROW_POOL = 4;

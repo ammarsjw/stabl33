@@ -5,10 +5,11 @@ pragma solidity 0.8.17;
 import "./Ownable.sol";
 import "./SafeMathUpgradeable.sol";
 import "./SafeERC20.sol";
+import "./ReentrancyGuard.sol";
 
 import "./ITreasury.sol";
 
-contract Stabl3PublicSale is Ownable {
+contract Stabl3PublicSale is Ownable, ReentrancyGuard {
     using SafeMathUpgradeable for uint256;
     using SafeERC20 for IERC20;
 
@@ -108,7 +109,7 @@ contract Stabl3PublicSale is Ownable {
         saleState = _state;
     }
 
-    function buy(IERC20 _token, uint256 _amountToken) external saleActive reserved(_token) {
+    function buy(IERC20 _token, uint256 _amountToken) external nonReentrant saleActive reserved(_token) {
         require(_amountToken > 0, "Stabl3PublicSale: Insufficient amount");
 
         uint256 amountStabl3 = treasury.getAmountOut(_token, _amountToken);
@@ -138,7 +139,7 @@ contract Stabl3PublicSale is Ownable {
         IERC20 _exchangingToken,
         IERC20 _token,
         uint256 _amountToken
-    ) external saleActive reserved(_exchangingToken) reserved(_token) {
+    ) external nonReentrant saleActive reserved(_exchangingToken) reserved(_token) {
         require(_exchangingToken != _token, "Stabl3PublicSale: Invalid exchange");
         require(_amountToken > 0, "Stabl3PublicSale: Insufficient amount");
 

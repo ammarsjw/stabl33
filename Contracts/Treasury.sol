@@ -5,8 +5,9 @@ pragma solidity 0.8.17;
 import "./Ownable.sol";
 import "./SafeMathUpgradeable.sol";
 import "./SafeERC20.sol";
+import "./ReentrancyGuard.sol";
 
-contract Treasury is Ownable {
+contract Treasury is Ownable, ReentrancyGuard {
     using SafeMathUpgradeable for uint256;
 
     uint256 private immutable MAX_INT = 2 ** 256 - 1;
@@ -30,8 +31,6 @@ contract Treasury is Ownable {
     IERC20 public stabl3;
 
     RateInfo public rateInfo;
-
-    uint256 private unlocked = 1;
 
     // structs
 
@@ -294,7 +293,7 @@ contract Treasury is Ownable {
         uint256 _amountTokenROI,
         uint256 _amountTokenHQ,
         bool _isIncrease
-    ) external lock permission {
+    ) external nonReentrant permission {
         if (_isIncrease) {
             getTreasuryPool[_type][_token] += _amountTokenTreasury;
             getROIPool[_type][_token] += _amountTokenROI;
@@ -307,7 +306,7 @@ contract Treasury is Ownable {
         }
     }
 
-    function updateRate(IERC20 _token, uint256 _amountToken) public lock permission reserved(_token) {
+    function updateRate(IERC20 _token, uint256 _amountToken) public nonReentrant permission reserved(_token) {
         uint256 amountTokenConverted = _amountToken;
         if (_token.decimals() < 18) {
             amountTokenConverted *= 10 ** (18 - _token.decimals());
@@ -384,13 +383,6 @@ contract Treasury is Ownable {
     }
 
     // modifiers
-
-    modifier lock() {
-        require(unlocked == 1, "Treasury: Locked");
-        unlocked = 0;
-        _;
-        unlocked = 1;
-    }
 
     modifier permission() {
         require(permitted[msg.sender] || msg.sender == owner(), "Treasury: Not permitted");

@@ -4,10 +4,11 @@ pragma solidity 0.8.17;
 
 import "./Ownable.sol";
 import "./SafeERC20.sol";
+import "./ReentrancyGuard.sol";
 
 import "./ITreasury.sol";
 
-contract ROI is Ownable {
+contract ROI is Ownable, ReentrancyGuard {
 
     uint256 private immutable MAX_INT = 2 ** 256 - 1;
 
@@ -17,8 +18,6 @@ contract ROI is Ownable {
     ITreasury public treasury;
 
     IERC20 public stabl3;
-
-    uint256 private unlocked = 1;
 
     // mappings
 
@@ -128,7 +127,7 @@ contract ROI is Ownable {
         return currentAPR;
     }
 
-    function updateAPR() public lock permission {
+    function updateAPR() public nonReentrant permission {
         uint256 currentAPR = getAPR();
 
         uint256 reserves = getReserves();
@@ -162,13 +161,6 @@ contract ROI is Ownable {
     }
 
     // modifiers
-
-    modifier lock() {
-        require(unlocked == 1, "ROI: Locked");
-        unlocked = 0;
-        _;
-        unlocked = 1;
-    }
 
     modifier permission() {
         require(permitted[msg.sender] || msg.sender == owner(), "ROI: Not permitted");
