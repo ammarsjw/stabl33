@@ -92,9 +92,26 @@ contract Stabl3Staking is Ownable {
 
     event UpdatedLendingStabl3ClaimTime(uint256 newLendingStabl3ClaimTime, uint256 oldLendingStabl3ClaimTime);
 
-    event Stake(address indexed user, uint256 index, uint8 stakingType, IERC20 token, uint256 amountToken, uint256 totalAmountToken, bool isLend, uint256 timestamp);
+    event Stake(
+        address indexed user,
+        uint256 index,
+        uint8 stakingType,
+        IERC20 token,
+        uint256 amountToken,
+        uint256 totalAmountToken,
+        bool isLend,
+        uint256 timestamp
+    );
 
-    event WithdrewReward(address indexed user, uint256 index, IERC20 token, uint256 rewardWithdrawn, uint256 totalRewardWithdrawn, bool isLend, uint256 timestamp);
+    event WithdrewReward(
+        address indexed user,
+        uint256 index,
+        IERC20 token,
+        uint256 rewardWithdrawn,
+        uint256 totalRewardWithdrawn,
+        bool isLend,
+        uint256 timestamp
+    );
 
     event ClaimedLendingStabl3(
         address indexed user,
@@ -196,6 +213,40 @@ contract Stabl3Staking is Ownable {
 
     function allStakingsLength(address _user) external view returns (uint256) {
         return getStakings[_user].length;
+    }
+
+    function allStakings(
+        address _user
+    ) external view returns (
+        Staking[] memory unlockedLending,
+        Staking[] memory lockedLending,
+        Staking[] memory unlockedStaking,
+        Staking[] memory lockedStaking
+    ) {
+        for (uint256 i = 0 ; i < getStakings[_user].length ; i++) {
+            Staking memory staking = getStakings[_user][i];
+
+            if (staking.status && staking.amountTokenStaked > 0) {
+                uint256 endTime = staking.startTime + lockTimes[staking.stakingType - 1];
+
+                if (block.timestamp >= endTime) {
+                    if (staking.isLending) {
+                        unlockedLending[unlockedLending.length] = staking;
+                    }
+                    else {
+                        unlockedStaking[unlockedStaking.length] = staking;
+                    }
+                }
+                else {
+                    if (staking.isLending) {
+                        lockedLending[lockedLending.length] = staking;
+                    }
+                    else {
+                        lockedStaking[lockedStaking.length] = staking;
+                    }
+                }
+            }
+        }
     }
 
     function validatePool(IERC20 _token, uint256 _amountToken) public view stakeActive reserved(_token) returns (bool) {
@@ -392,7 +443,15 @@ contract Stabl3Staking is Ownable {
 
                 ROI.updateAPR();
 
-                emit WithdrewReward(staking.user, staking.index, staking.token, reward, values.totalRewardWithdrawn, _isLending, _timestamp);
+                emit WithdrewReward(
+                    staking.user,
+                    staking.index,
+                    staking.token,
+                    reward,
+                    values.totalRewardWithdrawn,
+                    _isLending,
+                    _timestamp
+                );
             }
         }
     }
@@ -407,7 +466,11 @@ contract Stabl3Staking is Ownable {
         }
     }
 
-    function _getClaimableStabl3LendingSingle(address _user, uint256 _index, uint256 _timestamp) internal view stakeActive returns (uint256) {
+    function _getClaimableStabl3LendingSingle(
+        address _user,
+        uint256 _index,
+        uint256 _timestamp
+    ) internal view stakeActive returns (uint256) {
         uint256 claimableStabl3Lending;
 
         Staking memory staking = getStakings[_user][_index];
