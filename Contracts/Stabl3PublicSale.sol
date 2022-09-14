@@ -112,29 +112,32 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
     function buy(IERC20 _token, uint256 _amountToken) external nonReentrant saleActive reserved(_token) {
         require(_amountToken > 0, "Stabl3PublicSale: Insufficient amount");
 
-        uint256 amountStabl3 = treasury.getAmountOut(_token, _amountToken);
-
         uint256 amountTreasury = _amountToken.mul(treasuryPercentage).div(1000);
-        SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), amountTreasury);
 
         uint256 amountROI = _amountToken.mul(ROIPercentage).div(1000);
-        SafeERC20.safeTransferFrom(_token, msg.sender, ROI, amountROI);
 
         uint256 amountHQ = _amountToken.mul(HQPercentage).div(1000);
-        SafeERC20.safeTransferFrom(_token, msg.sender, HQ, amountHQ);
 
         uint256 totalAmountDistributed = amountTreasury + amountROI + amountHQ;
         if (_amountToken > totalAmountDistributed) {
             amountTreasury += _amountToken - totalAmountDistributed;
         }
 
+        SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), amountTreasury);
+        SafeERC20.safeTransferFrom(_token, msg.sender, ROI, amountROI);
+        SafeERC20.safeTransferFrom(_token, msg.sender, HQ, amountHQ);
+
+        uint256 amountStabl3 = treasury.getAmountOut(_token, _amountToken);
+
         stabl3.transferFrom(address(treasury), msg.sender, amountStabl3);
 
-        emit Buy(msg.sender, amountStabl3, _token, _amountToken, block.timestamp);
         treasury.updatePool(BUY_POOL, _token, amountTreasury, amountROI, amountHQ, true);
         treasury.updateRate(_token, _amountToken);
+
+        emit Buy(msg.sender, amountStabl3, _token, _amountToken, block.timestamp);
     }
 
+    // TODO rework, no buying stabl3, 5 minute pause per user, 24 hour limit 30% of treasury per user, AMM for price
     function exchange(
         IERC20 _exchangingToken,
         IERC20 _token,
@@ -146,18 +149,18 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
         uint256 fee = (_amountToken * exchangeFee) / 1000;
         uint256 amountTokenWithFee = _amountToken - fee;
 
-        uint256 amountStabl3 = treasury.getAmountOut(_token, fee);
-
         SafeERC20.safeTransferFrom(_token, msg.sender, ROI, fee);
+
+        uint256 amountStabl3 = treasury.getAmountOut(_token, fee);
 
         stabl3.transferFrom(address(treasury), msg.sender, amountStabl3);
 
-        emit Buy(msg.sender, amountStabl3, _token, fee, block.timestamp);
         treasury.updatePool(BUY_POOL, _token, 0, fee, 0, true);
         treasury.updateRate(_token, fee);
 
-        uint256 amountExchangingToken;
+        emit Buy(msg.sender, amountStabl3, _token, fee, block.timestamp);
 
+        uint256 amountExchangingToken;
         if (_exchangingToken.decimals() > _token.decimals()) {
             amountExchangingToken = amountTokenWithFee * (10 ** (_exchangingToken.decimals() - _token.decimals()));
         }
@@ -169,12 +172,12 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
         }
 
         SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), amountTokenWithFee);
-
         SafeERC20.safeTransferFrom(_exchangingToken, address(treasury), msg.sender, amountExchangingToken);
 
-        emit Exchange(msg.sender, _exchangingToken, amountExchangingToken, _token, amountTokenWithFee, fee, block.timestamp);
         treasury.updatePool(BUY_POOL, _token, amountTokenWithFee, 0, 0, true);
         treasury.updatePool(BUY_POOL, _exchangingToken, amountExchangingToken, 0, 0, false);
+
+        emit Exchange(msg.sender, _exchangingToken, amountExchangingToken, _token, amountTokenWithFee, fee, block.timestamp);
     }
 
     // modifiers

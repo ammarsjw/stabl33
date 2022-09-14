@@ -349,41 +349,43 @@ contract Stabl3Staking is Ownable {
 
         if (_isLending) {
             uint256 amountTreasury = _amountToken.mul(treasuryPercentages[1]).div(1000);
-            SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), amountTreasury);
 
-            // TODO take stabl3 put it into staking contract, update rate and then just transfer from staking to user
             uint256 amountROI = _amountToken.mul(ROIPercentages[1]).div(1000);
-            amountStabl3Lending = treasury.getAmountOut(_token, amountROI);
-            SafeERC20.safeTransferFrom(_token, msg.sender, address(ROI), amountROI);
             amountTokenLending = amountROI;
+            amountStabl3Lending = treasury.getAmountOut(_token, amountTokenLending);
 
             uint256 amountHQ = _amountToken.mul(HQPercentages[1]).div(1000);
-            SafeERC20.safeTransferFrom(_token, msg.sender, HQ, amountHQ);
 
             uint256 totalAmountDistributed = amountTreasury + amountROI + amountHQ;
             if (_amountToken > totalAmountDistributed) {
                 amountTreasury += _amountToken - totalAmountDistributed;
             }
 
-            _amountToken = amountTreasury + amountHQ;
+            SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), amountTreasury);
+            SafeERC20.safeTransferFrom(_token, msg.sender, address(ROI), amountROI);
+            SafeERC20.safeTransferFrom(_token, msg.sender, HQ, amountHQ);
 
-            treasury.updatePool(STAKE_POOL, _token, amountTreasury, amountROI, amountHQ, true);
+            stabl3.transferFrom(address(treasury), address(this), amountStabl3Lending);
+
+            treasury.updatePool(STAKE_POOL, _token, amountTreasury, 0, amountHQ, true);
+            treasury.updatePool(BUY_POOL, _token, 0, amountROI, 0, true);
             treasury.updateRate(_token, amountROI);
         }
         else {
             uint256 amountTreasury = _amountToken.mul(treasuryPercentages[0]).div(1000);
-            SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), amountTreasury);
 
             uint256 amountROI = _amountToken.mul(ROIPercentages[0]).div(1000);
-            SafeERC20.safeTransferFrom(_token, msg.sender, address(ROI), amountROI);
 
             uint256 amountHQ = _amountToken.mul(HQPercentages[0]).div(1000);
-            SafeERC20.safeTransferFrom(_token, msg.sender, HQ, amountHQ);
 
             uint256 totalAmountDistributed = amountTreasury + amountROI + amountHQ;
             if (_amountToken > totalAmountDistributed) {
                 amountTreasury += _amountToken - totalAmountDistributed;
             }
+
+            SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), amountTreasury);
+            SafeERC20.safeTransferFrom(_token, msg.sender, address(ROI), amountROI);
+            SafeERC20.safeTransferFrom(_token, msg.sender, HQ, amountHQ);
 
             treasury.updatePool(STAKE_POOL, _token, amountTreasury, amountROI, amountHQ, true);
         }
@@ -573,7 +575,7 @@ contract Stabl3Staking is Ownable {
         uint256 amountStabl3Lending = _getClaimableStabl3LendingSingle(msg.sender, _index, _timestamp);
 
         if (amountStabl3Lending > 0) {
-            stabl3.transferFrom(address(treasury), msg.sender, amountStabl3Lending);
+            stabl3.transferFrom(address(this), msg.sender, amountStabl3Lending);
 
             staking.isClaimedStabl3Lending = true;
 
