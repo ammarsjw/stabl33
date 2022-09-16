@@ -293,7 +293,7 @@ contract Treasury is Ownable, ReentrancyGuard {
         uint256 _amountTokenROI,
         uint256 _amountTokenHQ,
         bool _isIncrease
-    ) external nonReentrant permission {
+    ) external permission {
         if (_isIncrease) {
             getTreasuryPool[_type][_token] += _amountTokenTreasury;
             getROIPool[_type][_token] += _amountTokenROI;

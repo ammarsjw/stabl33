@@ -8,12 +8,15 @@ import "./SafeERC20.sol";
 import "./ReentrancyGuard.sol";
 
 import "./ITreasury.sol";
+import "./IUniswapV2Router.sol";
 
 contract Stabl3PublicSale is Ownable, ReentrancyGuard {
     using SafeMathUpgradeable for uint256;
     using SafeERC20 for IERC20;
 
     uint8 constant BUY_POOL = 1;
+
+    IUniswapV2Router02 public uniswapRouter;
 
     ITreasury public treasury;
     address public ROI;
@@ -27,7 +30,24 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
 
     uint256 public exchangeFee;
 
+    uint256 public exchangePauseTime;
+    uint256 public exchangeLimitTime;
+    uint256 public exchangeLimitPercentage;
+
     bool public saleState;
+
+    // structs
+
+    struct Limit {
+        address user;
+        uint256 amount;
+        uint256 startTime;
+        uint256 lastExchangeTime;
+    }
+
+    // mappings
+
+    mapping (address => Limit) public getLimit;
 
     // events
 
@@ -54,6 +74,9 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
     // constructor
 
     constructor(address _treasury, address _ROI) {
+        // TODO change
+        uniswapRouter = IUniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
+
         treasury = ITreasury(_treasury);
         ROI = _ROI;
         HQ = 0x294d0487fdf7acecf342ae70AFc5549A6E90f3e0;
@@ -65,6 +88,10 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
         HQPercentage = 39;
 
         exchangeFee = 3;
+
+        exchangePauseTime = 300;
+        exchangeLimitTime = 86400;
+        exchangeLimitPercentage = 300;
     }
 
     function updateTreasury(address _treasury) external onlyOwner {
@@ -104,12 +131,27 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
         exchangeFee = _exchangeFee;
     }
 
+    function updateExchangePauseTime(uint256 _exchangePauseTime) external onlyOwner {
+        require(exchangePauseTime != _exchangePauseTime, "Stabl3PublicSale: Exchange Pause Time is already this value");
+        exchangePauseTime = _exchangePauseTime;
+    }
+
+    function updateExchangeLimitTime(uint256 _exchangeLimitTime) external onlyOwner {
+        require(exchangeLimitTime != _exchangeLimitTime, "Stabl3PublicSale: Exchange Limit Time is already this value");
+        exchangeLimitTime = _exchangeLimitTime;
+    }
+
+    function updateExchangeLimitPercentage(uint256 _exchangeLimitPercentage) external onlyOwner {
+        require(exchangeLimitPercentage != _exchangeLimitPercentage, "Stabl3PublicSale: Exchange Limit Percentage is already this value");
+        exchangeLimitPercentage = _exchangeLimitPercentage;
+    }
+
     function updateSaleState(bool _state) external onlyOwner {
         require(saleState != _state, "Stabl3PublicSale: Sale state is already of the value 'state'");
         saleState = _state;
     }
 
-    function buy(IERC20 _token, uint256 _amountToken) external nonReentrant saleActive reserved(_token) {
+    function buy(IERC20 _token, uint256 _amountToken) external saleActive reserved(_token) {
         require(_amountToken > 0, "Stabl3PublicSale: Insufficient amount");
 
         uint256 amountTreasury = _amountToken.mul(treasuryPercentage).div(1000);
@@ -137,17 +179,70 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
         emit Buy(msg.sender, amountStabl3, _token, _amountToken, block.timestamp);
     }
 
-    // TODO rework, no buying stabl3, 5 minute pause per user, 24 hour limit 30% of treasury per user, AMM for price
+    function _handleLimit(IERC20 _exchangingToken, uint256 _amountExchangingToken) internal {
+        Limit storage limit = getLimit[msg.sender];
+
+        uint256 amountExchangingTokenConverted = _amountExchangingToken;
+        if (_exchangingToken.decimals() < 18) {
+            amountExchangingTokenConverted *= 10 ** (18 - _exchangingToken.decimals());
+        }
+
+        if (limit.user != msg.sender) {
+            limit.user = msg.sender;
+            limit.amount = amountExchangingTokenConverted;
+            limit.startTime = block.timestamp;
+        }
+
+        if (block.timestamp > limit.lastExchangeTime + exchangePauseTime) {
+            limit.lastExchangeTime = block.timestamp;
+        }
+        else {
+            revert("Stabl3PublicSale: Exchange Paused. Try again later");
+        }
+
+        uint256 treasuryReserves = treasury.getReserves();
+
+        if (limit.amount + amountExchangingTokenConverted > treasuryReserves.mul(exchangeLimitPercentage).div(1000)) {
+            require(block.timestamp > limit.startTime.add(exchangeLimitTime),
+                "Nabana: Exchange Limit Reached. Try again later or try a smaller value");
+        }
+
+        if (block.timestamp > limit.startTime.add(exchangeLimitTime)) {
+            limit.amount = amountExchangingTokenConverted;
+            limit.startTime = block.timestamp;
+        }
+        else {
+            limit.amount += amountExchangingTokenConverted;
+        }
+    }
+
+    // 5 minute pause per user, limited to 30% of treasury exchangeable within 24 hour per user, AMM for price
     function exchange(
         IERC20 _exchangingToken,
         IERC20 _token,
         uint256 _amountToken
-    ) external nonReentrant saleActive reserved(_exchangingToken) reserved(_token) {
+    ) external saleActive nonReentrant reserved(_exchangingToken) reserved(_token)  {
         require(_exchangingToken != _token, "Stabl3PublicSale: Invalid exchange");
         require(_amountToken > 0, "Stabl3PublicSale: Insufficient amount");
 
         uint256 fee = (_amountToken * exchangeFee) / 1000;
         uint256 amountTokenWithFee = _amountToken - fee;
+
+        address[] memory path;
+        path[0] = address(_token);
+        path[1] = address(_exchangingToken);
+
+        uint256[] memory amountExchangingToken = uniswapRouter.getAmountsOut(amountTokenWithFee, path);
+
+        _handleLimit(_exchangingToken, amountExchangingToken[1]);
+
+        SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), amountTokenWithFee);
+        SafeERC20.safeTransferFrom(_exchangingToken, address(treasury), msg.sender, amountExchangingToken[1]);
+
+        treasury.updatePool(BUY_POOL, _token, amountTokenWithFee, 0, 0, true);
+        treasury.updatePool(BUY_POOL, _exchangingToken, amountExchangingToken[1], 0, 0, false);
+
+        emit Exchange(msg.sender, _exchangingToken, amountExchangingToken[1], _token, amountTokenWithFee, fee, block.timestamp);
 
         SafeERC20.safeTransferFrom(_token, msg.sender, ROI, fee);
 
@@ -159,25 +254,6 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
         treasury.updateRate(_token, fee);
 
         emit Buy(msg.sender, amountStabl3, _token, fee, block.timestamp);
-
-        uint256 amountExchangingToken;
-        if (_exchangingToken.decimals() > _token.decimals()) {
-            amountExchangingToken = amountTokenWithFee * (10 ** (_exchangingToken.decimals() - _token.decimals()));
-        }
-        else if (_token.decimals() > _exchangingToken.decimals()) {
-            amountExchangingToken = amountTokenWithFee / (10 ** (_token.decimals() - _exchangingToken.decimals()));
-        }
-        else {
-            amountExchangingToken = amountTokenWithFee;
-        }
-
-        SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), amountTokenWithFee);
-        SafeERC20.safeTransferFrom(_exchangingToken, address(treasury), msg.sender, amountExchangingToken);
-
-        treasury.updatePool(BUY_POOL, _token, amountTokenWithFee, 0, 0, true);
-        treasury.updatePool(BUY_POOL, _exchangingToken, amountExchangingToken, 0, 0, false);
-
-        emit Exchange(msg.sender, _exchangingToken, amountExchangingToken, _token, amountTokenWithFee, fee, block.timestamp);
     }
 
     // modifiers

@@ -71,6 +71,7 @@ contract Stabl3Staking is Ownable {
     // user staking
     mapping (address => Staking[]) public getStakings;
 
+    // user lifetime values
     mapping (address => Values) public getValues;
 
     // events
@@ -653,7 +654,11 @@ contract Stabl3Staking is Ownable {
         emit WithdrewAmountStaked(msg.sender, _index, staking.token, _amountToWithdraw, staking.isLending);
     }
 
-    function withdrawAmountStakedSingle(uint256 _index, uint256 _amountToWithdraw) external stakeActive {
+    // TODO getValues for both stake and lend are different
+    // TODO reward single
+    // TODO reward undistributed single token?
+    // TODO rework
+    function withdrawAmountStakedSingle(uint256 _index, uint256 _amountToWithdraw, uint256 _stakingType, uint256 _isLending) external stakeActive {
         Staking memory staking = getStakings[msg.sender][_index];
 
         require(getAmountStakedAll(msg.sender, staking.isLending) > 0, "Stabl3Staking: No Staked Amount to withdraw");
