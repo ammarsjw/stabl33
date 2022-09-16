@@ -8,15 +8,12 @@ import "./SafeERC20.sol";
 import "./ReentrancyGuard.sol";
 
 import "./ITreasury.sol";
-import "./IUniswapV2Router.sol";
 
 contract Stabl3PublicSale is Ownable, ReentrancyGuard {
     using SafeMathUpgradeable for uint256;
     using SafeERC20 for IERC20;
 
     uint8 constant BUY_POOL = 1;
-
-    IUniswapV2Router02 public uniswapRouter;
 
     ITreasury public treasury;
     address public ROI;
@@ -27,8 +24,6 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
     uint256 public treasuryPercentage;
     uint256 public ROIPercentage;
     uint256 public HQPercentage;
-
-    uint256 public exchangeFee;
 
     uint256 public exchangePauseTime;
     uint256 public exchangeLimitTime;
@@ -57,8 +52,6 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
 
     event UpdatedHQ(address newHQ, address oldHQ);
 
-    event UpdatedExchangeFee(uint256 newExchangeFee, uint256 oldExchangeFee);
-
     event Buy(address indexed recipient, uint256 amountStabl3, IERC20 token, uint256 amountToken, uint256 timestamp);
 
     event Exchange(
@@ -74,9 +67,6 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
     // constructor
 
     constructor(address _treasury, address _ROI) {
-        // TODO change
-        uniswapRouter = IUniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
-
         treasury = ITreasury(_treasury);
         ROI = _ROI;
         HQ = 0x294d0487fdf7acecf342ae70AFc5549A6E90f3e0;
@@ -86,8 +76,6 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
         treasuryPercentage = 800;
         ROIPercentage = 161;
         HQPercentage = 39;
-
-        exchangeFee = 3;
 
         exchangePauseTime = 300;
         exchangeLimitTime = 86400;
@@ -123,12 +111,6 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
         treasuryPercentage = _treasuryPercentage;
         ROIPercentage = _ROIPercentage;
         HQPercentage = _HQPercentage;
-    }
-
-    function updateExchangeFee(uint256 _exchangeFee) external onlyOwner {
-        require(exchangeFee != _exchangeFee, "Stabl3PublicSale: Exchange Fee is already this value");
-        emit UpdatedExchangeFee(_exchangeFee, exchangeFee);
-        exchangeFee = _exchangeFee;
     }
 
     function updateExchangePauseTime(uint256 _exchangePauseTime) external onlyOwner {
@@ -225,24 +207,20 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
         require(_exchangingToken != _token, "Stabl3PublicSale: Invalid exchange");
         require(_amountToken > 0, "Stabl3PublicSale: Insufficient amount");
 
-        uint256 fee = (_amountToken * exchangeFee) / 1000;
+        uint256 fee = (_amountToken * treasury.exchangeFee()) / 1000;
         uint256 amountTokenWithFee = _amountToken - fee;
 
-        address[] memory path;
-        path[0] = address(_token);
-        path[1] = address(_exchangingToken);
+        uint256 amountExchangingToken = treasury.getExchangeAmountOut(_exchangingToken, _token, _amountToken);
 
-        uint256[] memory amountExchangingToken = uniswapRouter.getAmountsOut(amountTokenWithFee, path);
-
-        _handleLimit(_exchangingToken, amountExchangingToken[1]);
+        _handleLimit(_exchangingToken, amountExchangingToken);
 
         SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), amountTokenWithFee);
-        SafeERC20.safeTransferFrom(_exchangingToken, address(treasury), msg.sender, amountExchangingToken[1]);
+        SafeERC20.safeTransferFrom(_exchangingToken, address(treasury), msg.sender, amountExchangingToken);
 
         treasury.updatePool(BUY_POOL, _token, amountTokenWithFee, 0, 0, true);
-        treasury.updatePool(BUY_POOL, _exchangingToken, amountExchangingToken[1], 0, 0, false);
+        treasury.updatePool(BUY_POOL, _exchangingToken, amountExchangingToken, 0, 0, false);
 
-        emit Exchange(msg.sender, _exchangingToken, amountExchangingToken[1], _token, amountTokenWithFee, fee, block.timestamp);
+        emit Exchange(msg.sender, _exchangingToken, amountExchangingToken, _token, amountTokenWithFee, fee, block.timestamp);
 
         SafeERC20.safeTransferFrom(_token, msg.sender, ROI, fee);
 

@@ -7,6 +7,10 @@ import "./SafeMathUpgradeable.sol";
 import "./SafeERC20.sol";
 import "./ReentrancyGuard.sol";
 
+import "./IUniswapV2Router.sol";
+import "./IUniswapV2Factory.sol";
+import "./IUniswapV2Pair.sol";
+
 contract Treasury is Ownable, ReentrancyGuard {
     using SafeMathUpgradeable for uint256;
 
@@ -25,10 +29,15 @@ contract Treasury is Ownable, ReentrancyGuard {
     // uint8 private constant UCD_BURN_POOL = 8;
     // uint8 private constant UCD_RETURN_POOL = 9;
 
+    IUniswapV2Router02 public uniswapRouter;
+    IUniswapV2Factory public uniswapFactory;
+
     address public ROI;
     address public HQ;
 
     IERC20 public stabl3;
+
+    uint256 public exchangeFee;
 
     RateInfo public rateInfo;
 
@@ -64,6 +73,8 @@ contract Treasury is Ownable, ReentrancyGuard {
 
     event UpdatedHQ(address newHQ, address oldHQ);
 
+    event UpdatedExchangeFee(uint256 newExchangeFee, uint256 oldExchangeFee);
+
     event UpdatedPermission(address contractAddress, bool state);
 
     event UpdatedReservedToken(IERC20 token, bool state);
@@ -73,9 +84,15 @@ contract Treasury is Ownable, ReentrancyGuard {
     // constructor
 
     constructor() {
+        // TODO change
+        uniswapRouter = IUniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
+        uniswapFactory = IUniswapV2Factory(uniswapRouter.factory());
+
         HQ = 0x294d0487fdf7acecf342ae70AFc5549A6E90f3e0;
 
         stabl3 = IERC20(0xDf9c4990a8973b6cC069738592F27Ea54b27D569);
+
+        exchangeFee = 3;
 
         rateInfo = RateInfo(1 * (10 ** 15), 0.0007 * (10 ** 18), 10000 * (10 ** 18), 0, 0);
         rateInfo.stabl3Window = (rateInfo.tokenWindow * (10 ** 6)) / rateInfo.rate;
@@ -97,6 +114,12 @@ contract Treasury is Ownable, ReentrancyGuard {
         require(HQ != _HQ, "Treasury: HQ is already this address");
         emit UpdatedHQ(_HQ, HQ);
         HQ = _HQ;
+    }
+
+    function updateExchangeFee(uint256 _exchangeFee) external onlyOwner {
+        require(exchangeFee != _exchangeFee, "Stabl3PublicSale: Exchange Fee is already this value");
+        emit UpdatedExchangeFee(_exchangeFee, exchangeFee);
+        exchangeFee = _exchangeFee;
     }
 
     function updatePermission(address _contractAddress, bool _state) external onlyOwner {
@@ -284,6 +307,54 @@ contract Treasury is Ownable, ReentrancyGuard {
         }
 
         return amountToken;
+    }
+
+    function getExchangeAmountOut(IERC20 _exchangingToken, IERC20 _token, uint256 _amountToken) external view reserved(_token) returns (uint256) {
+        require(_amountToken > 0, "Treasury: Insufficient input amount");
+        if (_exchangingToken.balanceOf(address(this)) == 0) {
+            return 0;
+        }
+
+        uint256 fee = (_amountToken * exchangeFee) / 1000;
+        uint256 amountTokenWithFee = _amountToken - fee;
+
+        address pair = uniswapFactory.getPair(address(_token), address(_exchangingToken));
+
+        (uint256 reserve0, uint256 reserve1, ) = IUniswapV2Pair(pair).getReserves();
+
+        uint256 amountExchangingToken;
+        if (IUniswapV2Pair(pair).token0() == address(_token)) {
+            amountExchangingToken = uniswapRouter.quote(amountTokenWithFee, reserve0, reserve1);
+        }
+        else {
+            amountExchangingToken = uniswapRouter.quote(amountTokenWithFee, reserve1, reserve0);
+        }
+
+        return amountExchangingToken;
+    }
+
+    function getExchangeAmountIn(IERC20 _exchangingToken, uint256 _amountExchangingToken, IERC20 _token) external view reserved(_token) returns (uint256) {
+        require(_amountExchangingToken > 0, "Treasury: Insufficient input amount");
+        if (_exchangingToken.balanceOf(address(this)) == 0) {
+            return 0;
+        }
+
+        address pair = uniswapFactory.getPair(address(_token), address(_exchangingToken));
+
+        (uint256 reserve0, uint256 reserve1, ) = IUniswapV2Pair(pair).getReserves();
+
+        uint256 amountToken;
+        if (IUniswapV2Pair(pair).token0() == address(_token)) {
+            amountToken = uniswapRouter.quote(_amountExchangingToken, reserve1, reserve0);
+        }
+        else {
+            amountToken = uniswapRouter.quote(_amountExchangingToken, reserve0, reserve1);
+        }
+
+        uint256 fee = (amountToken * 1000) / (1000 - exchangeFee);
+        uint256 amountTokenWithFee = amountToken + fee;
+
+        return amountTokenWithFee;
     }
 
     function updatePool(

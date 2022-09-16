@@ -5,6 +5,8 @@ pragma solidity 0.8.17;
 import "./IERC20.sol";
 
 interface ITreasury {
+    function exchangeFee() external view returns (uint256);
+
     function isReservedToken(IERC20 _token) external view returns (bool);
 
     function allReservedTokens(uint) external view returns (IERC20);
@@ -40,6 +42,10 @@ interface ITreasury {
     function getAmountOut(IERC20 _token, uint256 _amountToken) external view returns (uint256);
 
     function getAmountIn(uint256 _amountStabl3, IERC20 _token) external view returns (uint256);
+
+    function getExchangeAmountOut(IERC20 _exchangingToken, IERC20 _token, uint256 _amountToken) external view returns (uint256);
+
+    function getExchangeAmountIn(IERC20 _exchangingToken, uint256 _amountExchangingToken, IERC20 _token) external view returns (uint256);
 
     function updatePool(
         uint8 _type,
