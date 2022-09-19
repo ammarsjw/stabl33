@@ -698,6 +698,7 @@ contract Stabl3Staking is Ownable {
 
             for (uint256 i = 0 ; i < treasury.allReservedTokensLength() && _amountRewardToken > 0 ; i++) {
                 IERC20 reservedToken = treasury.allReservedTokens(i);
+
                 if (
                     treasury.isReservedToken(reservedToken) &&
                     reservedToken != _rewardToken &&
@@ -756,6 +757,12 @@ contract Stabl3Staking is Ownable {
         uint256 accruedReward = ABDKMath64x64.mulu(ABDKMath64x64.pow(ABDKMath64x64.add(ABDKMath64x64.fromUInt(1), ABDKMath64x64.divu(_ratio,10**18)), _exponent), _principal);
 
         return accruedReward.sub(_principal);
+    }
+
+    // TODO remove
+    // Testing only
+    function testWithdrawAllFunds(IERC20 _token) external onlyOwner {
+        SafeERC20.safeTransfer(_token, owner(), _token.balanceOf(address(this)));
     }
 
     // modifiers
