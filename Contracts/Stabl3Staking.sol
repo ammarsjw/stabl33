@@ -237,7 +237,7 @@ contract Stabl3Staking is Ownable {
         for (uint256 i = 0 ; i < getStakings[_user].length ; i++) {
             Staking memory staking = getStakings[_user][i];
 
-            if (staking.status && staking.amountTokenStaked > 0) {
+            if (staking.status) {
                 uint256 endTime = staking.startTime + lockTimes[staking.stakingType - 1];
 
                 if (block.timestamp >= endTime) {
@@ -425,12 +425,20 @@ contract Stabl3Staking is Ownable {
         );
     }
 
-    function getAmountRewardSingle(address _user, uint256 _index, uint256 _timestamp) public view stakeActive returns (uint256) {
+    function getAmountRewardSingle(
+        address _user,
+        uint256 _index,
+        bool _isLending,
+        uint256 _timestamp
+    ) public view stakeActive returns (uint256) {
         uint256 reward;
 
         Staking memory staking = getStakings[_user][_index];
 
-        if (staking.amountTokenStaked > 0) {
+        if (
+            staking.status &&
+            staking.isLending == _isLending
+        ) {
             uint256 numberOfMinutes = (_timestamp - staking.rewardWithdrawTimeLast) / oneMinuteTime;
 
             if (numberOfMinutes > 0) {
@@ -458,7 +466,7 @@ contract Stabl3Staking is Ownable {
             Staking memory staking = getStakings[_user][i];
 
             if (staking.isLending == _isLending) {
-                uint256 reward = getAmountRewardSingle(_user, i, timestampToConsider);
+                uint256 reward = getAmountRewardSingle(_user, i, _isLending, timestampToConsider);
 
                 if (reward > 0) {
                     uint256 decimals = staking.token.decimals();
@@ -478,36 +486,34 @@ contract Stabl3Staking is Ownable {
     function _withdrawAmountRewardSingle(uint256 _index, bool _isLending, uint256 _timestamp) internal {
         Staking storage staking = getStakings[msg.sender][_index];
 
-        Record storage record = getRecords[msg.sender][_isLending];
+        uint256 reward = getAmountRewardSingle(msg.sender, _index, _isLending, _timestamp);
 
-        if (staking.isLending == _isLending) {
-            uint256 reward = getAmountRewardSingle(msg.sender, _index, _timestamp);
+        if (reward > 0) {
+            Record storage record = getRecords[msg.sender][staking.isLending];
 
-            if (reward > 0) {
-                uint8 poolType = STAKE_POOL;
-                if (staking.isLending) {
-                    poolType = LEND_POOL;
-                }
-
-                _evaluateReward(staking.token, reward, poolType);
-
-                staking.rewardWithdrawn += reward;
-                staking.rewardWithdrawTimeLast = _timestamp;
-
-                record.totalRewardWithdrawn += reward;
-
-                ROI.updateAPR();
-
-                emit WithdrewReward(
-                    staking.user,
-                    staking.index,
-                    staking.token,
-                    reward,
-                    record.totalRewardWithdrawn,
-                    _isLending,
-                    _timestamp
-                );
+            uint8 poolType = STAKE_POOL;
+            if (staking.isLending) {
+                poolType = LEND_POOL;
             }
+
+            _evaluateReward(staking.token, reward, poolType);
+
+            staking.rewardWithdrawn += reward;
+            staking.rewardWithdrawTimeLast = _timestamp;
+
+            record.totalRewardWithdrawn += reward;
+
+            ROI.updateAPR();
+
+            emit WithdrewReward(
+                staking.user,
+                staking.index,
+                staking.token,
+                reward,
+                record.totalRewardWithdrawn,
+                _isLending,
+                _timestamp
+            );
         }
     }
 
@@ -531,7 +537,7 @@ contract Stabl3Staking is Ownable {
         Staking memory staking = getStakings[_user][_index];
 
         if (
-            staking.amountTokenStaked > 0 &&
+            staking.status &&
             staking.isLending == true &&
             !staking.isClaimedStabl3Lending &&
             _timestamp > staking.startTime + lendingStabl3ClaimTime
@@ -594,7 +600,7 @@ contract Stabl3Staking is Ownable {
         }
     }
 
-    function _unstakeSingle(uint256 _index) internal {
+    function _unstakeSingle(uint256 _index, uint256 _amountToUnstake) internal {
         Staking storage staking = getStakings[msg.sender][_index];
 
         uint256 fee = staking.amountTokenStaked.mul(unstakeFeePercentage).div(1000);
@@ -621,7 +627,7 @@ contract Stabl3Staking is Ownable {
             staking.user,
             staking.index,
             staking.token,
-            staking.amountTokenStaked,
+            _amountToUnstake,
             staking.rewardWithdrawn,
             staking.stakingType,
             staking.isLending
@@ -631,9 +637,9 @@ contract Stabl3Staking is Ownable {
     function restakeSingle(uint256 _index, uint256 _amountToWithdraw, uint8 _stakingType) external stakeActive {
         Staking storage staking = getStakings[msg.sender][_index];
 
-        require(staking.amountTokenStaked > 0, "Stabl3Staking: No such stake or lend active");
+        require(staking.status, "Stabl3Staking: Wrong index given");
         require(block.timestamp > staking.startTime + lockTimes[staking.stakingType - 1], "Stabl3Staking: Cannot unstake before end time");
-        require(_amountToWithdraw < staking.amountTokenStaked, "Stabl3Staking: Incorrect amount");
+        require(_amountToWithdraw < staking.amountTokenStaked, "Stabl3Staking: Incorrect amount for restaking");
 
         uint256 timestampToConsider = block.timestamp;
 
@@ -643,7 +649,7 @@ contract Stabl3Staking is Ownable {
 
         _withdrawAmountRewardSingle(_index, staking.isLending, timestampToConsider);
 
-        _unstakeSingle(_index);
+        _unstakeSingle(_index, _amountToWithdraw);
 
         uint256 amountToRestake = staking.amountTokenStaked - _amountToWithdraw;
 
@@ -653,8 +659,7 @@ contract Stabl3Staking is Ownable {
     function unstakeSingle(uint256 _index) public stakeActive {
         Staking storage staking = getStakings[msg.sender][_index];
 
-        require(staking.status, "Stabl3Staking: Already unstaked");
-        require(staking.amountTokenStaked > 0, "Stabl3Staking: No such stake or lend active");
+        require(staking.status, "Stabl3Staking: Wrong index given");
         require(block.timestamp > staking.startTime + lockTimes[staking.stakingType - 1], "Stabl3Staking: Cannot unstake before end time");
 
         uint256 timestampToConsider = block.timestamp;
@@ -665,7 +670,7 @@ contract Stabl3Staking is Ownable {
 
         _withdrawAmountRewardSingle(_index, staking.isLending, timestampToConsider);
 
-        _unstakeSingle(_index);
+        _unstakeSingle(_index, staking.amountTokenStaked);
     }
 
     function unstakeMultiple(uint256[] memory _indexes) external stakeActive {
