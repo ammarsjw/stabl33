@@ -351,8 +351,7 @@ contract Treasury is Ownable, ReentrancyGuard {
             amountToken = uniswapRouter.quote(_amountExchangingToken, reserve0, reserve1);
         }
 
-        uint256 fee = (amountToken * 1000) / (1000 - exchangeFee);
-        uint256 amountTokenWithFee = amountToken + fee;
+        uint256 amountTokenWithFee = (amountToken * 1000) / (1000 - exchangeFee);
 
         return amountTokenWithFee;
     }
