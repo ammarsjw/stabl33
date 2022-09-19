@@ -7,6 +7,8 @@ import "./IERC20.sol";
 interface IROI {
     function updateTreasury(address _treasury) external;
 
+    function initializeUCD(address _ucd) external;
+
     function updatePermission(address _contractAddress, bool _state) external;
 
     function getReserves() external view returns (uint256);

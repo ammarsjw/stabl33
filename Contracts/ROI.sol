@@ -19,6 +19,8 @@ contract ROI is Ownable, ReentrancyGuard {
 
     IERC20 public stabl3;
 
+    IERC20 public ucd;
+
     // mappings
 
     // contracts with permission to access treasury funds
@@ -48,6 +50,11 @@ contract ROI is Ownable, ReentrancyGuard {
         updatePermission(_treasury, true);
         emit UpdatedTreasury(_treasury, address(treasury));
         treasury = ITreasury(_treasury);
+    }
+
+    function initializeUCD(address _ucd) external onlyOwner {
+        // require(address(ucd) == address(0), "Treasury: UCD has already been initialized");
+        ucd = IERC20(_ucd);
     }
 
     function updatePermission(address _contractAddress, bool _state) public onlyOwner {

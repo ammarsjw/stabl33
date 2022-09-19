@@ -15,9 +15,13 @@ contract Stabl3Staking is Ownable {
     using SafeERC20 for IERC20;
 
     uint8 private constant BUY_POOL = 0;
+
     uint8 private constant BOND_POOL = 1;
+
     uint8 private constant STAKE_POOL = 2;
     uint8 private constant LEND_POOL = 3;
+    uint8 private constant STAKE_REWARD_POOL = 4;
+    uint8 private constant LEND_REWARD_POOL = 5;
 
     ITreasury public treasury;
     IROI public ROI;
@@ -680,7 +684,7 @@ contract Stabl3Staking is Ownable {
     }
 
     function _evaluateReward(IERC20 _rewardToken, uint256 _amountRewardToken, uint8 _poolType) internal {
-        uint8 rewardDistributionType = _poolType + 4;
+        uint8 rewardPoolType = _poolType + 2;
 
         uint256 amountRewardTokenROI = _rewardToken.balanceOf(address(ROI));
 
@@ -691,7 +695,7 @@ contract Stabl3Staking is Ownable {
                 _amountRewardToken -= amountRewardTokenROI;
 
                 treasury.updatePool(_poolType, _rewardToken, 0, amountRewardTokenROI, 0, false);
-                treasury.updatePool(rewardDistributionType, _rewardToken, 0, amountRewardTokenROI, 0, true);
+                treasury.updatePool(rewardPoolType, _rewardToken, 0, amountRewardTokenROI, 0, true);
             }
 
             uint256 decimalsRewardToken = _rewardToken.decimals();
@@ -720,7 +724,7 @@ contract Stabl3Staking is Ownable {
                         SafeERC20.safeTransferFrom(reservedToken, address(ROI), msg.sender, amountReservedTokenROI);
 
                         treasury.updatePool(_poolType, reservedToken, 0, amountReservedTokenROI, 0, false);
-                        treasury.updatePool(rewardDistributionType, reservedToken, 0, amountReservedTokenROI, 0, true);
+                        treasury.updatePool(rewardPoolType, reservedToken, 0, amountReservedTokenROI, 0, true);
 
                         if (decimalsRewardToken > decimalsReservedToken) {
                             _amountRewardToken -= amountReservedTokenROI * (10 ** (decimalsRewardToken - decimalsReservedToken));
@@ -733,7 +737,7 @@ contract Stabl3Staking is Ownable {
                         SafeERC20.safeTransferFrom(reservedToken, address(ROI), msg.sender, amountRewardTokenConverted);
 
                         treasury.updatePool(_poolType, reservedToken, 0, amountRewardTokenConverted, 0, false);
-                        treasury.updatePool(rewardDistributionType, reservedToken, 0, amountRewardTokenConverted, 0, true);
+                        treasury.updatePool(rewardPoolType, reservedToken, 0, amountRewardTokenConverted, 0, true);
 
                         _amountRewardToken = 0;
                         break;
@@ -745,7 +749,7 @@ contract Stabl3Staking is Ownable {
             SafeERC20.safeTransferFrom(_rewardToken, address(ROI), msg.sender, _amountRewardToken);
 
             treasury.updatePool(_poolType, _rewardToken, 0, _amountRewardToken, 0, false);
-            treasury.updatePool(rewardDistributionType, _rewardToken, 0, _amountRewardToken, 0, true);
+            treasury.updatePool(rewardPoolType, _rewardToken, 0, _amountRewardToken, 0, true);
         }
     }
 

@@ -19,6 +19,8 @@ interface ITreasury {
 
     function updateHQ(address _HQ) external;
 
+    function initializeUCD(address _ucd) external;
+
     function updatePermission(address _contractAddress, bool _state) external;
 
     function updateReservedToken(IERC20 _token, bool _state) external;

@@ -17,17 +17,20 @@ contract Treasury is Ownable, ReentrancyGuard {
     uint256 private immutable MAX_INT = 2 ** 256 - 1;
 
     // uint8 private constant BUY_POOL = 0;
+
     // uint8 private constant BOND_POOL = 1;
+
     // uint8 private constant STAKE_POOL = 2;
     // uint8 private constant LEND_POOL = 3;
-    // uint8 private constant BORROW_POOL = 4;
-    // uint8 private constant EXCHANGE_POOL = 5;
+    // uint8 private constant STAKE_REWARD_POOL = 4;
+    // uint8 private constant LEND_REWARD_POOL = 5;
 
-    // uint8 private constant COLLATERAL_STABL3_POOL = 6;
-
-    // uint8 private constant UCD_BORROW_POOL = 7;
-    // uint8 private constant UCD_BURN_POOL = 8;
-    // uint8 private constant UCD_RETURN_POOL = 9;
+    // uint8 private constant BORROW_POOL = 6;
+    // uint8 private constant COLLATERAL_STABL3_POOL = 7;
+    // uint8 private constant UCD_BORROW_POOL = 8;
+    // uint8 private constant UCD_BURN_POOL = 9;
+    // uint8 private constant UCD_RETURN_POOL = 10;
+    // uint8 private constant UCD_EXCHANGE_POOL = 11;
 
     IUniswapV2Router02 public uniswapRouter;
     IUniswapV2Factory public uniswapFactory;
@@ -36,6 +39,8 @@ contract Treasury is Ownable, ReentrancyGuard {
     address public HQ;
 
     IERC20 public stabl3;
+
+    IERC20 public ucd;
 
     uint256 public exchangeFee;
 
@@ -116,6 +121,11 @@ contract Treasury is Ownable, ReentrancyGuard {
         HQ = _HQ;
     }
 
+    function initializeUCD(address _ucd) external onlyOwner {
+        // require(address(ucd) == address(0), "Treasury: UCD has already been initialized");
+        ucd = IERC20(_ucd);
+    }
+
     function updateExchangeFee(uint256 _exchangeFee) external onlyOwner {
         require(exchangeFee != _exchangeFee, "Stabl3PublicSale: Exchange Fee is already this value");
         emit UpdatedExchangeFee(_exchangeFee, exchangeFee);
@@ -129,12 +139,16 @@ contract Treasury is Ownable, ReentrancyGuard {
         if (_state) {
             delegateApprove(stabl3, _contractAddress, true);
 
+            delegateApprove(ucd, _contractAddress, true);
+
             for (uint256 i = 0 ; i < allReservedTokens.length ; i++) {
                 delegateApprove(allReservedTokens[i], _contractAddress, true);
             }
         }
         else {
             delegateApprove(stabl3, _contractAddress, false);
+
+            delegateApprove(ucd, _contractAddress, false);
 
             for (uint256 i = 0 ; i < allReservedTokens.length ; i++) {
                 delegateApprove(allReservedTokens[i], _contractAddress, false);
@@ -215,6 +229,7 @@ contract Treasury is Ownable, ReentrancyGuard {
         return rateInfo.rate;
     }
 
+    // rate is in 18 decimals
     function getRateImpact(IERC20 _token, uint256 _amountToken) public view reserved(_token) returns (uint256) {
         uint256 amountTokenConverted = _amountToken;
         if (_token.decimals() < 18) {
