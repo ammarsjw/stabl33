@@ -220,6 +220,9 @@ contract Stabl3Staking is Ownable {
         return getStakings[_user].length;
     }
 
+    // TODO
+    // true, false swapped
+    // 0 amounts
     function allStakings(
         address _user
     ) external view returns (
@@ -228,11 +231,6 @@ contract Stabl3Staking is Ownable {
         Staking[] memory unlockedStaking,
         Staking[] memory lockedStaking
     ) {
-        unlockedLending = new Staking[](getStakings[_user].length);
-        lockedLending = new Staking[](getStakings[_user].length);
-        unlockedStaking = new Staking[](getStakings[_user].length);
-        lockedStaking = new Staking[](getStakings[_user].length);
-
         uint256 unlockedLendingLength;
         uint256 lockedLendingLength;
         uint256 unlockedStakingLength;
@@ -246,17 +244,56 @@ contract Stabl3Staking is Ownable {
 
                 if (block.timestamp >= endTime) {
                     if (staking.isLending) {
-                        unlockedLending[unlockedLendingLength] = staking;
                         unlockedLendingLength++;
                     }
                     else {
-                        lockedLending[unlockedStakingLength] = staking;
                         unlockedStakingLength++;
                     }
                 }
                 else {
                     if (staking.isLending) {
-                        unlockedStaking[lockedLendingLength] = staking;
+                        lockedLendingLength++;
+                    }
+                    else {
+                        lockedStakingLength++;
+                    }
+                }
+            }
+        }
+
+        unlockedLending = new Staking[](unlockedLendingLength);
+        lockedLending = new Staking[](lockedLendingLength);
+        unlockedStaking = new Staking[](unlockedStakingLength);
+        lockedStaking = new Staking[](lockedStakingLength);
+
+        uint256 leftMax = SafeMathUpgradeable.max(unlockedLendingLength, lockedLendingLength);
+        uint256 rightMax = SafeMathUpgradeable.max(unlockedStakingLength, lockedStakingLength);
+        uint256 finalMax = SafeMathUpgradeable.max(leftMax, rightMax);
+
+        unlockedLendingLength = 0;
+        lockedLendingLength = 0;
+        unlockedStakingLength = 0;
+        lockedStakingLength = 0;
+
+        for (uint256 i = 0 ; i < finalMax ; i++) {
+            Staking memory staking = getStakings[_user][i];
+
+            if (staking.status) {
+                uint256 endTime = staking.startTime + lockTimes[staking.stakingType - 1];
+
+                if (block.timestamp >= endTime) {
+                    if (staking.isLending) {
+                        unlockedLending[unlockedLendingLength] = staking;
+                        unlockedLendingLength++;
+                    }
+                    else {
+                        unlockedStaking[unlockedStakingLength] = staking;
+                        unlockedStakingLength++;
+                    }
+                }
+                else {
+                    if (staking.isLending) {
+                        lockedLending[lockedLendingLength] = staking;
                         lockedLendingLength++;
                     }
                     else {
@@ -266,41 +303,6 @@ contract Stabl3Staking is Ownable {
                 }
             }
         }
-
-        Staking[] memory tempUnlockedLending = new Staking[](unlockedLendingLength);
-        Staking[] memory tempLockedLending = new Staking[](lockedLendingLength);
-        Staking[] memory tempUnlockedStaking = new Staking[](unlockedStakingLength);
-        Staking[] memory tempLockedStaking = new Staking[](lockedStakingLength);
-
-        for (uint256 i = 0 ; i < getStakings[_user].length ; i++) {
-            bool checker;
-
-            if (i < unlockedLendingLength) {
-                tempUnlockedLending[i] = unlockedLending[i];
-                checker = true;
-            }
-
-            if (i < lockedLendingLength) {
-                tempLockedLending[i] = lockedLending[i];
-                checker = true;
-            }
-
-            if (i < unlockedStakingLength) {
-                tempUnlockedStaking[i] = unlockedStaking[i];
-                checker = true;
-            }
-
-            if (i < lockedStakingLength) {
-                tempLockedStaking[i] = lockedStaking[i];
-                checker = true;
-            }
-
-            if (!checker) {
-                break;
-            }
-        }
-
-        return (tempUnlockedLending, tempLockedLending, tempUnlockedStaking, tempLockedStaking);
     }
 
     function validatePool(IERC20 _token, uint256 _amountToken) public view stakeActive reserved(_token) returns (bool) {

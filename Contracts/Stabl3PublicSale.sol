@@ -179,14 +179,16 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
             limit.lastExchangeTime = block.timestamp;
         }
         else {
-            revert("Stabl3PublicSale: Exchange Paused. Try again later");
+            revert("Stabl3PublicSale: Exchange Time Lock. Try again later");
         }
 
-        uint256 treasuryReserves = treasury.getReserves();
+        // TODO
+        // uint256 treasuryReserves = treasury.getReserves();
+        uint256 amountExchangingTokenTreasury = _exchangingToken.balanceOf(address(treasury));
 
-        if (limit.amount + amountExchangingTokenConverted > treasuryReserves.mul(exchangeLimitPercentage).div(1000)) {
+        if (limit.amount + amountExchangingTokenConverted > amountExchangingTokenTreasury.mul(exchangeLimitPercentage).div(1000)) {
             require(block.timestamp > limit.startTime.add(exchangeLimitTime),
-                "Nabana: Exchange Limit Reached. Try again later or try a smaller value");
+                "Stabl3PublicSale: Exchange Limit Reached. Try again later or try a smaller value");
         }
 
         if (block.timestamp > limit.startTime.add(exchangeLimitTime)) {
