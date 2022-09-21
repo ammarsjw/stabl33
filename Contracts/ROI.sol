@@ -53,7 +53,6 @@ contract ROI is Ownable, ReentrancyGuard {
     }
 
     function initializeUCD(address _ucd) external onlyOwner {
-        // require(address(ucd) == address(0), "Treasury: UCD has already been initialized");
         ucd = IERC20(_ucd);
     }
 
@@ -64,12 +63,16 @@ contract ROI is Ownable, ReentrancyGuard {
         if (_state) {
             delegateApprove(stabl3, _contractAddress, true);
 
+            delegateApprove(ucd, _contractAddress, true);
+
             for (uint256 i = 0 ; i < treasury.allReservedTokensLength() ; i++) {
                 delegateApprove(treasury.allReservedTokens(i), _contractAddress, true);
             }
         }
         else {
             delegateApprove(stabl3, _contractAddress, false);
+
+            delegateApprove(ucd, _contractAddress, false);
 
             for (uint256 i = 0 ; i < treasury.allReservedTokensLength() ; i++) {
                 delegateApprove(treasury.allReservedTokens(i), _contractAddress, false);
