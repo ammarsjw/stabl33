@@ -23,7 +23,7 @@ contract ROI is Ownable, ReentrancyGuard {
 
     // mappings
 
-    // contracts with permission to access treasury funds
+    // contracts with permission to access ROI pool funds
     mapping (address => bool) public permitted;
 
     // events

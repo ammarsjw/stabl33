@@ -66,7 +66,7 @@ contract Stabl3Staking is Ownable {
     struct Record {
         uint256 totalAmountTokenStaked;
         uint256 totalRewardWithdrawn;
-        uint256 totalAmountStabl3Lending;
+        uint256 totalAmountStabl3Withdrawn;
     }
 
     // mappings
@@ -76,6 +76,9 @@ contract Stabl3Staking is Ownable {
 
     // user lifetime record
     mapping (address => mapping (bool => Record)) public getRecords;
+
+    // contracts with permission to access certain Staking functions
+    mapping (address => bool) public permitted;
 
     // events
 
@@ -92,6 +95,8 @@ contract Stabl3Staking is Ownable {
     event UpdatedLendingStabl3Percentage(uint256 newLendingStabl3Percentage, uint256 oldLendingStabl3Percentage);
 
     event UpdatedLendingStabl3ClaimTime(uint256 newLendingStabl3ClaimTime, uint256 oldLendingStabl3ClaimTime);
+
+    event UpdatedPermission(address contractAddress, bool state);
 
     event Stake(
         address indexed user,
@@ -120,7 +125,7 @@ contract Stabl3Staking is Ownable {
         IERC20 token,
         uint256 amountTokenLending,
         uint256 amountStabl3Lending,
-        uint256 totalAmountStabl3Lending,
+        uint256 totalAmountStabl3Withdrawn,
         uint256 timestamp
     );
 
@@ -216,16 +221,17 @@ contract Stabl3Staking is Ownable {
         stakeState = _state;
     }
 
+    function updatePermission(address _contractAddress, bool _state) external onlyOwner {
+        require(permitted[_contractAddress] != _state, "Stabl3Staking: Contract is already of the value 'state'");
+        permitted[_contractAddress] = _state;
+        emit UpdatedPermission(_contractAddress, _state);
+    }
+
     function allStakingsLength(address _user) external view returns (uint256) {
         return getStakings[_user].length;
     }
 
-    // TODO
-    // true, false swapped
-    // 0 amounts
-    function allStakings(
-        address _user
-    ) external view returns (
+    function allStakings(address _user) external view returns (
         Staking[] memory unlockedLending,
         Staking[] memory lockedLending,
         Staking[] memory unlockedStaking,
@@ -266,16 +272,12 @@ contract Stabl3Staking is Ownable {
         unlockedStaking = new Staking[](unlockedStakingLength);
         lockedStaking = new Staking[](lockedStakingLength);
 
-        uint256 leftMax = SafeMathUpgradeable.max(unlockedLendingLength, lockedLendingLength);
-        uint256 rightMax = SafeMathUpgradeable.max(unlockedStakingLength, lockedStakingLength);
-        uint256 finalMax = SafeMathUpgradeable.max(leftMax, rightMax);
-
         unlockedLendingLength = 0;
         lockedLendingLength = 0;
         unlockedStakingLength = 0;
         lockedStakingLength = 0;
 
-        for (uint256 i = 0 ; i < finalMax ; i++) {
+        for (uint256 i = 0 ; i < getStakings[_user].length ; i++) {
             Staking memory staking = getStakings[_user][i];
 
             if (staking.status) {
@@ -582,7 +584,7 @@ contract Stabl3Staking is Ownable {
 
             staking.isClaimedStabl3Lending = true;
 
-            record.totalAmountStabl3Lending += amountStabl3Lending;
+            record.totalAmountStabl3Withdrawn += amountStabl3Lending;
 
             emit ClaimedLendingStabl3(
                 staking.user,
@@ -590,7 +592,7 @@ contract Stabl3Staking is Ownable {
                 staking.token,
                 staking.amountTokenLending,
                 staking.amountStabl3Lending,
-                record.totalAmountStabl3Lending,
+                record.totalAmountStabl3Withdrawn,
                 _timestamp
             );
         }
@@ -775,6 +777,11 @@ contract Stabl3Staking is Ownable {
 
     modifier stakeActive() {
         require(stakeState, "Stabl3Staking: Stake and Lend not yet started");
+        _;
+    }
+
+    modifier permission() {
+        require(permitted[msg.sender] || msg.sender == owner(), "Stabl3Staking: Not permitted");
         _;
     }
 

@@ -32,6 +32,8 @@ contract Treasury is Ownable, ReentrancyGuard {
     // uint8 private constant UCD_RETURN_POOL = 10;
     // uint8 private constant UCD_EXCHANGE_POOL = 11;
 
+    // uint8 private constant REAL_ESTATE_POOL = 12;
+
     IUniswapV2Router02 public uniswapRouter;
     IUniswapV2Factory public uniswapFactory;
 
