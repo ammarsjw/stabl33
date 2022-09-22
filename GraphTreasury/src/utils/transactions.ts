@@ -17,6 +17,6 @@ export function loadOrCreateTransaction(eth_transaction: ethereum.Transaction, e
     transaction.save()
     log.debug('new transaction created {}', [eth_transaction.hash.toHex()])
   }
-  
+
   return transaction as Transaction
 }
