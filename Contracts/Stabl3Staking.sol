@@ -63,6 +63,18 @@ contract Stabl3Staking is Ownable {
         uint256 amountStabl3Lending;
     }
 
+    struct ExternalStaking {
+        uint256 index;
+        address user;
+        bool status;
+        uint8 stakingType;
+        IERC20 token;
+        uint256 amountTokenStaked;
+        uint256 startTime;
+        uint256 rewardWithdrawn;
+        uint256 rewardWithdrawTimeLast;
+    }
+
     struct Record {
         uint256 totalAmountTokenStaked;
         uint256 totalRewardWithdrawn;
@@ -71,11 +83,14 @@ contract Stabl3Staking is Ownable {
 
     // mappings
 
-    // user staking
+    // user stakings
     mapping (address => Staking[]) public getStakings;
 
     // user lifetime record
     mapping (address => mapping (bool => Record)) public getRecords;
+
+    // user external stakings
+    mapping (address => ExternalStaking[]) public getExternalStakings;
 
     // contracts with permission to access certain Staking functions
     mapping (address => bool) public permitted;
@@ -433,6 +448,27 @@ contract Stabl3Staking is Ownable {
         );
     }
 
+    function stakeRealEstate(address _user, IERC20 _token, uint256 _amountToken, uint8 _stakingType) public permission reserved(_token) {
+        require(_amountToken > 0, "Stabl3Staking: Amount should be greater than zero");
+        require(validatePool(_token, _amountToken), "Stabl3Staking: Staking pool limit reached");
+
+        uint256 timestampToConsider = block.timestamp;
+
+        ExternalStaking memory externalStaking = ExternalStaking(
+            getStakings[_user].length,
+            _user,
+            true,
+            _stakingType,
+            _token,
+            _amountToken,
+            timestampToConsider,
+            0,
+            timestampToConsider
+        );
+
+        getExternalStakings[_user].push(externalStaking);
+    }
+
     function getAmountRewardSingle(
         address _user,
         uint256 _index,
@@ -535,6 +571,19 @@ contract Stabl3Staking is Ownable {
         }
     }
 
+    // function getAmountRewardSingle(
+    //     address _user,
+    //     uint256 _index,
+    //     bool _isLending,
+    //     uint256 _timestamp
+    // ) public view stakeActive returns (uint256) {
+
+    // function getAmountRewardAll(address _user, bool _isLending) public view stakeActive returns (uint256) {
+
+    // function _withdrawAmountRewardSingle(uint256 _index, bool _isLending, uint256 _timestamp) internal {
+
+    // function withdrawAmountRewardAll(bool _isLending) external stakeActive {
+
     function getClaimableStabl3LendingSingle(
         address _user,
         uint256 _index,
@@ -580,7 +629,7 @@ contract Stabl3Staking is Ownable {
         uint256 amountStabl3Lending = getClaimableStabl3LendingSingle(msg.sender, _index, _timestamp);
 
         if (amountStabl3Lending > 0) {
-            stabl3.transferFrom(address(this), msg.sender, amountStabl3Lending);
+            stabl3.transfer(msg.sender, amountStabl3Lending);
 
             staking.isClaimedStabl3Lending = true;
 
