@@ -21,8 +21,8 @@ contract Treasury is Ownable, ReentrancyGuard {
     // uint8 private constant BOND_POOL = 1;
 
     // uint8 private constant STAKE_POOL = 2;
-    // uint8 private constant LEND_POOL = 3;
-    // uint8 private constant STAKE_REWARD_POOL = 4;
+    // uint8 private constant STAKE_REWARD_POOL = 3;
+    // uint8 private constant LEND_POOL = 4;
     // uint8 private constant LEND_REWARD_POOL = 5;
 
     // uint8 private constant BORROW_POOL = 6;
@@ -33,6 +33,8 @@ contract Treasury is Ownable, ReentrancyGuard {
     // uint8 private constant UCD_EXCHANGE_POOL = 11;
 
     // uint8 private constant REAL_ESTATE_POOL = 12;
+    // uint8 private constant REAL_ESTATE_STAKE_POOL = 13;
+    // uint8 private constant REAL_ESTATE_STAKE_REWARD_POOL = 14;
 
     IUniswapV2Router02 public uniswapRouter;
     IUniswapV2Factory public uniswapFactory;

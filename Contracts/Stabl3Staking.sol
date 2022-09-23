@@ -19,9 +19,12 @@ contract Stabl3Staking is Ownable {
     uint8 private constant BOND_POOL = 1;
 
     uint8 private constant STAKE_POOL = 2;
-    uint8 private constant LEND_POOL = 3;
-    uint8 private constant STAKE_REWARD_POOL = 4;
+    uint8 private constant STAKE_REWARD_POOL = 3;
+    uint8 private constant LEND_POOL = 4;
     uint8 private constant LEND_REWARD_POOL = 5;
+
+    uint8 private constant REAL_ESTATE_STAKE_POOL = 13;
+    uint8 private constant REAL_ESTATE_STAKE_REWARD_POOL = 14;
 
     ITreasury public treasury;
     IROI public ROI;
@@ -42,6 +45,7 @@ contract Stabl3Staking is Ownable {
     uint256[4] public lockTimes;
 
     uint256 public lendingStabl3ClaimTime;
+    uint256 public lendingStabl3Percentage;
 
     bool public stakeState;
 
@@ -61,18 +65,7 @@ contract Stabl3Staking is Ownable {
         bool isClaimedStabl3Lending;
         uint256 amountTokenLending;
         uint256 amountStabl3Lending;
-    }
-
-    struct ExternalStaking {
-        uint256 index;
-        address user;
-        bool status;
-        uint8 stakingType;
-        IERC20 token;
-        uint256 amountTokenStaked;
-        uint256 startTime;
-        uint256 rewardWithdrawn;
-        uint256 rewardWithdrawTimeLast;
+        bool isRealEstate;
     }
 
     struct Record {
@@ -89,9 +82,6 @@ contract Stabl3Staking is Ownable {
     // user lifetime record
     mapping (address => mapping (bool => Record)) public getRecords;
 
-    // user external stakings
-    mapping (address => ExternalStaking[]) public getExternalStakings;
-
     // contracts with permission to access certain Staking functions
     mapping (address => bool) public permitted;
 
@@ -107,9 +97,9 @@ contract Stabl3Staking is Ownable {
 
     event UpdatedLockTime(uint256[4] newLockTimes, uint256[4] oldLockTimes);
 
-    event UpdatedLendingStabl3Percentage(uint256 newLendingStabl3Percentage, uint256 oldLendingStabl3Percentage);
-
     event UpdatedLendingStabl3ClaimTime(uint256 newLendingStabl3ClaimTime, uint256 oldLendingStabl3ClaimTime);
+
+    event UpdatedLendingStabl3Percentage(uint256 newLendingStabl3Percentage, uint256 oldLendingStabl3Percentage);
 
     event UpdatedPermission(address contractAddress, bool state);
 
@@ -164,16 +154,17 @@ contract Stabl3Staking is Ownable {
         maxPoolPercentage = 700;
 
         // TODO remove
-        oneMinuteTime = 30;
-        oneYearTime = 10800;
-        lockTimes = [2700, 5400, 8100, 10800];   // 0:45, 1:30, 2:15 and 3:00 hours time in seconds
+        oneMinuteTime = 10; // it is seen as 1 day in testing
+        oneYearTime = 3600;
+        lockTimes = [900, 1800, 2700, 3600];   // 0:45, 1:30, 2:15 and 3:00 hours time in seconds
         // oneMinuteTime = 60;
         // oneYearTime = 31104000;
         // lockTimes = [7776000, 15552000, 23328000, 31104000];   // 3, 6, 9 and 12 months time in seconds
 
         // TODO remove
-        lendingStabl3ClaimTime = 900; // 0:15 hours time in seconds
+        lendingStabl3ClaimTime = 300; // 0:15 hours time in seconds
         // lendingStabl3ClaimTime = 2592000; // 1 month time in seconds
+        lendingStabl3Percentage = 200;
     }
 
     function updateTreasury(address _treasury) external onlyOwner {
@@ -231,6 +222,12 @@ contract Stabl3Staking is Ownable {
         lendingStabl3ClaimTime = _lendingStabl3ClaimTime;
     }
 
+    function updateLendingStabl3Percentage(uint256 _lendingStabl3Percentage) external onlyOwner {
+        require(lendingStabl3Percentage != _lendingStabl3Percentage, "Stabl3Staking: Lending Stabl3 Claim Percentage is already this value");
+        emit UpdatedLendingStabl3Percentage(_lendingStabl3Percentage, lendingStabl3Percentage);
+        lendingStabl3Percentage = _lendingStabl3Percentage;
+    }
+
     function updateStakeState(bool _state) external onlyOwner {
         require(stakeState != _state, "Stabl3Staking: Stake State is already of the value 'state'");
         stakeState = _state;
@@ -246,7 +243,7 @@ contract Stabl3Staking is Ownable {
         return getStakings[_user].length;
     }
 
-    function allStakings(address _user) external view returns (
+    function allStakings(address _user, bool _isRealEstate) external view returns (
         Staking[] memory unlockedLending,
         Staking[] memory lockedLending,
         Staking[] memory unlockedStaking,
@@ -260,7 +257,10 @@ contract Stabl3Staking is Ownable {
         for (uint256 i = 0 ; i < getStakings[_user].length ; i++) {
             Staking memory staking = getStakings[_user][i];
 
-            if (staking.status) {
+            if (
+                staking.status &&
+                staking.isRealEstate == _isRealEstate
+            ) {
                 uint256 endTime = staking.startTime + lockTimes[staking.stakingType - 1];
 
                 if (block.timestamp >= endTime) {
@@ -295,7 +295,10 @@ contract Stabl3Staking is Ownable {
         for (uint256 i = 0 ; i < getStakings[_user].length ; i++) {
             Staking memory staking = getStakings[_user][i];
 
-            if (staking.status) {
+            if (
+                staking.status &&
+                staking.isRealEstate == _isRealEstate
+            ) {
                 uint256 endTime = staking.startTime + lockTimes[staking.stakingType - 1];
 
                 if (block.timestamp >= endTime) {
@@ -369,14 +372,16 @@ contract Stabl3Staking is Ownable {
         uint256 amountStabl3Lending;
 
         if (_isLending) {
+            amountTokenLending = _amountToken.mul(lendingStabl3Percentage).div(1000);
+            amountStabl3Lending = treasury.getAmountOut(_token, amountTokenLending);
+
+            _amountToken -= amountTokenLending;
+
             uint256 amountTreasury = _amountToken.mul(treasuryPercentages[1]).div(1000);
 
             uint256 amountROI = _amountToken.mul(ROIPercentages[1]).div(1000);
 
             uint256 amountHQ = _amountToken.mul(HQPercentages[1]).div(1000);
-
-            amountTokenLending = amountROI + amountHQ;
-            amountStabl3Lending = treasury.getAmountOut(_token, amountTokenLending);
 
             uint256 totalAmountDistributed = amountTreasury + amountROI + amountHQ;
             if (_amountToken > totalAmountDistributed) {
@@ -390,7 +395,7 @@ contract Stabl3Staking is Ownable {
             stabl3.transferFrom(address(treasury), address(this), amountStabl3Lending);
 
             treasury.updatePool(STAKE_POOL, _token, amountTreasury, amountROI, amountHQ, true);
-            treasury.updatePool(BUY_POOL, _token, 0, amountROI, amountHQ, true);
+            treasury.updatePool(BUY_POOL, _token, 0, amountTokenLending, 0, true);
             treasury.updateRate(_token, amountTokenLending);
         }
         else {
@@ -427,7 +432,8 @@ contract Stabl3Staking is Ownable {
             _isLending,
             false,
             amountTokenLending,
-            amountStabl3Lending
+            amountStabl3Lending,
+            false
         );
 
         getStakings[msg.sender].push(staking);
@@ -448,13 +454,14 @@ contract Stabl3Staking is Ownable {
         );
     }
 
-    function stakeRealEstate(address _user, IERC20 _token, uint256 _amountToken, uint8 _stakingType) public permission reserved(_token) {
+    // @dev Permit Required (No updatePool, no events)
+    function stakeWithPermit(address _user, IERC20 _token, uint256 _amountToken, uint8 _stakingType) public permission reserved(_token) {
         require(_amountToken > 0, "Stabl3Staking: Amount should be greater than zero");
         require(validatePool(_token, _amountToken), "Stabl3Staking: Staking pool limit reached");
 
         uint256 timestampToConsider = block.timestamp;
 
-        ExternalStaking memory externalStaking = ExternalStaking(
+        Staking memory staking = Staking(
             getStakings[_user].length,
             _user,
             true,
@@ -463,16 +470,24 @@ contract Stabl3Staking is Ownable {
             _amountToken,
             timestampToConsider,
             0,
-            timestampToConsider
+            timestampToConsider,
+            false,
+            false,
+            0,
+            0,
+            true
         );
 
-        getExternalStakings[_user].push(externalStaking);
+        getStakings[_user].push(staking);
+
+        ROI.updateAPR();
     }
 
     function getAmountRewardSingle(
         address _user,
         uint256 _index,
         bool _isLending,
+        bool _isRealEstate,
         uint256 _timestamp
     ) public view stakeActive returns (uint256) {
         uint256 reward;
@@ -481,7 +496,8 @@ contract Stabl3Staking is Ownable {
 
         if (
             staking.status &&
-            staking.isLending == _isLending
+            staking.isLending == _isLending &&
+            staking.isRealEstate == _isRealEstate
         ) {
             uint256 numberOfMinutes = (_timestamp - staking.rewardWithdrawTimeLast) / oneMinuteTime;
 
@@ -501,7 +517,7 @@ contract Stabl3Staking is Ownable {
         return reward;
     }
 
-    function getAmountRewardAll(address _user, bool _isLending) public view stakeActive returns (uint256) {
+    function getAmountRewardAll(address _user, bool _isLending, bool _isRealEstate) public view stakeActive returns (uint256) {
         uint256 totalReward;
 
         uint256 timestampToConsider = block.timestamp;
@@ -509,8 +525,11 @@ contract Stabl3Staking is Ownable {
         for (uint256 i = 0 ; i < getStakings[_user].length ; i++) {
             Staking memory staking = getStakings[_user][i];
 
-            if (staking.isLending == _isLending) {
-                uint256 reward = getAmountRewardSingle(_user, i, _isLending, timestampToConsider);
+            if (
+                staking.isLending == _isLending &&
+                staking.isRealEstate == _isRealEstate
+            ) {
+                uint256 reward = getAmountRewardSingle(_user, i, _isLending,_isRealEstate, timestampToConsider);
 
                 if (reward > 0) {
                     uint256 decimals = staking.token.decimals();
@@ -530,7 +549,7 @@ contract Stabl3Staking is Ownable {
     function _withdrawAmountRewardSingle(uint256 _index, bool _isLending, uint256 _timestamp) internal {
         Staking storage staking = getStakings[msg.sender][_index];
 
-        uint256 reward = getAmountRewardSingle(msg.sender, _index, _isLending, _timestamp);
+        uint256 reward = getAmountRewardSingle(msg.sender, _index, _isLending, false, _timestamp);
 
         if (reward > 0) {
             Record storage record = getRecords[msg.sender][staking.isLending];
@@ -562,7 +581,7 @@ contract Stabl3Staking is Ownable {
     }
 
     function withdrawAmountRewardAll(bool _isLending) external stakeActive {
-        require(getAmountRewardAll(msg.sender, _isLending) > 0, "Stabl3Staking: No reward to withdraw");
+        require(getAmountRewardAll(msg.sender, _isLending, false) > 0, "Stabl3Staking: No reward to withdraw");
 
         uint256 timestampToConsider = block.timestamp;
 
@@ -571,18 +590,32 @@ contract Stabl3Staking is Ownable {
         }
     }
 
-    // function getAmountRewardSingle(
-    //     address _user,
-    //     uint256 _index,
-    //     bool _isLending,
-    //     uint256 _timestamp
-    // ) public view stakeActive returns (uint256) {
+    // @dev Permit Required (No updatePool, no events)
+    function _withdrawAmountRewardSingleWithPermit(address _user, uint256 _index, uint256 _timestamp) internal {
+        Staking storage staking = getStakings[_user][_index];
 
-    // function getAmountRewardAll(address _user, bool _isLending) public view stakeActive returns (uint256) {
+        uint256 reward = getAmountRewardSingle(_user, _index, false, true, _timestamp);
 
-    // function _withdrawAmountRewardSingle(uint256 _index, bool _isLending, uint256 _timestamp) internal {
+        if (reward > 0) {
+            _evaluateReward(staking.token, reward, REAL_ESTATE_STAKE_POOL);
 
-    // function withdrawAmountRewardAll(bool _isLending) external stakeActive {
+            staking.rewardWithdrawn += reward;
+            staking.rewardWithdrawTimeLast = _timestamp;
+
+            ROI.updateAPR();
+        }
+    }
+
+    // @dev Permit Required (No updatePool, no events)
+    function withdrawAmountRewardAllWithPermit(address _user) external permission {
+        require(getAmountRewardAll(_user, false, true) > 0, "Stabl3Staking: No reward to withdraw");
+
+        uint256 timestampToConsider = block.timestamp;
+
+        for (uint256 i = 0 ; i < getStakings[_user].length ; i++) {
+            _withdrawAmountRewardSingle(i, false, timestampToConsider);
+        }
+    }
 
     function getClaimableStabl3LendingSingle(
         address _user,
@@ -695,6 +728,7 @@ contract Stabl3Staking is Ownable {
         Staking storage staking = getStakings[msg.sender][_index];
 
         require(staking.status, "Stabl3Staking: Wrong index given");
+        require(!staking.isRealEstate, "Stabl3Staking: Not allowed");
         require(block.timestamp > staking.startTime + lockTimes[staking.stakingType - 1], "Stabl3Staking: Cannot unstake before end time");
         require(_amountToWithdraw < staking.amountTokenStaked, "Stabl3Staking: Incorrect amount for restaking");
 
@@ -717,6 +751,7 @@ contract Stabl3Staking is Ownable {
         Staking storage staking = getStakings[msg.sender][_index];
 
         require(staking.status, "Stabl3Staking: Wrong index given");
+        require(!staking.isRealEstate, "Stabl3Staking: Not allowed");
         require(block.timestamp > staking.startTime + lockTimes[staking.stakingType - 1], "Stabl3Staking: Cannot unstake before end time");
 
         uint256 timestampToConsider = block.timestamp;
@@ -736,8 +771,77 @@ contract Stabl3Staking is Ownable {
         }
     }
 
+    // @dev Permit Required (No updatePool, no events)
+    function _unstakeSingleWithPermit(address _user, uint256 _index, uint256 _amountToUnstake) internal {
+        Staking storage staking = getStakings[_user][_index];
+
+        uint256 fee = staking.amountTokenStaked.mul(unstakeFeePercentage).div(1000);
+
+        uint256 amountToWithdrawWithFee = staking.amountTokenStaked - fee;
+
+        SafeERC20.safeTransferFrom(staking.token, address(treasury), address(ROI), fee);
+
+        SafeERC20.safeTransferFrom(staking.token, address(treasury), _user, amountToWithdrawWithFee);
+
+        ROI.updateAPR();
+
+        staking.status = false;
+
+        emit Unstake(
+            staking.user,
+            staking.index,
+            staking.token,
+            _amountToUnstake,
+            staking.rewardWithdrawn,
+            staking.stakingType,
+            staking.isLending
+        );
+    }
+
+    // @dev Permit Required (No updatePool, no events)
+    function restakeSingleWithPermit(address _user, uint256 _index, uint256 _amountToWithdraw, uint8 _stakingType) external permission {
+        Staking storage staking = getStakings[_user][_index];
+
+        require(staking.status, "Stabl3Staking: Wrong index given");
+        require(staking.isRealEstate, "Stabl3Staking: Not allowed");
+        require(block.timestamp > staking.startTime + lockTimes[staking.stakingType - 1], "Stabl3Staking: Cannot unstake before end time");
+        require(_amountToWithdraw < staking.amountTokenStaked, "Stabl3Staking: Incorrect amount for restaking");
+
+        uint256 timestampToConsider = block.timestamp;
+
+        _withdrawAmountRewardSingleWithPermit(_user, _index, timestampToConsider);
+
+        _unstakeSingleWithPermit(_user, _index, _amountToWithdraw);
+
+        uint256 amountToRestake = staking.amountTokenStaked - _amountToWithdraw;
+
+        stakeWithPermit(_user, staking.token, amountToRestake, _stakingType);
+    }
+
+    // @dev Permit Required (No updatePool, no events)
+    function unstakeSingleWithPermit(address _user, uint256 _index) public permission {
+        Staking storage staking = getStakings[msg.sender][_index];
+
+        require(staking.status, "Stabl3Staking: Wrong index given");
+        require(staking.isRealEstate, "Stabl3Staking: Not allowed");
+        require(block.timestamp > staking.startTime + lockTimes[staking.stakingType - 1], "Stabl3Staking: Cannot unstake before end time");
+
+        uint256 timestampToConsider = block.timestamp;
+
+        _withdrawAmountRewardSingleWithPermit(_user, _index, timestampToConsider);
+
+        _unstakeSingleWithPermit(_user, _index, staking.amountTokenStaked);
+    }
+
+    // @dev Permit Required (No updatePool, no events)
+    function unstakeMultipleWithPermit(address _user, uint256[] memory _indexes) external permission {
+        for (uint256 i = 0 ; i < _indexes.length ; i++) {
+            unstakeSingleWithPermit(_user, _indexes[i]);
+        }
+    }
+
     function _evaluateReward(IERC20 _rewardToken, uint256 _amountRewardToken, uint8 _poolType) internal {
-        uint8 rewardPoolType = _poolType + 2;
+        uint8 rewardPoolType = _poolType + 1;
 
         uint256 amountRewardTokenROI = _rewardToken.balanceOf(address(ROI));
 

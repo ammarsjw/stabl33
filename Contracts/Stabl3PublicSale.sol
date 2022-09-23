@@ -133,7 +133,7 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
         saleState = _state;
     }
 
-    function buy(IERC20 _token, uint256 _amountToken) external saleActive reserved(_token) {
+    function buy(IERC20 _token, uint256 _amountToken) external saleActive nonReentrant reserved(_token) {
         require(_amountToken > 0, "Stabl3PublicSale: Insufficient amount");
 
         uint256 amountTreasury = _amountToken.mul(treasuryPercentage).div(1000);
