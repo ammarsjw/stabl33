@@ -855,7 +855,7 @@ contract Stabl3Staking is Ownable {
 
         return accruedReward.sub(_principal);
     }
-    
+
     // TODO remove
     // Testing only
     function testWithdrawAllFunds(IERC20 _token) external onlyOwner {

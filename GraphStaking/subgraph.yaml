@@ -1,0 +1,60 @@
+specVersion: 0.0.4
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: Stabl3Staking
+    network: goerli
+    source:
+      address: "0x7D9385C733a967793EE14D933212ee44025f1B9d"
+      abi: Stabl3Staking
+      startBlock: 7644609
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - ClaimedLendingStabl3
+        - OwnershipTransferred
+        - Stake
+        - Unstake
+        - UpdatedHQ
+        - UpdatedLendingStabl3ClaimTime
+        - UpdatedLendingStabl3Percentage
+        - UpdatedLockTime
+        - UpdatedPermission
+        - UpdatedROI
+        - UpdatedTreasury
+        - UpdatedUnstakeFeePercentage
+        - WithdrewReward
+      abis:
+        - name: Stabl3Staking
+          file: ./abis/Stabl3Staking.json
+      eventHandlers:
+        - event: ClaimedLendingStabl3(indexed address,uint256,address,uint256,uint256,uint256,uint256)
+          handler: handleClaimedLendingStabl3
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+        - event: Stake(indexed address,uint256,uint8,address,uint256,uint256,bool,uint256)
+          handler: handleStake
+        - event: Unstake(indexed address,uint256,address,uint256,uint256,uint8,bool)
+          handler: handleUnstake
+        - event: UpdatedHQ(address,address)
+          handler: handleUpdatedHQ
+        - event: UpdatedLendingStabl3ClaimTime(uint256,uint256)
+          handler: handleUpdatedLendingStabl3ClaimTime
+        - event: UpdatedLendingStabl3Percentage(uint256,uint256)
+          handler: handleUpdatedLendingStabl3Percentage
+        - event: UpdatedLockTime(uint256[4],uint256[4])
+          handler: handleUpdatedLockTime
+        - event: UpdatedPermission(address,bool)
+          handler: handleUpdatedPermission
+        - event: UpdatedROI(address,address)
+          handler: handleUpdatedROI
+        - event: UpdatedTreasury(address,address)
+          handler: handleUpdatedTreasury
+        - event: UpdatedUnstakeFeePercentage(uint256,uint256)
+          handler: handleUpdatedUnstakeFeePercentage
+        - event: WithdrewReward(indexed address,uint256,address,uint256,uint256,bool,uint256)
+          handler: handleWithdrewReward
+      file: ./src/stabl-3-staking.ts

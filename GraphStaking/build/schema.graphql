@@ -1,0 +1,115 @@
+type Transaction @entity {
+  id: ID!
+  timestamp: BigInt!
+  blockNumber: BigInt!
+  blockHash: Bytes!
+  from: Bytes!
+  to: Bytes
+  value: BigInt!
+  gasPrice: BigInt!
+}
+
+type UpdatedTreasury @entity {
+  id: ID!
+  transaction: Transaction!
+  newTreasury: Bytes
+  oldTreasury: Bytes
+}
+
+type UpdatedROI @entity {
+  id: ID!
+  transaction: Transaction!
+  newROI: Bytes
+  oldROI: Bytes
+}
+
+type UpdatedHQ @entity {
+  id: ID!
+  transaction: Transaction!
+  newHQ: Bytes
+  oldHQ: Bytes
+}
+
+type UpdatedUnstakeFeePercentage @entity {
+  id: ID!
+  transaction: Transaction!
+  newUnstakeFeePercentage: BigInt
+  oldUnstakeFeePercentage: BigInt
+}
+
+type UpdatedLockTime @entity {
+  id: ID!
+  transaction: Transaction!
+  newLockTimes: [BigInt!]
+  oldLockTimes: [BigInt!]
+}
+
+type UpdatedLendingStabl3ClaimTime @entity {
+  id: ID!
+  transaction: Transaction!
+  newLendingStabl3ClaimTime: BigInt
+  oldLendingStabl3ClaimTime: BigInt
+}
+
+type UpdatedLendingStabl3Percentage @entity {
+  id: ID!
+  transaction: Transaction!
+  newLendingStabl3Percentage: BigInt
+  oldLendingStabl3Percentage: BigInt
+}
+
+type UpdatedPermission @entity {
+  id: ID!
+  transaction: Transaction!
+  contractAddress: Bytes
+  state: Boolean
+}
+
+type Stake @entity {
+  id: ID!
+  transaction: Transaction!
+  user: Bytes
+  index: BigInt
+  stakingType: Int
+  token: Bytes
+  amountToken: BigInt
+  totalAmountToken: BigInt
+  isLend: Boolean
+  timestamp: BigInt
+}
+
+type WithdrewReward @entity {
+  id: ID!
+  transaction: Transaction!
+  user: Bytes
+  index: BigInt
+  token: Bytes
+  rewardWithdrawn: BigInt
+  totalRewardWithdrawn: BigInt
+  isLend: Boolean
+  timestamp: BigInt
+}
+
+type ClaimedLendingStabl3 @entity {
+  id: ID!
+  transaction: Transaction!
+  user: Bytes
+  index: BigInt
+  token: Bytes
+  amountTokenLending: BigInt
+  amountStabl3Lending: BigInt
+  totalAmountStabl3Withdrawn: BigInt
+  timestamp: BigInt
+}
+
+type Unstake @entity {
+  id: ID!
+  transaction: Transaction!
+  user: Bytes
+  index: BigInt
+  token: Bytes
+  amountToken: BigInt
+  reward: BigInt
+  stakingType: Int
+  isLend: Boolean
+}
