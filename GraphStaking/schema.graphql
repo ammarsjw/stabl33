@@ -9,6 +9,13 @@ type Transaction @entity {
   gasPrice: BigInt!
 }
 
+type OwnershipTransferred @entity {
+  id: ID!
+  transaction: Transaction!
+  previousOwner: Bytes!
+  newOwner: Bytes!
+}
+
 type UpdatedTreasury @entity {
   id: ID!
   transaction: Transaction!

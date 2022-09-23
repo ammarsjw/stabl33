@@ -114,6 +114,67 @@ export class Transaction extends Entity {
   }
 }
 
+export class OwnershipTransferred extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save OwnershipTransferred entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type OwnershipTransferred must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("OwnershipTransferred", id.toString(), this);
+    }
+  }
+
+  static load(id: string): OwnershipTransferred | null {
+    return changetype<OwnershipTransferred | null>(
+      store.get("OwnershipTransferred", id)
+    );
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get transaction(): string {
+    let value = this.get("transaction");
+    return value!.toString();
+  }
+
+  set transaction(value: string) {
+    this.set("transaction", Value.fromString(value));
+  }
+
+  get previousOwner(): Bytes {
+    let value = this.get("previousOwner");
+    return value!.toBytes();
+  }
+
+  set previousOwner(value: Bytes) {
+    this.set("previousOwner", Value.fromBytes(value));
+  }
+
+  get newOwner(): Bytes {
+    let value = this.get("newOwner");
+    return value!.toBytes();
+  }
+
+  set newOwner(value: Bytes) {
+    this.set("newOwner", Value.fromBytes(value));
+  }
+}
+
 export class UpdatedTreasury extends Entity {
   constructor(id: string) {
     super();

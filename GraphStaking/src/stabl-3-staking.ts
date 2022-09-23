@@ -2,6 +2,7 @@ import { Bytes, BigInt } from "@graphprotocol/graph-ts"
 
 import {
   ClaimedLendingStabl3 as ClaimedLendingStabl3Event,
+  OwnershipTransferred as OwnershipTransferredEvent,
   Stake as StakeEvent,
   Unstake as UnstakeEvent,
   UpdatedHQ as UpdatedHQEvent,
@@ -17,6 +18,7 @@ import {
 
 import {
   ClaimedLendingStabl3,
+  OwnershipTransferred,
   Stake,
   Unstake,
   UpdatedHQ,
@@ -31,6 +33,15 @@ import {
 } from "../generated/schema"
 
 import { loadOrCreateTransaction } from "./utils/Transactions"
+
+export function handleOwnershipTransferred(event: OwnershipTransferredEvent): void {
+  let transaction = loadOrCreateTransaction(event.transaction, event.block);
+  let entity = new OwnershipTransferred(transaction.id)
+  entity.transaction = transaction.id
+  entity.previousOwner = event.params.previousOwner
+  entity.newOwner = event.params.newOwner
+  entity.save()
+}
 
 export function handleClaimedLendingStabl3(event: ClaimedLendingStabl3Event): void {
   let transaction = loadOrCreateTransaction(event.transaction, event.block)
