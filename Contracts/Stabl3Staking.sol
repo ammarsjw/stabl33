@@ -352,7 +352,7 @@ contract Stabl3Staking is Ownable {
         maxPool = maxPool.mul(maxPoolPercentage).div(1000);
 
         if (_token.decimals() < 18) {
-            _amountToken = _amountToken.mul(10 ** (18 - _token.decimals()));
+            _amountToken *= 10 ** (18 - _token.decimals());
         }
 
         bool isValid = (currentPool + _amountToken) <= maxPool;
@@ -533,10 +533,8 @@ contract Stabl3Staking is Ownable {
                 uint256 reward = getAmountRewardSingle(_user, i, _isLending,_isRealEstate, timestampToConsider);
 
                 if (reward > 0) {
-                    uint256 decimals = staking.token.decimals();
-
-                    if (decimals < 18) {
-                        reward *= 10 ** (18 - decimals);
+                    if (staking.token.decimals() < 18) {
+                        reward *= 10 ** (18 - staking.token.decimals());
                     }
 
                     totalReward += reward;
