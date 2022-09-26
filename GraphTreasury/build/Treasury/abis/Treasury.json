@@ -35,6 +35,12 @@
       {
         "indexed": false,
         "internalType": "uint256",
+        "name": "totalValueLocked",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
         "name": "reserves",
         "type": "uint256"
       },
@@ -46,6 +52,25 @@
       }
     ],
     "name": "Rate",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newExchangeFee",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "oldExchangeFee",
+        "type": "uint256"
+      }
+    ],
+    "name": "UpdatedExchangeFee",
     "type": "event"
   },
   {
@@ -217,19 +242,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "circulatingSupply",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "contract IERC20",
@@ -250,6 +262,19 @@
     "name": "delegateApprove",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "exchangeFee",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -290,6 +315,64 @@
       }
     ],
     "name": "getAmountOut",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract IERC20",
+        "name": "_exchangingToken",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amountExchangingToken",
+        "type": "uint256"
+      },
+      {
+        "internalType": "contract IERC20",
+        "name": "_token",
+        "type": "address"
+      }
+    ],
+    "name": "getExchangeAmountIn",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract IERC20",
+        "name": "_exchangingToken",
+        "type": "address"
+      },
+      {
+        "internalType": "contract IERC20",
+        "name": "_token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amountToken",
+        "type": "uint256"
+      }
+    ],
+    "name": "getExchangeAmountOut",
     "outputs": [
       {
         "internalType": "uint256",
@@ -423,6 +506,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "getTotalValueLocked",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint8",
@@ -436,19 +532,6 @@
       }
     ],
     "name": "getTreasuryPool",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "initialTreasurySupply",
     "outputs": [
       {
         "internalType": "uint256",
@@ -508,19 +591,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_amountStabl3",
-        "type": "uint256"
-      }
-    ],
-    "name": "provideInitialTreasurySupply",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -622,6 +692,45 @@
       }
     ],
     "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "uniswapFactory",
+    "outputs": [
+      {
+        "internalType": "contract IUniswapV2Factory",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "uniswapRouter",
+    "outputs": [
+      {
+        "internalType": "contract IUniswapV2Router02",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_exchangeFee",
+        "type": "uint256"
+      }
+    ],
+    "name": "updateExchangeFee",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

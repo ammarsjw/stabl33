@@ -34,6 +34,7 @@ type Rate @entity {
   id: ID!
   transaction: Transaction!
   rate: BigInt!
+  totalValueLocked: BigInt!
   reserves: BigInt!
   blockTimestampLast: BigInt!
 }

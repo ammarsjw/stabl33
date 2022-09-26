@@ -15,13 +15,6 @@ export class Transaction extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
-
-    this.set("timestamp", Value.fromBigInt(BigInt.zero()));
-    this.set("blockNumber", Value.fromBigInt(BigInt.zero()));
-    this.set("blockHash", Value.fromBytes(Bytes.empty()));
-    this.set("from", Value.fromBytes(Bytes.empty()));
-    this.set("value", Value.fromBigInt(BigInt.zero()));
-    this.set("gasPrice", Value.fromBigInt(BigInt.zero()));
   }
 
   save(): void {
@@ -125,10 +118,6 @@ export class OwnershipTransferred extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
-
-    this.set("transaction", Value.fromString(""));
-    this.set("previousOwner", Value.fromBytes(Bytes.empty()));
-    this.set("newOwner", Value.fromBytes(Bytes.empty()));
   }
 
   save(): void {
@@ -190,10 +179,6 @@ export class UpdatedPermission extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
-
-    this.set("transaction", Value.fromString(""));
-    this.set("contractAddress", Value.fromBytes(Bytes.empty()));
-    this.set("state", Value.fromBoolean(false));
   }
 
   save(): void {
@@ -255,10 +240,6 @@ export class UpdatedReservedToken extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
-
-    this.set("transaction", Value.fromString(""));
-    this.set("token", Value.fromBytes(Bytes.empty()));
-    this.set("state", Value.fromBoolean(false));
   }
 
   save(): void {
@@ -320,11 +301,6 @@ export class Rate extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
-
-    this.set("transaction", Value.fromString(""));
-    this.set("rate", Value.fromBigInt(BigInt.zero()));
-    this.set("reserves", Value.fromBigInt(BigInt.zero()));
-    this.set("blockTimestampLast", Value.fromBigInt(BigInt.zero()));
   }
 
   save(): void {
@@ -370,6 +346,15 @@ export class Rate extends Entity {
     this.set("rate", Value.fromBigInt(value));
   }
 
+  get totalValueLocked(): BigInt {
+    let value = this.get("totalValueLocked");
+    return value!.toBigInt();
+  }
+
+  set totalValueLocked(value: BigInt) {
+    this.set("totalValueLocked", Value.fromBigInt(value));
+  }
+
   get reserves(): BigInt {
     let value = this.get("reserves");
     return value!.toBigInt();
@@ -393,10 +378,6 @@ export class UpdatedROI extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
-
-    this.set("transaction", Value.fromString(""));
-    this.set("newROI", Value.fromBytes(Bytes.empty()));
-    this.set("oldROI", Value.fromBytes(Bytes.empty()));
   }
 
   save(): void {
@@ -456,10 +437,6 @@ export class UpdatedHQ extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
-
-    this.set("transaction", Value.fromString(""));
-    this.set("newHQ", Value.fromBytes(Bytes.empty()));
-    this.set("oldHQ", Value.fromBytes(Bytes.empty()));
   }
 
   save(): void {

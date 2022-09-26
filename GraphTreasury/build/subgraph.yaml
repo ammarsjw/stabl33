@@ -6,9 +6,9 @@ dataSources:
     name: Treasury
     network: goerli
     source:
-      address: "0x681a4fD31Af48a533Fa0B93B5462643Fd6e6ebC1"
+      address: "0xFaCd12988AE6c71eD8865dB483F5964E0760dFdA"
       abi: Treasury
-      startBlock: 7577514
+      startBlock: 7620349
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -18,13 +18,15 @@ dataSources:
         - Rate
         - UpdatedPermission
         - UpdatedReservedToken
+        - UpdatedROI
+        - UpdatedHQ
       abis:
         - name: Treasury
           file: Treasury\abis\Treasury.json
       eventHandlers:
         - event: OwnershipTransferred(indexed address,indexed address)
           handler: handleOwnershipTransferred
-        - event: Rate(uint256,uint256,uint256)
+        - event: Rate(uint256,uint256,uint256,uint256)
           handler: handleRate
         - event: UpdatedPermission(address,bool)
           handler: handleUpdatedPermission

@@ -49,12 +49,38 @@ export class Rate__Params {
     return this._event.parameters[0].value.toBigInt();
   }
 
-  get reserves(): BigInt {
+  get totalValueLocked(): BigInt {
     return this._event.parameters[1].value.toBigInt();
   }
 
-  get blockTimestampLast(): BigInt {
+  get reserves(): BigInt {
     return this._event.parameters[2].value.toBigInt();
+  }
+
+  get blockTimestampLast(): BigInt {
+    return this._event.parameters[3].value.toBigInt();
+  }
+}
+
+export class UpdatedExchangeFee extends ethereum.Event {
+  get params(): UpdatedExchangeFee__Params {
+    return new UpdatedExchangeFee__Params(this);
+  }
+}
+
+export class UpdatedExchangeFee__Params {
+  _event: UpdatedExchangeFee;
+
+  constructor(event: UpdatedExchangeFee) {
+    this._event = event;
+  }
+
+  get newExchangeFee(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get oldExchangeFee(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
   }
 }
 
@@ -164,6 +190,18 @@ export class Treasury__allPoolsResult {
     map.set("value2", ethereum.Value.fromUnsignedBigInt(this.value2));
     return map;
   }
+
+  getValue0(): BigInt {
+    return this.value0;
+  }
+
+  getValue1(): BigInt {
+    return this.value1;
+  }
+
+  getValue2(): BigInt {
+    return this.value2;
+  }
 }
 
 export class Treasury__rateInfoResult {
@@ -195,6 +233,26 @@ export class Treasury__rateInfoResult {
     map.set("value3", ethereum.Value.fromUnsignedBigInt(this.value3));
     map.set("value4", ethereum.Value.fromUnsignedBigInt(this.value4));
     return map;
+  }
+
+  getCompoundPercentage(): BigInt {
+    return this.value0;
+  }
+
+  getRate(): BigInt {
+    return this.value1;
+  }
+
+  getTokenWindow(): BigInt {
+    return this.value2;
+  }
+
+  getStabl3Window(): BigInt {
+    return this.value3;
+  }
+
+  getTokenWindowConsumed(): BigInt {
+    return this.value4;
   }
 }
 
@@ -321,22 +379,14 @@ export class Treasury extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
-  circulatingSupply(): BigInt {
-    let result = super.call(
-      "circulatingSupply",
-      "circulatingSupply():(uint256)",
-      []
-    );
+  exchangeFee(): BigInt {
+    let result = super.call("exchangeFee", "exchangeFee():(uint256)", []);
 
     return result[0].toBigInt();
   }
 
-  try_circulatingSupply(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall(
-      "circulatingSupply",
-      "circulatingSupply():(uint256)",
-      []
-    );
+  try_exchangeFee(): ethereum.CallResult<BigInt> {
+    let result = super.tryCall("exchangeFee", "exchangeFee():(uint256)", []);
     if (result.reverted) {
       return new ethereum.CallResult();
     }
@@ -397,6 +447,84 @@ export class Treasury extends ethereum.SmartContract {
       "getAmountOut",
       "getAmountOut(address,uint256):(uint256)",
       [
+        ethereum.Value.fromAddress(_token),
+        ethereum.Value.fromUnsignedBigInt(_amountToken)
+      ]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
+  getExchangeAmountIn(
+    _exchangingToken: Address,
+    _amountExchangingToken: BigInt,
+    _token: Address
+  ): BigInt {
+    let result = super.call(
+      "getExchangeAmountIn",
+      "getExchangeAmountIn(address,uint256,address):(uint256)",
+      [
+        ethereum.Value.fromAddress(_exchangingToken),
+        ethereum.Value.fromUnsignedBigInt(_amountExchangingToken),
+        ethereum.Value.fromAddress(_token)
+      ]
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_getExchangeAmountIn(
+    _exchangingToken: Address,
+    _amountExchangingToken: BigInt,
+    _token: Address
+  ): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "getExchangeAmountIn",
+      "getExchangeAmountIn(address,uint256,address):(uint256)",
+      [
+        ethereum.Value.fromAddress(_exchangingToken),
+        ethereum.Value.fromUnsignedBigInt(_amountExchangingToken),
+        ethereum.Value.fromAddress(_token)
+      ]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
+  getExchangeAmountOut(
+    _exchangingToken: Address,
+    _token: Address,
+    _amountToken: BigInt
+  ): BigInt {
+    let result = super.call(
+      "getExchangeAmountOut",
+      "getExchangeAmountOut(address,address,uint256):(uint256)",
+      [
+        ethereum.Value.fromAddress(_exchangingToken),
+        ethereum.Value.fromAddress(_token),
+        ethereum.Value.fromUnsignedBigInt(_amountToken)
+      ]
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_getExchangeAmountOut(
+    _exchangingToken: Address,
+    _token: Address,
+    _amountToken: BigInt
+  ): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "getExchangeAmountOut",
+      "getExchangeAmountOut(address,address,uint256):(uint256)",
+      [
+        ethereum.Value.fromAddress(_exchangingToken),
         ethereum.Value.fromAddress(_token),
         ethereum.Value.fromUnsignedBigInt(_amountToken)
       ]
@@ -556,6 +684,29 @@ export class Treasury extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
+  getTotalValueLocked(): BigInt {
+    let result = super.call(
+      "getTotalValueLocked",
+      "getTotalValueLocked():(uint256)",
+      []
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_getTotalValueLocked(): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "getTotalValueLocked",
+      "getTotalValueLocked():(uint256)",
+      []
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
   getTreasuryPool(param0: i32, param1: Address): BigInt {
     let result = super.call(
       "getTreasuryPool",
@@ -580,29 +731,6 @@ export class Treasury extends ethereum.SmartContract {
         ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(param0)),
         ethereum.Value.fromAddress(param1)
       ]
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
-  initialTreasurySupply(): BigInt {
-    let result = super.call(
-      "initialTreasurySupply",
-      "initialTreasurySupply():(uint256)",
-      []
-    );
-
-    return result[0].toBigInt();
-  }
-
-  try_initialTreasurySupply(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall(
-      "initialTreasurySupply",
-      "initialTreasurySupply():(uint256)",
-      []
     );
     if (result.reverted) {
       return new ethereum.CallResult();
@@ -748,6 +876,44 @@ export class Treasury extends ethereum.SmartContract {
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
+
+  uniswapFactory(): Address {
+    let result = super.call("uniswapFactory", "uniswapFactory():(address)", []);
+
+    return result[0].toAddress();
+  }
+
+  try_uniswapFactory(): ethereum.CallResult<Address> {
+    let result = super.tryCall(
+      "uniswapFactory",
+      "uniswapFactory():(address)",
+      []
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+
+  uniswapRouter(): Address {
+    let result = super.call("uniswapRouter", "uniswapRouter():(address)", []);
+
+    return result[0].toAddress();
+  }
+
+  try_uniswapRouter(): ethereum.CallResult<Address> {
+    let result = super.tryCall(
+      "uniswapRouter",
+      "uniswapRouter():(address)",
+      []
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
 }
 
 export class ConstructorCall extends ethereum.Call {
@@ -810,36 +976,6 @@ export class DelegateApproveCall__Outputs {
   _call: DelegateApproveCall;
 
   constructor(call: DelegateApproveCall) {
-    this._call = call;
-  }
-}
-
-export class ProvideInitialTreasurySupplyCall extends ethereum.Call {
-  get inputs(): ProvideInitialTreasurySupplyCall__Inputs {
-    return new ProvideInitialTreasurySupplyCall__Inputs(this);
-  }
-
-  get outputs(): ProvideInitialTreasurySupplyCall__Outputs {
-    return new ProvideInitialTreasurySupplyCall__Outputs(this);
-  }
-}
-
-export class ProvideInitialTreasurySupplyCall__Inputs {
-  _call: ProvideInitialTreasurySupplyCall;
-
-  constructor(call: ProvideInitialTreasurySupplyCall) {
-    this._call = call;
-  }
-
-  get _amountStabl3(): BigInt {
-    return this._call.inputValues[0].value.toBigInt();
-  }
-}
-
-export class ProvideInitialTreasurySupplyCall__Outputs {
-  _call: ProvideInitialTreasurySupplyCall;
-
-  constructor(call: ProvideInitialTreasurySupplyCall) {
     this._call = call;
   }
 }
@@ -926,6 +1062,36 @@ export class TransferOwnershipCall__Outputs {
   _call: TransferOwnershipCall;
 
   constructor(call: TransferOwnershipCall) {
+    this._call = call;
+  }
+}
+
+export class UpdateExchangeFeeCall extends ethereum.Call {
+  get inputs(): UpdateExchangeFeeCall__Inputs {
+    return new UpdateExchangeFeeCall__Inputs(this);
+  }
+
+  get outputs(): UpdateExchangeFeeCall__Outputs {
+    return new UpdateExchangeFeeCall__Outputs(this);
+  }
+}
+
+export class UpdateExchangeFeeCall__Inputs {
+  _call: UpdateExchangeFeeCall;
+
+  constructor(call: UpdateExchangeFeeCall) {
+    this._call = call;
+  }
+
+  get _exchangeFee(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
+  }
+}
+
+export class UpdateExchangeFeeCall__Outputs {
+  _call: UpdateExchangeFeeCall;
+
+  constructor(call: UpdateExchangeFeeCall) {
     this._call = call;
   }
 }

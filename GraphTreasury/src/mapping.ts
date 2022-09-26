@@ -52,6 +52,7 @@ export function handleRate(event: RateEvent): void {
   let entity = new Rate(event.params.blockTimestampLast.toString())
   entity.transaction = transaction.id
   entity.rate = event.params.rate
+  entity.totalValueLocked = event.params.totalValueLocked
   entity.reserves = event.params.reserves
   entity.blockTimestampLast = event.params.blockTimestampLast
   entity.save()
