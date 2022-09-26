@@ -13,7 +13,9 @@ contract ROI is Ownable, ReentrancyGuard {
     uint256 private immutable MAX_INT = 2 ** 256 - 1;
 
     uint8 private constant STAKE_POOL = 2;
-    uint8 private constant LEND_POOL = 3;
+    uint8 private constant STAKE_REWARD_POOL = 3;
+    uint8 private constant LEND_POOL = 4;
+    uint8 private constant LEND_REWARD_POOL = 5;
 
     ITreasury public treasury;
 
@@ -32,7 +34,7 @@ contract ROI is Ownable, ReentrancyGuard {
 
     event UpdatedPermission(address contractAddress, bool state);
 
-    event APR(uint256 rate, uint256 reserves, uint256 blockTimestampLast);
+    event APR(uint256 APR, uint256 reserves, uint256 totalRewardDistributed, uint256 blockTimestampLast);
 
     // constructor
 
@@ -53,6 +55,7 @@ contract ROI is Ownable, ReentrancyGuard {
     }
 
     function initializeUCD(address _ucd) external onlyOwner {
+        require(address(ucd) != _ucd, "ROI: UCD is already this address");
         ucd = IERC20(_ucd);
     }
 
@@ -82,11 +85,36 @@ contract ROI is Ownable, ReentrancyGuard {
         emit UpdatedPermission(_contractAddress, _state);
     }
 
+    function getTotalRewardDistributed() public view returns (uint256) {
+        uint256 totalRewardDistributed;
+
+        for (uint256 i = 0 ; i < treasury.allReservedTokensLength() ; i++) {
+            IERC20 reservedToken = treasury.allReservedTokens(i);
+
+            if (treasury.isReservedToken(reservedToken)) {
+                uint256 stakeRewardAmount = treasury.sumOfAllPools(STAKE_REWARD_POOL, reservedToken);
+                uint256 lendRewardAmount = treasury.sumOfAllPools(LEND_REWARD_POOL, reservedToken);
+
+                uint256 decimals = reservedToken.decimals();
+
+                if (decimals < 18) {
+                    stakeRewardAmount *= 10 ** (18 - decimals);
+                    lendRewardAmount *= 10 ** (18 - decimals);
+                }
+
+                totalRewardDistributed += stakeRewardAmount + lendRewardAmount;
+            }
+        }
+
+        return totalRewardDistributed;
+    }
+
     function getReserves() public view returns (uint256) {
         uint256 totalReserves;
 
         for (uint256 i = 0 ; i < treasury.allReservedTokensLength() ; i++) {
             IERC20 reservedToken = treasury.allReservedTokens(i);
+
             if (treasury.isReservedToken(reservedToken)) {
                 uint256 amount = reservedToken.balanceOf(address(this));
 
@@ -142,7 +170,9 @@ contract ROI is Ownable, ReentrancyGuard {
 
         uint256 reserves = getReserves();
 
-        emit APR(currentAPR, reserves, block.timestamp);
+        uint256 totalRewardDistributed = getTotalRewardDistributed();
+
+        emit APR(currentAPR, reserves, totalRewardDistributed, block.timestamp);
     }
 
     function delegateApprove(IERC20 _token, address _spender, bool _isApprove) public onlyOwner {

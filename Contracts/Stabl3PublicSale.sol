@@ -13,7 +13,7 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
     using SafeMathUpgradeable for uint256;
     using SafeERC20 for IERC20;
 
-    uint8 constant BUY_POOL = 1;
+    uint8 constant BUY_POOL = 0;
 
     ITreasury public treasury;
     address public ROI;

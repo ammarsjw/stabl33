@@ -126,6 +126,7 @@ contract Treasury is Ownable, ReentrancyGuard {
     }
 
     function initializeUCD(address _ucd) external onlyOwner {
+        require(address(ucd) != _ucd, "Treasury: UCD is already this address");
         ucd = IERC20(_ucd);
     }
 
