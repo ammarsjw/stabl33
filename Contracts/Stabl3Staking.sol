@@ -374,6 +374,8 @@ contract Stabl3Staking is Ownable {
 
             _amountToken -= amountTokenLending;
 
+            SafeERC20.safeTransferFrom(_token, msg.sender, address(ROI), amountTokenLending);
+
             uint256 amountTreasury = _amountToken.mul(treasuryPercentages[1]).div(1000);
 
             uint256 amountROI = _amountToken.mul(ROIPercentages[1]).div(1000);
@@ -862,18 +864,45 @@ contract Stabl3Staking is Ownable {
 
     // modifiers
 
+    // modifier stakeActive() {
+    //     require(stakeState, "Stabl3Staking: Stake and Lend not yet started");
+    //     _;
+    // }
+
+    // modifier permission() {
+    //     require(permitted[msg.sender] || msg.sender == owner(), "Stabl3Staking: Not permitted");
+    //     _;
+    // }
+
+    // modifier reserved(IERC20 _token) {
+    //     require(treasury.isReservedToken(_token), "Stabl3Staking: Not a reserved token");
+    //     _;
+    // }
+
     modifier stakeActive() {
-        require(stakeState, "Stabl3Staking: Stake and Lend not yet started");
+        _stakeActive();
         _;
+    }
+
+    function _stakeActive() internal view {
+        require(stakeState, "Stabl3Staking: Stake and Lend not yet started");
     }
 
     modifier permission() {
-        require(permitted[msg.sender] || msg.sender == owner(), "Stabl3Staking: Not permitted");
+        _permission();
         _;
     }
 
+    function _permission() internal view {
+        require(permitted[msg.sender] || msg.sender == owner(), "Stabl3Staking: Not permitted");
+    }
+
     modifier reserved(IERC20 _token) {
-        require(treasury.isReservedToken(_token), "Stabl3Staking: Not a reserved token");
+        _reserved(_token);
         _;
+    }
+
+    function _reserved(IERC20 _token) internal view {
+        require(treasury.isReservedToken(_token), "Stabl3Staking: Not a reserved token");
     }
 }
