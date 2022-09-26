@@ -143,7 +143,7 @@ contract Treasury is Ownable, ReentrancyGuard {
         if (_state) {
             delegateApprove(stabl3, _contractAddress, true);
 
-            delegateApprove(ucd, _contractAddress, true);
+            // delegateApprove(ucd, _contractAddress, true);
 
             for (uint256 i = 0 ; i < allReservedTokens.length ; i++) {
                 delegateApprove(allReservedTokens[i], _contractAddress, true);
@@ -152,7 +152,7 @@ contract Treasury is Ownable, ReentrancyGuard {
         else {
             delegateApprove(stabl3, _contractAddress, false);
 
-            delegateApprove(ucd, _contractAddress, false);
+            // delegateApprove(ucd, _contractAddress, false);
 
             for (uint256 i = 0 ; i < allReservedTokens.length ; i++) {
                 delegateApprove(allReservedTokens[i], _contractAddress, false);

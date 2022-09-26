@@ -391,7 +391,7 @@ contract Stabl3Staking is Ownable {
 
             stabl3.transferFrom(address(treasury), address(this), amountStabl3Lending);
 
-            treasury.updatePool(STAKE_POOL, _token, amountTreasury, amountROI, amountHQ, true);
+            treasury.updatePool(LEND_POOL, _token, amountTreasury, amountROI, amountHQ, true);
             treasury.updatePool(BUY_POOL, _token, 0, amountTokenLending, 0, true);
             treasury.updateRate(_token, amountTokenLending);
         }

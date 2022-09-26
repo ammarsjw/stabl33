@@ -1,0 +1,33 @@
+specVersion: 0.0.4
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: ROI
+    network: goerli
+    source:
+      address: "0x94f1e0a6E02092Bf33EfFFeE9bC4b9B70c3C9ffD"
+      abi: ROI
+      startBlock: 7662133
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - APR
+        - OwnershipTransferred
+        - UpdatedPermission
+        - UpdatedTreasury
+      abis:
+        - name: ROI
+          file: ./abis/ROI.json
+      eventHandlers:
+        - event: APR(uint256,uint256,uint256,uint256)
+          handler: handleAPR
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+        - event: UpdatedPermission(address,bool)
+          handler: handleUpdatedPermission
+        - event: UpdatedTreasury(address,address)
+          handler: handleUpdatedTreasury
+      file: ./src/roi.ts
