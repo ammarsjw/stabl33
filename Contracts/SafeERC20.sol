@@ -23,7 +23,9 @@ library SafeERC20 {
         address to,
         uint256 value
     ) internal {
-        _callOptionalReturn(token, abi.encodeWithSelector(token.transfer.selector, to, value));
+        if (value > 0) {
+            _callOptionalReturn(token, abi.encodeWithSelector(token.transfer.selector, to, value));
+        }
     }
 
     function safeTransferFrom(
@@ -32,7 +34,9 @@ library SafeERC20 {
         address to,
         uint256 value
     ) internal {
-        _callOptionalReturn(token, abi.encodeWithSelector(token.transferFrom.selector, from, to, value));
+        if (value > 0) {
+            _callOptionalReturn(token, abi.encodeWithSelector(token.transferFrom.selector, from, to, value));
+        }
     }
 
     /**

@@ -33,6 +33,9 @@ contract Stabl3Staking is Ownable {
     uint256[] public ROIPercentages;
     uint256[] public HQPercentages;
 
+    uint256 public lendingStabl3ClaimTime;
+    uint256 public lendingStabl3Percentage;
+
     uint256 public unstakeFeePercentage;
 
     uint256 public maxPoolPercentage;
@@ -40,9 +43,6 @@ contract Stabl3Staking is Ownable {
     uint256 oneMinuteTime;
     uint256 oneYearTime;
     uint256[4] public lockTimes;
-
-    uint256 public lendingStabl3ClaimTime;
-    uint256 public lendingStabl3Percentage;
 
     bool public stakeState;
 
@@ -142,9 +142,14 @@ contract Stabl3Staking is Ownable {
 
         stabl3 = IERC20(0xDf9c4990a8973b6cC069738592F27Ea54b27D569);
 
-        treasuryPercentages = [975, 800];
-        ROIPercentages = [0, 175];
-        HQPercentages = [25, 25];
+        treasuryPercentages = [975, 761];
+        ROIPercentages = [0, 0];
+        HQPercentages = [25, 39];
+
+        // TODO remove
+        lendingStabl3ClaimTime = 300; // 0:15 hours time in seconds
+        // lendingStabl3ClaimTime = 2592000; // 1 month time in seconds
+        lendingStabl3Percentage = 200;
 
         unstakeFeePercentage = 50;
 
@@ -157,11 +162,6 @@ contract Stabl3Staking is Ownable {
         // oneMinuteTime = 60;
         // oneYearTime = 31104000;
         // lockTimes = [7776000, 15552000, 23328000, 31104000];   // 3, 6, 9 and 12 months time in seconds
-
-        // TODO remove
-        lendingStabl3ClaimTime = 300; // 0:15 hours time in seconds
-        // lendingStabl3ClaimTime = 2592000; // 1 month time in seconds
-        lendingStabl3Percentage = 200;
     }
 
     function updateTreasury(address _treasury) external onlyOwner {
@@ -183,18 +183,32 @@ contract Stabl3Staking is Ownable {
     }
 
     function updateDistributionPercentages(
-        uint256[2] memory _treasuryPercentages,
-        uint256[2] memory _ROIPercentages,
-        uint256[2] memory _HQPercentages
+        uint256 _treasuryPercentage,
+        uint256 _ROIPercentage,
+        uint256 _HQPercentage,
+        uint256 _lendingStabl3Percentage,
+        bool _isLending
     ) external onlyOwner {
-        require(_treasuryPercentages[0] + _ROIPercentages[0] + _HQPercentages[0] == 1000,
-            "Stabl3Staking: Sum of magnified Stake percentages should equal 1000");
-        require(_treasuryPercentages[1] + _ROIPercentages[1] + _HQPercentages[1] == 1000,
-            "Stabl3Staking: Sum of magnified Lend percentages should equal 1000");
+        if (_isLending) {
+            require(_treasuryPercentage + _ROIPercentage + _HQPercentage + _lendingStabl3Percentage == 1000,
+                "Stabl3Staking: Sum of magnified Lend percentages should equal 1000");
 
-        treasuryPercentages = _treasuryPercentages;
-        ROIPercentages = _ROIPercentages;
-        HQPercentages = _HQPercentages;
+            treasuryPercentages[1] = _treasuryPercentage;
+            ROIPercentages[1] = _ROIPercentage;
+            HQPercentages[1] = _HQPercentage;
+            if (lendingStabl3Percentage != _lendingStabl3Percentage) {
+                emit UpdatedLendingStabl3Percentage(_lendingStabl3Percentage, lendingStabl3Percentage);
+                lendingStabl3Percentage = _lendingStabl3Percentage;
+            }
+        }
+        else {
+            require(_treasuryPercentage + _ROIPercentage + _HQPercentage == 1000,
+                "Stabl3Staking: Sum of magnified Stake percentages should equal 1000");
+
+            treasuryPercentages[0] = _treasuryPercentage;
+            ROIPercentages[0] = _ROIPercentage;
+            HQPercentages[0] = _HQPercentage;
+        }
     }
 
     function updateUnstakeFeePercentage(uint256 _unstakeFeePercentage) external onlyOwner {
@@ -217,12 +231,6 @@ contract Stabl3Staking is Ownable {
         require(lendingStabl3ClaimTime != _lendingStabl3ClaimTime, "Stabl3Staking: Lending Stabl3 Claim Time is already this value");
         emit UpdatedLendingStabl3ClaimTime(_lendingStabl3ClaimTime, lendingStabl3ClaimTime);
         lendingStabl3ClaimTime = _lendingStabl3ClaimTime;
-    }
-
-    function updateLendingStabl3Percentage(uint256 _lendingStabl3Percentage) external onlyOwner {
-        require(lendingStabl3Percentage != _lendingStabl3Percentage, "Stabl3Staking: Lending Stabl3 Claim Percentage is already this value");
-        emit UpdatedLendingStabl3Percentage(_lendingStabl3Percentage, lendingStabl3Percentage);
-        lendingStabl3Percentage = _lendingStabl3Percentage;
     }
 
     function updateStakeState(bool _state) external onlyOwner {
@@ -369,29 +377,30 @@ contract Stabl3Staking is Ownable {
         uint256 amountStabl3Lending;
 
         if (_isLending) {
-            amountTokenLending = _amountToken.mul(lendingStabl3Percentage).div(1000);
-            amountStabl3Lending = treasury.getAmountOut(_token, amountTokenLending);
-
-            _amountToken -= amountTokenLending;
-
-            SafeERC20.safeTransferFrom(_token, msg.sender, address(ROI), amountTokenLending);
-
             uint256 amountTreasury = _amountToken.mul(treasuryPercentages[1]).div(1000);
 
             uint256 amountROI = _amountToken.mul(ROIPercentages[1]).div(1000);
 
             uint256 amountHQ = _amountToken.mul(HQPercentages[1]).div(1000);
 
-            uint256 totalAmountDistributed = amountTreasury + amountROI + amountHQ;
+            amountTokenLending = _amountToken.mul(lendingStabl3Percentage).div(1000);
+            amountStabl3Lending = treasury.getAmountOut(_token, amountTokenLending);
+
+            uint256 totalAmountDistributed = amountTreasury + amountROI + amountHQ + amountTokenLending;
             if (_amountToken > totalAmountDistributed) {
                 amountTreasury += _amountToken - totalAmountDistributed;
             }
 
+            _amountToken -= amountTokenLending;
+
             SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), amountTreasury);
             SafeERC20.safeTransferFrom(_token, msg.sender, address(ROI), amountROI);
             SafeERC20.safeTransferFrom(_token, msg.sender, HQ, amountHQ);
+            SafeERC20.safeTransferFrom(_token, msg.sender, address(ROI), amountTokenLending);
 
-            stabl3.transferFrom(address(treasury), address(this), amountStabl3Lending);
+            if (amountStabl3Lending > 0) {
+                stabl3.transferFrom(address(treasury), address(this), amountStabl3Lending);
+            }
 
             treasury.updatePool(LEND_POOL, _token, amountTreasury, amountROI, amountHQ, true);
             treasury.updatePool(BUY_POOL, _token, 0, amountTokenLending, 0, true);
