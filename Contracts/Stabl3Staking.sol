@@ -468,7 +468,7 @@ contract Stabl3Staking is Ownable {
         );
     }
 
-    // @dev Permit Required (NO rewardWithdrawal, NO record keeping, NO updatePool, NO updateAPR, NO events)
+    // @dev Permit Required (NO transfers, NO record keeping, NO updatePool, NO updateAPR, NO events)
     function stakeWithPermit(address _user, IERC20 _token, uint256 _amountToken, uint8 _stakingType) public permission reserved(_token) {
         require(_amountToken > 0, "Stabl3Staking: Amount should be greater than zero");
         require(validatePool(_token, _amountToken), "Stabl3Staking: Staking pool limit reached");
@@ -506,12 +506,21 @@ contract Stabl3Staking is Ownable {
 
         Staking memory staking = getStakings[_user][_index];
 
+        uint256 endTime = staking.startTime + lockTimes[staking.stakingType - 1];
+
         if (
             staking.status &&
             staking.isLending == _isLending &&
-            staking.isRealEstate == _isRealEstate
+            staking.isRealEstate == _isRealEstate &&
+            staking.rewardWithdrawTimeLast < endTime
         ) {
-            uint256 numberOfMinutes = (_timestamp - staking.rewardWithdrawTimeLast) / oneMinuteTime;
+            uint256 numberOfMinutes;
+            if (_timestamp > endTime) {
+                numberOfMinutes = (endTime - staking.rewardWithdrawTimeLast) / oneMinuteTime;
+            }
+            else {
+                numberOfMinutes = (_timestamp - staking.rewardWithdrawTimeLast) / oneMinuteTime;
+            }
 
             if (numberOfMinutes > 0) {
                 uint256 ratio = ROI.getAPR();
@@ -564,6 +573,8 @@ contract Stabl3Staking is Ownable {
         if (reward > 0) {
             Record storage record = getRecords[msg.sender][staking.isLending];
 
+            uint256 endTime = staking.startTime + lockTimes[staking.stakingType - 1];
+
             uint8 poolType = STAKE_POOL;
             if (staking.isLending) {
                 poolType = LEND_POOL;
@@ -572,7 +583,12 @@ contract Stabl3Staking is Ownable {
             _evaluateReward(staking.token, reward, poolType);
 
             staking.rewardWithdrawn += reward;
-            staking.rewardWithdrawTimeLast = _timestamp;
+            if (_timestamp > endTime) {
+                staking.rewardWithdrawTimeLast = endTime;
+            }
+            else {
+                staking.rewardWithdrawTimeLast = _timestamp;
+            }
 
             uint256 rewardConverted = reward;
             if (staking.token.decimals() < 18) {
@@ -758,27 +774,20 @@ contract Stabl3Staking is Ownable {
         }
     }
 
-    // @dev Permit Required (NO rewardWithdrawal, NO record keeping, NO updatePool, NO updateAPR, NO events)
-    function _unstakeSingleWithPermit(address _user, uint256 _index) internal {
+    // @dev Permit Required (NO transfers, NO record keeping, NO updatePool, NO updateAPR, NO events)
+    function unstakeSingleWithPermit(address _user, uint256 _index) public permission {
         Staking storage staking = getStakings[_user][_index];
 
-        SafeERC20.safeTransferFrom(staking.token, address(treasury), _user, staking.amountTokenStaked);
+        require(staking.status, "Stabl3Staking: Invalid Staking");
+        require(staking.isRealEstate, "Stabl3Staking: Not allowed");
+        if (staking.stakingType > 0) {
+            require(block.timestamp > staking.startTime + lockTimes[staking.stakingType - 1], "Stabl3Staking: Cannot unstake before end time");
+        }
 
         staking.status = false;
     }
 
-    // @dev Permit Required (NO rewardWithdrawal, NO record keeping, NO updatePool, NO updateAPR, NO events)
-    function unstakeSingleWithPermit(address _user, uint256 _index) public permission {
-        Staking storage staking = getStakings[msg.sender][_index];
-
-        require(staking.status, "Stabl3Staking: Invalid Staking");
-        require(staking.isRealEstate, "Stabl3Staking: Not allowed");
-        require(block.timestamp > staking.startTime + lockTimes[staking.stakingType - 1], "Stabl3Staking: Cannot unstake before end time");
-
-        _unstakeSingleWithPermit(_user, _index);
-    }
-
-    // @dev Permit Required (NO rewardWithdrawal, NO record keeping, NO updatePool, NO updateAPR, NO events)
+    // @dev Permit Required (NO transfers, NO record keeping, NO updatePool, NO updateAPR, NO events)
     function unstakeMultipleWithPermit(address _user, uint256[] memory _indexes) external permission {
         for (uint256 i = 0 ; i < _indexes.length ; i++) {
             unstakeSingleWithPermit(_user, _indexes[i]);
