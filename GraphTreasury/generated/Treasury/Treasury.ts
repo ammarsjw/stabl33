@@ -877,6 +877,21 @@ export class Treasury extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
+  ucd(): Address {
+    let result = super.call("ucd", "ucd():(address)", []);
+
+    return result[0].toAddress();
+  }
+
+  try_ucd(): ethereum.CallResult<Address> {
+    let result = super.tryCall("ucd", "ucd():(address)", []);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+
   uniswapFactory(): Address {
     let result = super.call("uniswapFactory", "uniswapFactory():(address)", []);
 
@@ -976,6 +991,36 @@ export class DelegateApproveCall__Outputs {
   _call: DelegateApproveCall;
 
   constructor(call: DelegateApproveCall) {
+    this._call = call;
+  }
+}
+
+export class InitializeUCDCall extends ethereum.Call {
+  get inputs(): InitializeUCDCall__Inputs {
+    return new InitializeUCDCall__Inputs(this);
+  }
+
+  get outputs(): InitializeUCDCall__Outputs {
+    return new InitializeUCDCall__Outputs(this);
+  }
+}
+
+export class InitializeUCDCall__Inputs {
+  _call: InitializeUCDCall;
+
+  constructor(call: InitializeUCDCall) {
+    this._call = call;
+  }
+
+  get _ucd(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+}
+
+export class InitializeUCDCall__Outputs {
+  _call: InitializeUCDCall;
+
+  constructor(call: InitializeUCDCall) {
     this._call = call;
   }
 }

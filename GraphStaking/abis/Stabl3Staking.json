@@ -1,8 +1,16 @@
 [
   {
     "inputs": [
-      { "internalType": "address", "name": "_treasury", "type": "address" },
-      { "internalType": "address", "name": "_ROI", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "_treasury",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_ROI",
+        "type": "address"
+      }
     ],
     "stateMutability": "nonpayable",
     "type": "constructor"
@@ -383,14 +391,32 @@
   {
     "inputs": [],
     "name": "HQ",
-    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "name": "HQPercentages",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
@@ -398,31 +424,71 @@
     "inputs": [],
     "name": "ROI",
     "outputs": [
-      { "internalType": "contract IROI", "name": "", "type": "address" }
+      {
+        "internalType": "contract IROI",
+        "name": "",
+        "type": "address"
+      }
     ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "name": "ROIPercentages",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_user", "type": "address" },
-      { "internalType": "bool", "name": "_isRealEstate", "type": "bool" }
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "ROIPercentages",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isRealEstate",
+        "type": "bool"
+      }
     ],
     "name": "allStakings",
     "outputs": [
       {
         "components": [
-          { "internalType": "uint256", "name": "index", "type": "uint256" },
-          { "internalType": "address", "name": "user", "type": "address" },
-          { "internalType": "bool", "name": "status", "type": "bool" },
-          { "internalType": "uint8", "name": "stakingType", "type": "uint8" },
+          {
+            "internalType": "uint256",
+            "name": "index",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "user",
+            "type": "address"
+          },
+          {
+            "internalType": "bool",
+            "name": "status",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint8",
+            "name": "stakingType",
+            "type": "uint8"
+          },
           {
             "internalType": "contract IERC20",
             "name": "token",
@@ -433,7 +499,11 @@
             "name": "amountTokenStaked",
             "type": "uint256"
           },
-          { "internalType": "uint256", "name": "startTime", "type": "uint256" },
+          {
+            "internalType": "uint256",
+            "name": "startTime",
+            "type": "uint256"
+          },
           {
             "internalType": "uint256",
             "name": "rewardWithdrawn",
@@ -444,7 +514,11 @@
             "name": "rewardWithdrawTimeLast",
             "type": "uint256"
           },
-          { "internalType": "bool", "name": "isLending", "type": "bool" },
+          {
+            "internalType": "bool",
+            "name": "isLending",
+            "type": "bool"
+          },
           {
             "internalType": "bool",
             "name": "isClaimedStabl3Lending",
@@ -460,7 +534,11 @@
             "name": "amountStabl3Lending",
             "type": "uint256"
           },
-          { "internalType": "bool", "name": "isRealEstate", "type": "bool" }
+          {
+            "internalType": "bool",
+            "name": "isRealEstate",
+            "type": "bool"
+          }
         ],
         "internalType": "struct Stabl3Staking.Staking[]",
         "name": "unlockedLending",
@@ -468,10 +546,26 @@
       },
       {
         "components": [
-          { "internalType": "uint256", "name": "index", "type": "uint256" },
-          { "internalType": "address", "name": "user", "type": "address" },
-          { "internalType": "bool", "name": "status", "type": "bool" },
-          { "internalType": "uint8", "name": "stakingType", "type": "uint8" },
+          {
+            "internalType": "uint256",
+            "name": "index",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "user",
+            "type": "address"
+          },
+          {
+            "internalType": "bool",
+            "name": "status",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint8",
+            "name": "stakingType",
+            "type": "uint8"
+          },
           {
             "internalType": "contract IERC20",
             "name": "token",
@@ -482,7 +576,11 @@
             "name": "amountTokenStaked",
             "type": "uint256"
           },
-          { "internalType": "uint256", "name": "startTime", "type": "uint256" },
+          {
+            "internalType": "uint256",
+            "name": "startTime",
+            "type": "uint256"
+          },
           {
             "internalType": "uint256",
             "name": "rewardWithdrawn",
@@ -493,7 +591,11 @@
             "name": "rewardWithdrawTimeLast",
             "type": "uint256"
           },
-          { "internalType": "bool", "name": "isLending", "type": "bool" },
+          {
+            "internalType": "bool",
+            "name": "isLending",
+            "type": "bool"
+          },
           {
             "internalType": "bool",
             "name": "isClaimedStabl3Lending",
@@ -509,7 +611,11 @@
             "name": "amountStabl3Lending",
             "type": "uint256"
           },
-          { "internalType": "bool", "name": "isRealEstate", "type": "bool" }
+          {
+            "internalType": "bool",
+            "name": "isRealEstate",
+            "type": "bool"
+          }
         ],
         "internalType": "struct Stabl3Staking.Staking[]",
         "name": "lockedLending",
@@ -517,10 +623,26 @@
       },
       {
         "components": [
-          { "internalType": "uint256", "name": "index", "type": "uint256" },
-          { "internalType": "address", "name": "user", "type": "address" },
-          { "internalType": "bool", "name": "status", "type": "bool" },
-          { "internalType": "uint8", "name": "stakingType", "type": "uint8" },
+          {
+            "internalType": "uint256",
+            "name": "index",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "user",
+            "type": "address"
+          },
+          {
+            "internalType": "bool",
+            "name": "status",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint8",
+            "name": "stakingType",
+            "type": "uint8"
+          },
           {
             "internalType": "contract IERC20",
             "name": "token",
@@ -531,7 +653,11 @@
             "name": "amountTokenStaked",
             "type": "uint256"
           },
-          { "internalType": "uint256", "name": "startTime", "type": "uint256" },
+          {
+            "internalType": "uint256",
+            "name": "startTime",
+            "type": "uint256"
+          },
           {
             "internalType": "uint256",
             "name": "rewardWithdrawn",
@@ -542,7 +668,11 @@
             "name": "rewardWithdrawTimeLast",
             "type": "uint256"
           },
-          { "internalType": "bool", "name": "isLending", "type": "bool" },
+          {
+            "internalType": "bool",
+            "name": "isLending",
+            "type": "bool"
+          },
           {
             "internalType": "bool",
             "name": "isClaimedStabl3Lending",
@@ -558,7 +688,11 @@
             "name": "amountStabl3Lending",
             "type": "uint256"
           },
-          { "internalType": "bool", "name": "isRealEstate", "type": "bool" }
+          {
+            "internalType": "bool",
+            "name": "isRealEstate",
+            "type": "bool"
+          }
         ],
         "internalType": "struct Stabl3Staking.Staking[]",
         "name": "unlockedStaking",
@@ -566,10 +700,26 @@
       },
       {
         "components": [
-          { "internalType": "uint256", "name": "index", "type": "uint256" },
-          { "internalType": "address", "name": "user", "type": "address" },
-          { "internalType": "bool", "name": "status", "type": "bool" },
-          { "internalType": "uint8", "name": "stakingType", "type": "uint8" },
+          {
+            "internalType": "uint256",
+            "name": "index",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "user",
+            "type": "address"
+          },
+          {
+            "internalType": "bool",
+            "name": "status",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint8",
+            "name": "stakingType",
+            "type": "uint8"
+          },
           {
             "internalType": "contract IERC20",
             "name": "token",
@@ -580,7 +730,11 @@
             "name": "amountTokenStaked",
             "type": "uint256"
           },
-          { "internalType": "uint256", "name": "startTime", "type": "uint256" },
+          {
+            "internalType": "uint256",
+            "name": "startTime",
+            "type": "uint256"
+          },
           {
             "internalType": "uint256",
             "name": "rewardWithdrawn",
@@ -591,7 +745,11 @@
             "name": "rewardWithdrawTimeLast",
             "type": "uint256"
           },
-          { "internalType": "bool", "name": "isLending", "type": "bool" },
+          {
+            "internalType": "bool",
+            "name": "isLending",
+            "type": "bool"
+          },
           {
             "internalType": "bool",
             "name": "isClaimedStabl3Lending",
@@ -607,7 +765,11 @@
             "name": "amountStabl3Lending",
             "type": "uint256"
           },
-          { "internalType": "bool", "name": "isRealEstate", "type": "bool" }
+          {
+            "internalType": "bool",
+            "name": "isRealEstate",
+            "type": "bool"
+          }
         ],
         "internalType": "struct Stabl3Staking.Staking[]",
         "name": "lockedStaking",
@@ -619,10 +781,20 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_user", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      }
     ],
     "name": "allStakingsLength",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
@@ -635,52 +807,132 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_user", "type": "address" },
-      { "internalType": "bool", "name": "_isLending", "type": "bool" },
-      { "internalType": "bool", "name": "_isRealEstate", "type": "bool" }
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isLending",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isRealEstate",
+        "type": "bool"
+      }
     ],
     "name": "getAmountRewardAll",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_user", "type": "address" },
-      { "internalType": "uint256", "name": "_index", "type": "uint256" },
-      { "internalType": "bool", "name": "_isLending", "type": "bool" },
-      { "internalType": "bool", "name": "_isRealEstate", "type": "bool" },
-      { "internalType": "uint256", "name": "_timestamp", "type": "uint256" }
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_index",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isLending",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isRealEstate",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_timestamp",
+        "type": "uint256"
+      }
     ],
     "name": "getAmountRewardSingle",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_user", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      }
     ],
     "name": "getClaimableStabl3LendingAll",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_user", "type": "address" },
-      { "internalType": "uint256", "name": "_index", "type": "uint256" },
-      { "internalType": "uint256", "name": "_timestamp", "type": "uint256" }
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_index",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_timestamp",
+        "type": "uint256"
+      }
     ],
     "name": "getClaimableStabl3LendingSingle",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "", "type": "address" },
-      { "internalType": "bool", "name": "", "type": "bool" }
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
     ],
     "name": "getRecords",
     "outputs": [
@@ -705,22 +957,54 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "", "type": "address" },
-      { "internalType": "uint256", "name": "", "type": "uint256" }
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
     ],
     "name": "getStakings",
     "outputs": [
-      { "internalType": "uint256", "name": "index", "type": "uint256" },
-      { "internalType": "address", "name": "user", "type": "address" },
-      { "internalType": "bool", "name": "status", "type": "bool" },
-      { "internalType": "uint8", "name": "stakingType", "type": "uint8" },
-      { "internalType": "contract IERC20", "name": "token", "type": "address" },
+      {
+        "internalType": "uint256",
+        "name": "index",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "status",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint8",
+        "name": "stakingType",
+        "type": "uint8"
+      },
+      {
+        "internalType": "contract IERC20",
+        "name": "token",
+        "type": "address"
+      },
       {
         "internalType": "uint256",
         "name": "amountTokenStaked",
         "type": "uint256"
       },
-      { "internalType": "uint256", "name": "startTime", "type": "uint256" },
+      {
+        "internalType": "uint256",
+        "name": "startTime",
+        "type": "uint256"
+      },
       {
         "internalType": "uint256",
         "name": "rewardWithdrawn",
@@ -731,7 +1015,11 @@
         "name": "rewardWithdrawTimeLast",
         "type": "uint256"
       },
-      { "internalType": "bool", "name": "isLending", "type": "bool" },
+      {
+        "internalType": "bool",
+        "name": "isLending",
+        "type": "bool"
+      },
       {
         "internalType": "bool",
         "name": "isClaimedStabl3Lending",
@@ -747,7 +1035,11 @@
         "name": "amountStabl3Lending",
         "type": "uint256"
       },
-      { "internalType": "bool", "name": "isRealEstate", "type": "bool" }
+      {
+        "internalType": "bool",
+        "name": "isRealEstate",
+        "type": "bool"
+      }
     ],
     "stateMutability": "view",
     "type": "function"
@@ -755,42 +1047,90 @@
   {
     "inputs": [],
     "name": "lendingStabl3ClaimTime",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "lendingStabl3Percentage",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "name": "lockTimes",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "maxPoolPercentage",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "owner",
-    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
     "name": "permitted",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
@@ -803,13 +1143,21 @@
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "_index", "type": "uint256" },
+      {
+        "internalType": "uint256",
+        "name": "_index",
+        "type": "uint256"
+      },
       {
         "internalType": "uint256",
         "name": "_amountToWithdraw",
         "type": "uint256"
       },
-      { "internalType": "uint8", "name": "_stakingType", "type": "uint8" }
+      {
+        "internalType": "uint8",
+        "name": "_stakingType",
+        "type": "uint8"
+      }
     ],
     "name": "restakeSingle",
     "outputs": [],
@@ -820,7 +1168,11 @@
     "inputs": [],
     "name": "stabl3",
     "outputs": [
-      { "internalType": "contract IERC20", "name": "", "type": "address" }
+      {
+        "internalType": "contract IERC20",
+        "name": "",
+        "type": "address"
+      }
     ],
     "stateMutability": "view",
     "type": "function"
@@ -832,9 +1184,21 @@
         "name": "_token",
         "type": "address"
       },
-      { "internalType": "uint256", "name": "_amountToken", "type": "uint256" },
-      { "internalType": "uint8", "name": "_stakingType", "type": "uint8" },
-      { "internalType": "bool", "name": "_isLending", "type": "bool" }
+      {
+        "internalType": "uint256",
+        "name": "_amountToken",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint8",
+        "name": "_stakingType",
+        "type": "uint8"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isLending",
+        "type": "bool"
+      }
     ],
     "name": "stake",
     "outputs": [],
@@ -844,20 +1208,38 @@
   {
     "inputs": [],
     "name": "stakeState",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_user", "type": "address" },
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
       {
         "internalType": "contract IERC20",
         "name": "_token",
         "type": "address"
       },
-      { "internalType": "uint256", "name": "_amountToken", "type": "uint256" },
-      { "internalType": "uint8", "name": "_stakingType", "type": "uint8" }
+      {
+        "internalType": "uint256",
+        "name": "_amountToken",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint8",
+        "name": "_stakingType",
+        "type": "uint8"
+      }
     ],
     "name": "stakeWithPermit",
     "outputs": [],
@@ -866,7 +1248,11 @@
   },
   {
     "inputs": [
-      { "internalType": "contract IERC20", "name": "_token", "type": "address" }
+      {
+        "internalType": "contract IERC20",
+        "name": "_token",
+        "type": "address"
+      }
     ],
     "name": "testWithdrawAllFunds",
     "outputs": [],
@@ -875,7 +1261,11 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "newOwner", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
     ],
     "name": "transferOwnership",
     "outputs": [],
@@ -886,28 +1276,54 @@
     "inputs": [],
     "name": "treasury",
     "outputs": [
-      { "internalType": "contract ITreasury", "name": "", "type": "address" }
+      {
+        "internalType": "contract ITreasury",
+        "name": "",
+        "type": "address"
+      }
     ],
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "name": "treasuryPercentages",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "unstakeFeePercentage",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "uint256[]", "name": "_indexes", "type": "uint256[]" }
+      {
+        "internalType": "uint256[]",
+        "name": "_indexes",
+        "type": "uint256[]"
+      }
     ],
     "name": "unstakeMultiple",
     "outputs": [],
@@ -916,8 +1332,16 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_user", "type": "address" },
-      { "internalType": "uint256[]", "name": "_indexes", "type": "uint256[]" }
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_indexes",
+        "type": "uint256[]"
+      }
     ],
     "name": "unstakeMultipleWithPermit",
     "outputs": [],
@@ -926,7 +1350,11 @@
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "_index", "type": "uint256" }
+      {
+        "internalType": "uint256",
+        "name": "_index",
+        "type": "uint256"
+      }
     ],
     "name": "unstakeSingle",
     "outputs": [],
@@ -935,8 +1363,16 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_user", "type": "address" },
-      { "internalType": "uint256", "name": "_index", "type": "uint256" }
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_index",
+        "type": "uint256"
+      }
     ],
     "name": "unstakeSingleWithPermit",
     "outputs": [],
@@ -946,19 +1382,29 @@
   {
     "inputs": [
       {
-        "internalType": "uint256[2]",
-        "name": "_treasuryPercentages",
-        "type": "uint256[2]"
+        "internalType": "uint256",
+        "name": "_treasuryPercentage",
+        "type": "uint256"
       },
       {
-        "internalType": "uint256[2]",
-        "name": "_ROIPercentages",
-        "type": "uint256[2]"
+        "internalType": "uint256",
+        "name": "_ROIPercentage",
+        "type": "uint256"
       },
       {
-        "internalType": "uint256[2]",
-        "name": "_HQPercentages",
-        "type": "uint256[2]"
+        "internalType": "uint256",
+        "name": "_HQPercentage",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_lendingStabl3Percentage",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isLending",
+        "type": "bool"
       }
     ],
     "name": "updateDistributionPercentages",
@@ -967,7 +1413,13 @@
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "address", "name": "_HQ", "type": "address" }],
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_HQ",
+        "type": "address"
+      }
+    ],
     "name": "updateHQ",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -982,19 +1434,6 @@
       }
     ],
     "name": "updateLendingStabl3ClaimTime",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_lendingStabl3Percentage",
-        "type": "uint256"
-      }
-    ],
-    "name": "updateLendingStabl3Percentage",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1032,7 +1471,11 @@
         "name": "_contractAddress",
         "type": "address"
       },
-      { "internalType": "bool", "name": "_state", "type": "bool" }
+      {
+        "internalType": "bool",
+        "name": "_state",
+        "type": "bool"
+      }
     ],
     "name": "updatePermission",
     "outputs": [],
@@ -1041,7 +1484,11 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_ROI", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "_ROI",
+        "type": "address"
+      }
     ],
     "name": "updateROI",
     "outputs": [],
@@ -1049,7 +1496,13 @@
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "bool", "name": "_state", "type": "bool" }],
+    "inputs": [
+      {
+        "internalType": "bool",
+        "name": "_state",
+        "type": "bool"
+      }
+    ],
     "name": "updateStakeState",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -1057,7 +1510,11 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_treasury", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "_treasury",
+        "type": "address"
+      }
     ],
     "name": "updateTreasury",
     "outputs": [],
@@ -1084,16 +1541,30 @@
         "name": "_token",
         "type": "address"
       },
-      { "internalType": "uint256", "name": "_amountToken", "type": "uint256" }
+      {
+        "internalType": "uint256",
+        "name": "_amountToken",
+        "type": "uint256"
+      }
     ],
     "name": "validatePool",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "bool", "name": "_isLending", "type": "bool" }
+      {
+        "internalType": "bool",
+        "name": "_isLending",
+        "type": "bool"
+      }
     ],
     "name": "withdrawAmountRewardAll",
     "outputs": [],

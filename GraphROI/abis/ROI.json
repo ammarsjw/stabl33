@@ -105,8 +105,16 @@
         "name": "_token",
         "type": "address"
       },
-      { "internalType": "address", "name": "_spender", "type": "address" },
-      { "internalType": "bool", "name": "_isApprove", "type": "bool" }
+      {
+        "internalType": "address",
+        "name": "_spender",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isApprove",
+        "type": "bool"
+      }
     ],
     "name": "delegateApprove",
     "outputs": [],
@@ -116,27 +124,49 @@
   {
     "inputs": [],
     "name": "getAPR",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "getReserves",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "getTotalRewardDistributed",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_ucd", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "_ucd",
+        "type": "address"
+      }
     ],
     "name": "initializeUCD",
     "outputs": [],
@@ -146,14 +176,32 @@
   {
     "inputs": [],
     "name": "owner",
-    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
     "name": "permitted",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
@@ -168,14 +216,22 @@
     "inputs": [],
     "name": "stabl3",
     "outputs": [
-      { "internalType": "contract IERC20", "name": "", "type": "address" }
+      {
+        "internalType": "contract IERC20",
+        "name": "",
+        "type": "address"
+      }
     ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "contract IERC20", "name": "_token", "type": "address" }
+      {
+        "internalType": "contract IERC20",
+        "name": "_token",
+        "type": "address"
+      }
     ],
     "name": "testWithdrawAllFunds",
     "outputs": [],
@@ -184,7 +240,11 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "newOwner", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
     ],
     "name": "transferOwnership",
     "outputs": [],
@@ -195,7 +255,11 @@
     "inputs": [],
     "name": "treasury",
     "outputs": [
-      { "internalType": "contract ITreasury", "name": "", "type": "address" }
+      {
+        "internalType": "contract ITreasury",
+        "name": "",
+        "type": "address"
+      }
     ],
     "stateMutability": "view",
     "type": "function"
@@ -204,7 +268,11 @@
     "inputs": [],
     "name": "ucd",
     "outputs": [
-      { "internalType": "contract IERC20", "name": "", "type": "address" }
+      {
+        "internalType": "contract IERC20",
+        "name": "",
+        "type": "address"
+      }
     ],
     "stateMutability": "view",
     "type": "function"
@@ -223,7 +291,11 @@
         "name": "_contractAddress",
         "type": "address"
       },
-      { "internalType": "bool", "name": "_state", "type": "bool" }
+      {
+        "internalType": "bool",
+        "name": "_state",
+        "type": "bool"
+      }
     ],
     "name": "updatePermission",
     "outputs": [],
@@ -232,7 +304,11 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_treasury", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "_treasury",
+        "type": "address"
+      }
     ],
     "name": "updateTreasury",
     "outputs": [],
@@ -241,7 +317,11 @@
   },
   {
     "inputs": [
-      { "internalType": "contract IERC20", "name": "_token", "type": "address" }
+      {
+        "internalType": "contract IERC20",
+        "name": "_token",
+        "type": "address"
+      }
     ],
     "name": "withdrawAllFunds",
     "outputs": [],
@@ -255,7 +335,11 @@
         "name": "_token",
         "type": "address"
       },
-      { "internalType": "uint256", "name": "_amountToken", "type": "uint256" }
+      {
+        "internalType": "uint256",
+        "name": "_amountToken",
+        "type": "uint256"
+      }
     ],
     "name": "withdrawFunds",
     "outputs": [],

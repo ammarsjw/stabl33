@@ -1905,16 +1905,24 @@ export class UpdateDistributionPercentagesCall__Inputs {
     this._call = call;
   }
 
-  get _treasuryPercentages(): Array<BigInt> {
-    return this._call.inputValues[0].value.toBigIntArray();
+  get _treasuryPercentage(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
   }
 
-  get _ROIPercentages(): Array<BigInt> {
-    return this._call.inputValues[1].value.toBigIntArray();
+  get _ROIPercentage(): BigInt {
+    return this._call.inputValues[1].value.toBigInt();
   }
 
-  get _HQPercentages(): Array<BigInt> {
-    return this._call.inputValues[2].value.toBigIntArray();
+  get _HQPercentage(): BigInt {
+    return this._call.inputValues[2].value.toBigInt();
+  }
+
+  get _lendingStabl3Percentage(): BigInt {
+    return this._call.inputValues[3].value.toBigInt();
+  }
+
+  get _isLending(): boolean {
+    return this._call.inputValues[4].value.toBoolean();
   }
 }
 
@@ -1982,36 +1990,6 @@ export class UpdateLendingStabl3ClaimTimeCall__Outputs {
   _call: UpdateLendingStabl3ClaimTimeCall;
 
   constructor(call: UpdateLendingStabl3ClaimTimeCall) {
-    this._call = call;
-  }
-}
-
-export class UpdateLendingStabl3PercentageCall extends ethereum.Call {
-  get inputs(): UpdateLendingStabl3PercentageCall__Inputs {
-    return new UpdateLendingStabl3PercentageCall__Inputs(this);
-  }
-
-  get outputs(): UpdateLendingStabl3PercentageCall__Outputs {
-    return new UpdateLendingStabl3PercentageCall__Outputs(this);
-  }
-}
-
-export class UpdateLendingStabl3PercentageCall__Inputs {
-  _call: UpdateLendingStabl3PercentageCall;
-
-  constructor(call: UpdateLendingStabl3PercentageCall) {
-    this._call = call;
-  }
-
-  get _lendingStabl3Percentage(): BigInt {
-    return this._call.inputValues[0].value.toBigInt();
-  }
-}
-
-export class UpdateLendingStabl3PercentageCall__Outputs {
-  _call: UpdateLendingStabl3PercentageCall;
-
-  constructor(call: UpdateLendingStabl3PercentageCall) {
     this._call = call;
   }
 }

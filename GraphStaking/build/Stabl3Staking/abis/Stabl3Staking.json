@@ -1382,19 +1382,29 @@
   {
     "inputs": [
       {
-        "internalType": "uint256[2]",
-        "name": "_treasuryPercentages",
-        "type": "uint256[2]"
+        "internalType": "uint256",
+        "name": "_treasuryPercentage",
+        "type": "uint256"
       },
       {
-        "internalType": "uint256[2]",
-        "name": "_ROIPercentages",
-        "type": "uint256[2]"
+        "internalType": "uint256",
+        "name": "_ROIPercentage",
+        "type": "uint256"
       },
       {
-        "internalType": "uint256[2]",
-        "name": "_HQPercentages",
-        "type": "uint256[2]"
+        "internalType": "uint256",
+        "name": "_HQPercentage",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_lendingStabl3Percentage",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isLending",
+        "type": "bool"
       }
     ],
     "name": "updateDistributionPercentages",
@@ -1424,19 +1434,6 @@
       }
     ],
     "name": "updateLendingStabl3ClaimTime",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_lendingStabl3Percentage",
-        "type": "uint256"
-      }
-    ],
-    "name": "updateLendingStabl3Percentage",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
