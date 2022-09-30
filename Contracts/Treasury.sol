@@ -13,6 +13,7 @@ import "./IUniswapV2Pair.sol";
 
 contract Treasury is Ownable, ReentrancyGuard {
     using SafeMathUpgradeable for uint256;
+    using SafeERC20 for IERC20;
 
     uint256 private immutable MAX_INT = 2 ** 256 - 1;
 
@@ -132,7 +133,7 @@ contract Treasury is Ownable, ReentrancyGuard {
     }
 
     function updateExchangeFee(uint256 _exchangeFee) external onlyOwner {
-        require(exchangeFee != _exchangeFee, "Stabl3PublicSale: Exchange Fee is already this value");
+        require(exchangeFee != _exchangeFee, "Treasury: Exchange Fee is already this value");
         emit UpdatedExchangeFee(_exchangeFee, exchangeFee);
         exchangeFee = _exchangeFee;
     }
@@ -449,7 +450,7 @@ contract Treasury is Ownable, ReentrancyGuard {
         }
     }
 
-    function updateRate(IERC20 _token, uint256 _amountToken) external nonReentrant permission reserved(_token) {
+    function updateRate(IERC20 _token, uint256 _amountToken) external permission reserved(_token) nonReentrant {
         uint256 amountTokenConverted = _amountToken;
         if (_token.decimals() < 18) {
             amountTokenConverted *= 10 ** (18 - _token.decimals());

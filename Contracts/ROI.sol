@@ -9,6 +9,7 @@ import "./ReentrancyGuard.sol";
 import "./ITreasury.sol";
 
 contract ROI is Ownable, ReentrancyGuard {
+    using SafeERC20 for IERC20;
 
     uint256 private immutable MAX_INT = 2 ** 256 - 1;
 
@@ -165,7 +166,7 @@ contract ROI is Ownable, ReentrancyGuard {
         return currentAPR;
     }
 
-    function updateAPR() public nonReentrant permission {
+    function updateAPR() public permission nonReentrant {
         uint256 currentAPR = getAPR();
 
         uint256 reserves = getReserves();

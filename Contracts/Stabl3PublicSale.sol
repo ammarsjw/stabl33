@@ -106,7 +106,7 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
         uint256 _HQPercentage
     ) external onlyOwner {
         require(_treasuryPercentage + _ROIPercentage + _HQPercentage == 1000,
-            "STABL3: Sum of magnified percentages should equal 1000");
+            "Stabl3PublicSale: Sum of magnified percentages should equal 1000");
 
         treasuryPercentage = _treasuryPercentage;
         ROIPercentage = _ROIPercentage;
@@ -133,7 +133,7 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
         saleState = _state;
     }
 
-    function buy(IERC20 _token, uint256 _amountToken) external saleActive nonReentrant reserved(_token) {
+    function buy(IERC20 _token, uint256 _amountToken) external saleActive reserved(_token) nonReentrant {
         require(_amountToken > 0, "Stabl3PublicSale: Insufficient amount");
 
         uint256 amountTreasury = _amountToken.mul(treasuryPercentage).div(1000);
@@ -206,7 +206,7 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
         IERC20 _exchangingToken,
         IERC20 _token,
         uint256 _amountToken
-    ) external saleActive nonReentrant reserved(_exchangingToken) reserved(_token)  {
+    ) external saleActive reserved(_exchangingToken) reserved(_token) nonReentrant {
         require(_exchangingToken != _token, "Stabl3PublicSale: Invalid exchange");
         require(_amountToken > 0, "Stabl3PublicSale: Insufficient amount");
 

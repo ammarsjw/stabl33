@@ -9,6 +9,7 @@ import "./ReentrancyGuard.sol";
 
 contract Stabl3Borrowing is Ownable, ReentrancyGuard {
     using SafeMathUpgradeable for uint256;
+    using SafeERC20 for IERC20;
 
     uint8 private constant BORROW_POOL = 4;
     uint8 private constant EXCHANGE_POOL = 5;

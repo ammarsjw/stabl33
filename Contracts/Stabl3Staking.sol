@@ -76,10 +76,10 @@ contract Stabl3Staking is Ownable {
     // user stakings
     mapping (address => Staking[]) public getStakings;
 
-    // user lifetime record
+    // user lifetime staking records
     mapping (address => mapping (bool => Record)) public getRecords;
 
-    // contracts with permission to access certain Staking functions
+    // contracts with permission to access certain staking functions
     mapping (address => bool) public permitted;
 
     // events
@@ -397,13 +397,9 @@ contract Stabl3Staking is Ownable {
             SafeERC20.safeTransferFrom(_token, msg.sender, HQ, amountHQ);
             SafeERC20.safeTransferFrom(_token, msg.sender, address(ROI), amountTokenLending);
 
-            if (amountStabl3Lending > 0) {
-                stabl3.transferFrom(address(treasury), address(this), amountStabl3Lending);
-            }
-
             treasury.updatePool(LEND_POOL, _token, amountTreasury, amountROI, amountHQ, true);
             treasury.updatePool(BUY_POOL, _token, 0, amountTokenLending, 0, true);
-            treasury.updateStabl3CirculatingSupply(amountStabl3Lending, true);
+
             treasury.updateRate(_token, amountTokenLending);
         }
         else {
@@ -666,7 +662,9 @@ contract Stabl3Staking is Ownable {
         uint256 amountStabl3Lending = getClaimableStabl3LendingSingle(msg.sender, _index, _timestamp);
 
         if (amountStabl3Lending > 0) {
-            stabl3.transfer(msg.sender, amountStabl3Lending);
+            stabl3.transferFrom(address(treasury), msg.sender, amountStabl3Lending);
+
+            treasury.updateStabl3CirculatingSupply(amountStabl3Lending, true);
 
             staking.isClaimedStabl3Lending = true;
 
@@ -873,12 +871,6 @@ contract Stabl3Staking is Ownable {
         uint256 accruedReward = ABDKMath64x64.mulu(ABDKMath64x64.pow(ABDKMath64x64.add(ABDKMath64x64.fromUInt(1), ABDKMath64x64.divu(_ratio,10**18)), _exponent), _principal);
 
         return accruedReward.sub(_principal);
-    }
-
-    // TODO remove
-    // Testing only
-    function testWithdrawAllFunds(IERC20 _token) external onlyOwner {
-        SafeERC20.safeTransfer(_token, owner(), _token.balanceOf(address(this)));
     }
 
     // modifiers
