@@ -245,24 +245,26 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
         require(timestampToConsider < bondInfo.expiryTime, "Stabl3Bonding: Bond has expired");
         require(bondInfo.bondAmountConsumed + _amountToken <= bondInfo.bondAmount, "Stabl3Bonding: Bond limit reached");
 
-        uint256 amountTreasury = _amountToken.mul(treasuryPercentage).div(1000);
+        {
+            uint256 amountTreasury = _amountToken.mul(treasuryPercentage).div(1000);
 
-        uint256 amountROI = _amountToken.mul(ROIPercentage).div(1000);
+            uint256 amountROI = _amountToken.mul(ROIPercentage).div(1000);
 
-        uint256 amountHQ = _amountToken.mul(HQPercentage).div(1000);
+            uint256 amountHQ = _amountToken.mul(HQPercentage).div(1000);
 
-        uint256 totalAmountDistributed = amountTreasury + amountROI + amountHQ;
-        if (_amountToken > totalAmountDistributed) {
-            amountTreasury += _amountToken - totalAmountDistributed;
+            uint256 totalAmountDistributed = amountTreasury + amountROI + amountHQ;
+            if (_amountToken > totalAmountDistributed) {
+                amountTreasury += _amountToken - totalAmountDistributed;
+            }
+
+            SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), amountTreasury);
+            SafeERC20.safeTransferFrom(_token, msg.sender, address(ROI), amountROI);
+            SafeERC20.safeTransferFrom(_token, msg.sender, HQ, amountHQ);
+
+            treasury.updatePool(BOND_POOL, _token, amountTreasury, amountROI, amountHQ, true);
+
+            treasury.updateRate(_token, _amountToken);
         }
-
-        SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), amountTreasury);
-        SafeERC20.safeTransferFrom(_token, msg.sender, address(ROI), amountROI);
-        SafeERC20.safeTransferFrom(_token, msg.sender, HQ, amountHQ);
-
-        treasury.updatePool(BOND_POOL, _token, amountTreasury, amountROI, amountHQ, true);
-
-        treasury.updateRate(_token, _amountToken);
 
         uint256 amountStabl3 = treasury.getAmountOut(_token, _amountToken);
 
