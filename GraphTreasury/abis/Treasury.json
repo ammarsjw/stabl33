@@ -660,6 +660,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "stabl3CirculatingSupply",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint8",
@@ -875,6 +888,24 @@
       }
     ],
     "name": "updateReservedToken",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_amountStabl3",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isIncrease",
+        "type": "bool"
+      }
+    ],
+    "name": "updateStabl3CirculatingSupply",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

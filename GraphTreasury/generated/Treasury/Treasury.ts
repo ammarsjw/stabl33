@@ -848,6 +848,29 @@ export class Treasury extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toAddress());
   }
 
+  stabl3CirculatingSupply(): BigInt {
+    let result = super.call(
+      "stabl3CirculatingSupply",
+      "stabl3CirculatingSupply():(uint256)",
+      []
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_stabl3CirculatingSupply(): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "stabl3CirculatingSupply",
+      "stabl3CirculatingSupply():(uint256)",
+      []
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
   sumOfAllPools(_type: i32, _token: Address): BigInt {
     let result = super.call(
       "sumOfAllPools",
@@ -1349,6 +1372,40 @@ export class UpdateReservedTokenCall__Outputs {
   _call: UpdateReservedTokenCall;
 
   constructor(call: UpdateReservedTokenCall) {
+    this._call = call;
+  }
+}
+
+export class UpdateStabl3CirculatingSupplyCall extends ethereum.Call {
+  get inputs(): UpdateStabl3CirculatingSupplyCall__Inputs {
+    return new UpdateStabl3CirculatingSupplyCall__Inputs(this);
+  }
+
+  get outputs(): UpdateStabl3CirculatingSupplyCall__Outputs {
+    return new UpdateStabl3CirculatingSupplyCall__Outputs(this);
+  }
+}
+
+export class UpdateStabl3CirculatingSupplyCall__Inputs {
+  _call: UpdateStabl3CirculatingSupplyCall;
+
+  constructor(call: UpdateStabl3CirculatingSupplyCall) {
+    this._call = call;
+  }
+
+  get _amountStabl3(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
+  }
+
+  get _isIncrease(): boolean {
+    return this._call.inputValues[1].value.toBoolean();
+  }
+}
+
+export class UpdateStabl3CirculatingSupplyCall__Outputs {
+  _call: UpdateStabl3CirculatingSupplyCall;
+
+  constructor(call: UpdateStabl3CirculatingSupplyCall) {
     this._call = call;
   }
 }

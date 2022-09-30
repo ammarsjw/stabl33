@@ -823,6 +823,31 @@ export class Stabl3Staking__getStakingsResult {
   }
 }
 
+export class Stabl3Staking__validatePoolResult {
+  value0: BigInt;
+  value1: BigInt;
+
+  constructor(value0: BigInt, value1: BigInt) {
+    this.value0 = value0;
+    this.value1 = value1;
+  }
+
+  toMap(): TypedMap<string, ethereum.Value> {
+    let map = new TypedMap<string, ethereum.Value>();
+    map.set("value0", ethereum.Value.fromUnsignedBigInt(this.value0));
+    map.set("value1", ethereum.Value.fromUnsignedBigInt(this.value1));
+    return map;
+  }
+
+  getMaxPool(): BigInt {
+    return this.value0;
+  }
+
+  getCurrentPool(): BigInt {
+    return this.value1;
+  }
+}
+
 export class Stabl3Staking extends ethereum.SmartContract {
   static bind(address: Address): Stabl3Staking {
     return new Stabl3Staking("Stabl3Staking", address);
@@ -1459,26 +1484,32 @@ export class Stabl3Staking extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
-  validatePool(_token: Address, _amountToken: BigInt): boolean {
+  validatePool(
+    _token: Address,
+    _amountToken: BigInt
+  ): Stabl3Staking__validatePoolResult {
     let result = super.call(
       "validatePool",
-      "validatePool(address,uint256):(bool)",
+      "validatePool(address,uint256):(uint256,uint256)",
       [
         ethereum.Value.fromAddress(_token),
         ethereum.Value.fromUnsignedBigInt(_amountToken)
       ]
     );
 
-    return result[0].toBoolean();
+    return new Stabl3Staking__validatePoolResult(
+      result[0].toBigInt(),
+      result[1].toBigInt()
+    );
   }
 
   try_validatePool(
     _token: Address,
     _amountToken: BigInt
-  ): ethereum.CallResult<boolean> {
+  ): ethereum.CallResult<Stabl3Staking__validatePoolResult> {
     let result = super.tryCall(
       "validatePool",
-      "validatePool(address,uint256):(bool)",
+      "validatePool(address,uint256):(uint256,uint256)",
       [
         ethereum.Value.fromAddress(_token),
         ethereum.Value.fromUnsignedBigInt(_amountToken)
@@ -1488,7 +1519,12 @@ export class Stabl3Staking extends ethereum.SmartContract {
       return new ethereum.CallResult();
     }
     let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBoolean());
+    return ethereum.CallResult.fromValue(
+      new Stabl3Staking__validatePoolResult(
+        value[0].toBigInt(),
+        value[1].toBigInt()
+      )
+    );
   }
 }
 
