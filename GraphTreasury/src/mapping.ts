@@ -54,6 +54,7 @@ export function handleRate(event: RateEvent): void {
   entity.rate = event.params.rate
   entity.totalValueLocked = event.params.totalValueLocked
   entity.reserves = event.params.reserves
+  entity.stabl3CirculatingSupply = event.params.stabl3CirculatingSupply
   entity.blockTimestampLast = event.params.blockTimestampLast
   entity.save()
 }

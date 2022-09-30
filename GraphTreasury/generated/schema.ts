@@ -364,6 +364,15 @@ export class Rate extends Entity {
     this.set("reserves", Value.fromBigInt(value));
   }
 
+  get stabl3CirculatingSupply(): BigInt {
+    let value = this.get("stabl3CirculatingSupply");
+    return value!.toBigInt();
+  }
+
+  set stabl3CirculatingSupply(value: BigInt) {
+    this.set("stabl3CirculatingSupply", Value.fromBigInt(value));
+  }
+
   get blockTimestampLast(): BigInt {
     let value = this.get("blockTimestampLast");
     return value!.toBigInt();

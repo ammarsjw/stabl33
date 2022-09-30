@@ -36,6 +36,7 @@ type Rate @entity {
   rate: BigInt!
   totalValueLocked: BigInt!
   reserves: BigInt!
+  stabl3CirculatingSupply: BigInt!
   blockTimestampLast: BigInt!
 }
 

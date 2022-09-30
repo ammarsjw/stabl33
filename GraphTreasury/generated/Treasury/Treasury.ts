@@ -57,8 +57,12 @@ export class Rate__Params {
     return this._event.parameters[2].value.toBigInt();
   }
 
-  get blockTimestampLast(): BigInt {
+  get stabl3CirculatingSupply(): BigInt {
     return this._event.parameters[3].value.toBigInt();
+  }
+
+  get blockTimestampLast(): BigInt {
+    return this._event.parameters[4].value.toBigInt();
   }
 }
 

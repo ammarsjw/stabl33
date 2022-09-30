@@ -89,7 +89,7 @@ contract Treasury is Ownable, ReentrancyGuard {
 
     event UpdatedReservedToken(IERC20 token, bool state);
 
-    event Rate(uint256 rate, uint256 totalValueLocked, uint256 reserves, uint256 blockTimestampLast);
+    event Rate(uint256 rate, uint256 totalValueLocked, uint256 reserves, uint256 stabl3CirculatingSupply, uint256 blockTimestampLast);
 
     // constructor
 
@@ -495,7 +495,7 @@ contract Treasury is Ownable, ReentrancyGuard {
 
         uint256 totalValueLocked = getTotalValueLocked();
 
-        emit Rate(rateInfo.rate, totalValueLocked, reserves, block.timestamp);
+        emit Rate(rateInfo.rate, totalValueLocked, reserves, stabl3CirculatingSupply, block.timestamp);
     }
 
     function delegateApprove(IERC20 _token, address _spender, bool _isApprove) public onlyOwner {
