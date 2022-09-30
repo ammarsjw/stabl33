@@ -58,6 +58,8 @@ interface ITreasury {
         bool _isIncrease
     ) external;
 
+    function updateStabl3CirculatingSupply(uint256 _amountStabl3, bool _isIncrease) external;
+
     function updateRate(IERC20 _token, uint256 _amountToken) external;
 
     function delegateApprove(IERC20 _token, address _spender, bool _isApprove) external;

@@ -330,10 +330,10 @@ contract Stabl3Staking is Ownable {
         }
     }
 
-    function validatePool(IERC20 _token, uint256 _amountToken) public view stakeActive reserved(_token) returns (bool) {
-        uint256 maxPool;
-        uint256 currentPool;
-
+    function validatePool(
+        IERC20 _token,
+        uint256 _amountToken
+    ) public view stakeActive reserved(_token) returns (uint256 maxPool, uint256 currentPool) {
         for (uint256 i = 0 ; i < treasury.allReservedTokensLength() ; i++) {
             IERC20 reservedToken = treasury.allReservedTokens(i);
             if (treasury.isReservedToken(reservedToken)) {
@@ -362,16 +362,15 @@ contract Stabl3Staking is Ownable {
         if (_token.decimals() < 18) {
             _amountToken *= 10 ** (18 - _token.decimals());
         }
-
-        bool isValid = (currentPool + _amountToken) <= maxPool;
-
-        return isValid;
+ 
+        currentPool += _amountToken;
     }
 
     function stake(IERC20 _token, uint256 _amountToken, uint8 _stakingType, bool _isLending) public stakeActive reserved(_token) {
         require(_amountToken > 0, "Stabl3Staking: Amount should be greater than zero");
         require(1 <= _stakingType && _stakingType <= 4, "Stabl3Staking: Incorrect staking type");
-        require(validatePool(_token, _amountToken), "Stabl3Staking: Staking pool limit reached");
+        (uint256 maxPool, uint256 currentPool) = validatePool(_token, _amountToken);
+        require(maxPool >= currentPool, "Stabl3Staking: Staking pool limit");
 
         uint256 amountTokenLending;
         uint256 amountStabl3Lending;
@@ -404,6 +403,7 @@ contract Stabl3Staking is Ownable {
 
             treasury.updatePool(LEND_POOL, _token, amountTreasury, amountROI, amountHQ, true);
             treasury.updatePool(BUY_POOL, _token, 0, amountTokenLending, 0, true);
+            treasury.updateStabl3CirculatingSupply(amountStabl3Lending, true);
             treasury.updateRate(_token, amountTokenLending);
         }
         else {
@@ -471,7 +471,8 @@ contract Stabl3Staking is Ownable {
     // @dev Permit Required (NO transfers, NO record keeping, NO updatePool, NO updateAPR, NO events)
     function stakeWithPermit(address _user, IERC20 _token, uint256 _amountToken, uint8 _stakingType) public permission reserved(_token) {
         require(_amountToken > 0, "Stabl3Staking: Amount should be greater than zero");
-        require(validatePool(_token, _amountToken), "Stabl3Staking: Staking pool limit reached");
+        (uint256 maxPool, uint256 currentPool) = validatePool(_token, _amountToken);
+        require(maxPool >= currentPool, "Stabl3Staking: Staking pool limit");
 
         uint256 timestampToConsider = block.timestamp;
 
@@ -882,45 +883,45 @@ contract Stabl3Staking is Ownable {
 
     // modifiers
 
-    // modifier stakeActive() {
-    //     require(stakeState, "Stabl3Staking: Stake and Lend not yet started");
-    //     _;
-    // }
-
-    // modifier permission() {
-    //     require(permitted[msg.sender] || msg.sender == owner(), "Stabl3Staking: Not permitted");
-    //     _;
-    // }
-
-    // modifier reserved(IERC20 _token) {
-    //     require(treasury.isReservedToken(_token), "Stabl3Staking: Not a reserved token");
-    //     _;
-    // }
-
     modifier stakeActive() {
-        _stakeActive();
-        _;
-    }
-
-    function _stakeActive() internal view {
         require(stakeState, "Stabl3Staking: Stake and Lend not yet started");
+        _;
     }
 
     modifier permission() {
-        _permission();
-        _;
-    }
-
-    function _permission() internal view {
         require(permitted[msg.sender] || msg.sender == owner(), "Stabl3Staking: Not permitted");
+        _;
     }
 
     modifier reserved(IERC20 _token) {
-        _reserved(_token);
+        require(treasury.isReservedToken(_token), "Stabl3Staking: Not a reserved token");
         _;
     }
 
-    function _reserved(IERC20 _token) internal view {
-        require(treasury.isReservedToken(_token), "Stabl3Staking: Not a reserved token");
-    }
+    // modifier stakeActive() {
+    //     _stakeActive();
+    //     _;
+    // }
+
+    // function _stakeActive() internal view {
+    //     require(stakeState, "Stabl3Staking: Stake and Lend not yet started");
+    // }
+
+    // modifier permission() {
+    //     _permission();
+    //     _;
+    // }
+
+    // function _permission() internal view {
+    //     require(permitted[msg.sender] || msg.sender == owner(), "Stabl3Staking: Not permitted");
+    // }
+
+    // modifier reserved(IERC20 _token) {
+    //     _reserved(_token);
+    //     _;
+    // }
+
+    // function _reserved(IERC20 _token) internal view {
+    //     require(treasury.isReservedToken(_token), "Stabl3Staking: Not a reserved token");
+    // }
 }

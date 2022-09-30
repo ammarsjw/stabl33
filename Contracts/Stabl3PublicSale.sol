@@ -156,6 +156,7 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
         stabl3.transferFrom(address(treasury), msg.sender, amountStabl3);
 
         treasury.updatePool(BUY_POOL, _token, amountTreasury, amountROI, amountHQ, true);
+        treasury.updateStabl3CirculatingSupply(amountStabl3, true);
         treasury.updateRate(_token, _amountToken);
 
         emit Buy(msg.sender, amountStabl3, _token, _amountToken, block.timestamp);
@@ -216,14 +217,6 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
 
         _handleLimit(_exchangingToken, amountExchangingToken);
 
-        SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), amountTokenWithFee);
-        SafeERC20.safeTransferFrom(_exchangingToken, address(treasury), msg.sender, amountExchangingToken);
-
-        treasury.updatePool(BUY_POOL, _token, amountTokenWithFee, 0, 0, true);
-        treasury.updatePool(BUY_POOL, _exchangingToken, amountExchangingToken, 0, 0, false);
-
-        emit Exchange(msg.sender, _exchangingToken, amountExchangingToken, _token, amountTokenWithFee, fee, block.timestamp);
-
         SafeERC20.safeTransferFrom(_token, msg.sender, ROI, fee);
 
         uint256 amountStabl3 = treasury.getAmountOut(_token, fee);
@@ -231,9 +224,18 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
         stabl3.transferFrom(address(treasury), msg.sender, amountStabl3);
 
         treasury.updatePool(BUY_POOL, _token, 0, fee, 0, true);
+        treasury.updateStabl3CirculatingSupply(fee, true);
         treasury.updateRate(_token, fee);
 
         emit Buy(msg.sender, amountStabl3, _token, fee, block.timestamp);
+
+        SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), amountTokenWithFee);
+        SafeERC20.safeTransferFrom(_exchangingToken, address(treasury), msg.sender, amountExchangingToken);
+
+        treasury.updatePool(BUY_POOL, _token, amountTokenWithFee, 0, 0, true);
+        treasury.updatePool(BUY_POOL, _exchangingToken, amountExchangingToken, 0, 0, false);
+
+        emit Exchange(msg.sender, _exchangingToken, amountExchangingToken, _token, amountTokenWithFee, fee, block.timestamp);
     }
 
     // modifiers
