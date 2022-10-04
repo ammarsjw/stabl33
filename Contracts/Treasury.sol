@@ -335,7 +335,7 @@ contract Treasury is Ownable, ReentrancyGuard {
                 stabl3WindowToConsider -= _compoundSingle(stabl3WindowToConsider, rateInfo.compoundPercentage);
             }
 
-            amountTokenToConsider += (_amountStabl3 * tokenWindowToConsider) / stabl3WindowToConsider;
+            amountTokenToConsider += (amountStabl3ToConsider * tokenWindowToConsider) / stabl3WindowToConsider;
         }
 
         if (_token.decimals() < 18) {
