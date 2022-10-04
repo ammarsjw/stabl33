@@ -286,4 +286,12 @@ library SafeMathUpgradeable {
             return a - b;
         }
     }
+
+    /**
+     * @dev Returns the subtraction of two unsigned integers, without an overflow flag
+     */
+    function checkSub(uint256 a, uint256 b) internal pure returns (uint256) {
+        if (b > a) return a;
+        else return a - b;
+    }
 }

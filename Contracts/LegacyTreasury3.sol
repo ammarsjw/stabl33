@@ -137,7 +137,7 @@ contract Treasury is Ownable, ReentrancyGuard {
     }
 
     function updatePermission(address _contractAddress, bool _state) external onlyOwner {
-        require(permitted[_contractAddress] != _state, "Treasury: Contract is already of the value 'state'");
+        require(permitted[_contractAddress] != _state, "Treasury: Address is already of the value 'state'");
         permitted[_contractAddress] = _state;
 
         if (_state) {

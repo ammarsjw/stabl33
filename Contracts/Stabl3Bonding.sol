@@ -173,7 +173,7 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
     }
 
     function updatePermission(address _contractAddress, bool _state) external onlyOwner {
-        require(permitted[_contractAddress] != _state, "Stabl3Bonding: Contract is already of the value 'state'");
+        require(permitted[_contractAddress] != _state, "Stabl3Bonding: Address is already of the value 'state'");
         permitted[_contractAddress] = _state;
         emit UpdatedPermission(_contractAddress, _state);
     }
