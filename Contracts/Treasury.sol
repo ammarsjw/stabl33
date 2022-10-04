@@ -388,11 +388,11 @@ contract Treasury is Ownable, ReentrancyGuard {
         (uint256 reserve0, uint256 reserve1, ) = IUniswapV2Pair(pair).getReserves();
 
         uint256 amountToken;
-        if (IUniswapV2Pair(pair).token0() == address(_token)) {
-            amountToken = uniswapRouter.quote(_amountExchangingToken, reserve1, reserve0);
+        if (IUniswapV2Pair(pair).token0() == address(_exchangingToken)) {
+            amountToken = uniswapRouter.quote(_amountExchangingToken, reserve0, reserve1);
         }
         else {
-            amountToken = uniswapRouter.quote(_amountExchangingToken, reserve0, reserve1);
+            amountToken = uniswapRouter.quote(_amountExchangingToken, reserve1, reserve0);
         }
 
         uint256 amountTokenWithFee = (amountToken * 1000) / (1000 - exchangeFee);
