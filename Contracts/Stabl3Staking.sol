@@ -90,14 +90,6 @@ contract Stabl3Staking is Ownable {
 
     event UpdatedHQ(address newHQ, address oldHQ);
 
-    event UpdatedUnstakeFeePercentage(uint256 newUnstakeFeePercentage, uint256 oldUnstakeFeePercentage);
-
-    event UpdatedLockTime(uint256[4] newLockTimes, uint256[4] oldLockTimes);
-
-    event UpdatedLendingStabl3ClaimTime(uint256 newLendingStabl3ClaimTime, uint256 oldLendingStabl3ClaimTime);
-
-    event UpdatedLendingStabl3Percentage(uint256 newLendingStabl3Percentage, uint256 oldLendingStabl3Percentage);
-
     event UpdatedPermission(address contractAddress, bool state);
 
     event Stake(
@@ -197,7 +189,6 @@ contract Stabl3Staking is Ownable {
             ROIPercentages[1] = _ROIPercentage;
             HQPercentages[1] = _HQPercentage;
             if (lendingStabl3Percentage != _lendingStabl3Percentage) {
-                emit UpdatedLendingStabl3Percentage(_lendingStabl3Percentage, lendingStabl3Percentage);
                 lendingStabl3Percentage = _lendingStabl3Percentage;
             }
         }
@@ -213,7 +204,6 @@ contract Stabl3Staking is Ownable {
 
     function updateUnstakeFeePercentage(uint256 _unstakeFeePercentage) external onlyOwner {
         require(unstakeFeePercentage != _unstakeFeePercentage, "Stabl3Staking: Unstake Fee is already this value");
-        emit UpdatedUnstakeFeePercentage(_unstakeFeePercentage, unstakeFeePercentage);
         unstakeFeePercentage = _unstakeFeePercentage;
     }
 
@@ -223,13 +213,11 @@ contract Stabl3Staking is Ownable {
     }
 
     function updateLockTimes(uint256[4] memory _lockTimes) external onlyOwner {
-        emit UpdatedLockTime(_lockTimes, lockTimes);
         lockTimes = _lockTimes;
     }
 
     function updateLendingStabl3ClaimTime(uint256 _lendingStabl3ClaimTime) external onlyOwner {
         require(lendingStabl3ClaimTime != _lendingStabl3ClaimTime, "Stabl3Staking: Lending Stabl3 Claim Time is already this value");
-        emit UpdatedLendingStabl3ClaimTime(_lendingStabl3ClaimTime, lendingStabl3ClaimTime);
         lendingStabl3ClaimTime = _lendingStabl3ClaimTime;
     }
 
@@ -512,6 +500,7 @@ contract Stabl3Staking is Ownable {
             staking.rewardWithdrawTimeLast < endTime
         ) {
             uint256 numberOfMinutes;
+
             if (_timestamp > endTime) {
                 numberOfMinutes = (endTime - staking.rewardWithdrawTimeLast) / oneMinuteTime;
             }
@@ -570,14 +559,14 @@ contract Stabl3Staking is Ownable {
         if (reward > 0) {
             Record storage record = getRecords[msg.sender][staking.isLending];
 
-            uint256 endTime = staking.startTime + lockTimes[staking.stakingType - 1];
-
             uint8 poolType = STAKE_POOL;
             if (staking.isLending) {
                 poolType = LEND_POOL;
             }
 
             _evaluateReward(staking.token, reward, poolType);
+
+            uint256 endTime = staking.startTime + lockTimes[staking.stakingType - 1];
 
             staking.rewardWithdrawn += reward;
             if (_timestamp > endTime) {
