@@ -436,6 +436,7 @@ contract Treasury is Ownable, ReentrancyGuard {
         }
 
         uint256 amountTokenToConsider = amountTokenConverted + rateInfo.tokenWindowConsumed;
+
         if (amountTokenToConsider > rateInfo.tokenWindow) {
             uint256 rateToConsider = rateInfo.rate;
 
