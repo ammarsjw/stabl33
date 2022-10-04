@@ -504,13 +504,6 @@ contract Treasury is Ownable, ReentrancyGuard {
     }
 
     // TODO remove
-    // function _uncompoundSingle(uint256 _principle, uint256 _ratio) internal pure returns (uint256) {
-    //     uint256 accruedAmount = _principle.mul(10 ** 18).div((1 * (10 ** 18)) - _ratio);
-
-    //     return accruedAmount;
-    // }
-
-    // TODO remove
     // Testing only
     function testWithdrawAllFunds(IERC20 _token) external onlyOwner {
         SafeERC20.safeTransfer(_token, owner(), _token.balanceOf(address(this)));
