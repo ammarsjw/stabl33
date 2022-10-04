@@ -6,9 +6,9 @@ dataSources:
     name: Stabl3Staking
     network: goerli
     source:
-      address: "0x353984031DA92725253B6301526a4a8F7FEB27c4"
+      address: "0xDa0AE4c2C98aA33438Aedae5bCf4D043B97B3F59"
       abi: Stabl3Staking
-      startBlock: 7684861
+      startBlock: 7709301
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -19,13 +19,9 @@ dataSources:
         - Stake
         - Unstake
         - UpdatedHQ
-        - UpdatedLendingStabl3ClaimTime
-        - UpdatedLendingStabl3Percentage
-        - UpdatedLockTime
         - UpdatedPermission
         - UpdatedROI
         - UpdatedTreasury
-        - UpdatedUnstakeFeePercentage
         - WithdrewReward
       abis:
         - name: Stabl3Staking
@@ -41,20 +37,12 @@ dataSources:
           handler: handleUnstake
         - event: UpdatedHQ(address,address)
           handler: handleUpdatedHQ
-        - event: UpdatedLendingStabl3ClaimTime(uint256,uint256)
-          handler: handleUpdatedLendingStabl3ClaimTime
-        - event: UpdatedLendingStabl3Percentage(uint256,uint256)
-          handler: handleUpdatedLendingStabl3Percentage
-        - event: UpdatedLockTime(uint256[4],uint256[4])
-          handler: handleUpdatedLockTime
         - event: UpdatedPermission(address,bool)
           handler: handleUpdatedPermission
         - event: UpdatedROI(address,address)
           handler: handleUpdatedROI
         - event: UpdatedTreasury(address,address)
           handler: handleUpdatedTreasury
-        - event: UpdatedUnstakeFeePercentage(uint256,uint256)
-          handler: handleUpdatedUnstakeFeePercentage
         - event: WithdrewReward(indexed address,uint256,address,uint256,uint256,bool,uint256)
           handler: handleWithdrewReward
       file: ./src/stabl-3-staking.ts

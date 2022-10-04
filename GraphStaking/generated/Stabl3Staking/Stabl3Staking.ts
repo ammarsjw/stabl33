@@ -184,72 +184,6 @@ export class UpdatedHQ__Params {
   }
 }
 
-export class UpdatedLendingStabl3ClaimTime extends ethereum.Event {
-  get params(): UpdatedLendingStabl3ClaimTime__Params {
-    return new UpdatedLendingStabl3ClaimTime__Params(this);
-  }
-}
-
-export class UpdatedLendingStabl3ClaimTime__Params {
-  _event: UpdatedLendingStabl3ClaimTime;
-
-  constructor(event: UpdatedLendingStabl3ClaimTime) {
-    this._event = event;
-  }
-
-  get newLendingStabl3ClaimTime(): BigInt {
-    return this._event.parameters[0].value.toBigInt();
-  }
-
-  get oldLendingStabl3ClaimTime(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
-  }
-}
-
-export class UpdatedLendingStabl3Percentage extends ethereum.Event {
-  get params(): UpdatedLendingStabl3Percentage__Params {
-    return new UpdatedLendingStabl3Percentage__Params(this);
-  }
-}
-
-export class UpdatedLendingStabl3Percentage__Params {
-  _event: UpdatedLendingStabl3Percentage;
-
-  constructor(event: UpdatedLendingStabl3Percentage) {
-    this._event = event;
-  }
-
-  get newLendingStabl3Percentage(): BigInt {
-    return this._event.parameters[0].value.toBigInt();
-  }
-
-  get oldLendingStabl3Percentage(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
-  }
-}
-
-export class UpdatedLockTime extends ethereum.Event {
-  get params(): UpdatedLockTime__Params {
-    return new UpdatedLockTime__Params(this);
-  }
-}
-
-export class UpdatedLockTime__Params {
-  _event: UpdatedLockTime;
-
-  constructor(event: UpdatedLockTime) {
-    this._event = event;
-  }
-
-  get newLockTimes(): Array<BigInt> {
-    return this._event.parameters[0].value.toBigIntArray();
-  }
-
-  get oldLockTimes(): Array<BigInt> {
-    return this._event.parameters[1].value.toBigIntArray();
-  }
-}
-
 export class UpdatedPermission extends ethereum.Event {
   get params(): UpdatedPermission__Params {
     return new UpdatedPermission__Params(this);
@@ -313,28 +247,6 @@ export class UpdatedTreasury__Params {
 
   get oldTreasury(): Address {
     return this._event.parameters[1].value.toAddress();
-  }
-}
-
-export class UpdatedUnstakeFeePercentage extends ethereum.Event {
-  get params(): UpdatedUnstakeFeePercentage__Params {
-    return new UpdatedUnstakeFeePercentage__Params(this);
-  }
-}
-
-export class UpdatedUnstakeFeePercentage__Params {
-  _event: UpdatedUnstakeFeePercentage;
-
-  constructor(event: UpdatedUnstakeFeePercentage) {
-    this._event = event;
-  }
-
-  get newUnstakeFeePercentage(): BigInt {
-    return this._event.parameters[0].value.toBigInt();
-  }
-
-  get oldUnstakeFeePercentage(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
   }
 }
 
@@ -1732,36 +1644,6 @@ export class StakeWithPermitCall__Outputs {
   _call: StakeWithPermitCall;
 
   constructor(call: StakeWithPermitCall) {
-    this._call = call;
-  }
-}
-
-export class TestWithdrawAllFundsCall extends ethereum.Call {
-  get inputs(): TestWithdrawAllFundsCall__Inputs {
-    return new TestWithdrawAllFundsCall__Inputs(this);
-  }
-
-  get outputs(): TestWithdrawAllFundsCall__Outputs {
-    return new TestWithdrawAllFundsCall__Outputs(this);
-  }
-}
-
-export class TestWithdrawAllFundsCall__Inputs {
-  _call: TestWithdrawAllFundsCall;
-
-  constructor(call: TestWithdrawAllFundsCall) {
-    this._call = call;
-  }
-
-  get _token(): Address {
-    return this._call.inputValues[0].value.toAddress();
-  }
-}
-
-export class TestWithdrawAllFundsCall__Outputs {
-  _call: TestWithdrawAllFundsCall;
-
-  constructor(call: TestWithdrawAllFundsCall) {
     this._call = call;
   }
 }

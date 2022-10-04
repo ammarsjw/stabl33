@@ -37,34 +37,6 @@ type UpdatedHQ @entity {
   oldHQ: Bytes
 }
 
-type UpdatedUnstakeFeePercentage @entity {
-  id: ID!
-  transaction: Transaction!
-  newUnstakeFeePercentage: BigInt
-  oldUnstakeFeePercentage: BigInt
-}
-
-type UpdatedLockTime @entity {
-  id: ID!
-  transaction: Transaction!
-  newLockTimes: [BigInt!]
-  oldLockTimes: [BigInt!]
-}
-
-type UpdatedLendingStabl3ClaimTime @entity {
-  id: ID!
-  transaction: Transaction!
-  newLendingStabl3ClaimTime: BigInt
-  oldLendingStabl3ClaimTime: BigInt
-}
-
-type UpdatedLendingStabl3Percentage @entity {
-  id: ID!
-  transaction: Transaction!
-  newLendingStabl3Percentage: BigInt
-  oldLendingStabl3Percentage: BigInt
-}
-
 type UpdatedPermission @entity {
   id: ID!
   transaction: Transaction!

@@ -211,63 +211,6 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "newLendingStabl3ClaimTime",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "oldLendingStabl3ClaimTime",
-        "type": "uint256"
-      }
-    ],
-    "name": "UpdatedLendingStabl3ClaimTime",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "newLendingStabl3Percentage",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "oldLendingStabl3Percentage",
-        "type": "uint256"
-      }
-    ],
-    "name": "UpdatedLendingStabl3Percentage",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256[4]",
-        "name": "newLockTimes",
-        "type": "uint256[4]"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256[4]",
-        "name": "oldLockTimes",
-        "type": "uint256[4]"
-      }
-    ],
-    "name": "UpdatedLockTime",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
         "internalType": "address",
         "name": "contractAddress",
         "type": "address"
@@ -318,25 +261,6 @@
       }
     ],
     "name": "UpdatedTreasury",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "newUnstakeFeePercentage",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "oldUnstakeFeePercentage",
-        "type": "uint256"
-      }
-    ],
-    "name": "UpdatedUnstakeFeePercentage",
     "type": "event"
   },
   {
@@ -1242,19 +1166,6 @@
       }
     ],
     "name": "stakeWithPermit",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "contract IERC20",
-        "name": "_token",
-        "type": "address"
-      }
-    ],
-    "name": "testWithdrawAllFunds",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

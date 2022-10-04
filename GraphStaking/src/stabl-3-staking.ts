@@ -6,13 +6,9 @@ import {
   Stake as StakeEvent,
   Unstake as UnstakeEvent,
   UpdatedHQ as UpdatedHQEvent,
-  UpdatedLendingStabl3ClaimTime as UpdatedLendingStabl3ClaimTimeEvent,
-  UpdatedLendingStabl3Percentage as UpdatedLendingStabl3PercentageEvent,
-  UpdatedLockTime as UpdatedLockTimeEvent,
   UpdatedPermission as UpdatedPermissionEvent,
   UpdatedROI as UpdatedROIEvent,
   UpdatedTreasury as UpdatedTreasuryEvent,
-  UpdatedUnstakeFeePercentage as UpdatedUnstakeFeePercentageEvent,
   WithdrewReward as WithdrewRewardEvent
 } from "../generated/Stabl3Staking/Stabl3Staking"
 
@@ -22,13 +18,9 @@ import {
   Stake,
   Unstake,
   UpdatedHQ,
-  UpdatedLendingStabl3ClaimTime,
-  UpdatedLendingStabl3Percentage,
-  UpdatedLockTime,
   UpdatedPermission,
   UpdatedROI,
   UpdatedTreasury,
-  UpdatedUnstakeFeePercentage,
   WithdrewReward
 } from "../generated/schema"
 
@@ -96,33 +88,6 @@ export function handleUpdatedHQ(event: UpdatedHQEvent): void {
   entity.save()
 }
 
-export function handleUpdatedLendingStabl3ClaimTime(event: UpdatedLendingStabl3ClaimTimeEvent): void {
-  let transaction = loadOrCreateTransaction(event.transaction, event.block)
-  let entity = new UpdatedLendingStabl3ClaimTime(transaction.id)
-  entity.transaction = transaction.id
-  entity.newLendingStabl3ClaimTime = event.params.newLendingStabl3ClaimTime
-  entity.oldLendingStabl3ClaimTime = event.params.oldLendingStabl3ClaimTime
-  entity.save()
-}
-
-export function handleUpdatedLendingStabl3Percentage(event: UpdatedLendingStabl3PercentageEvent): void {
-  let transaction = loadOrCreateTransaction(event.transaction, event.block)
-  let entity = new UpdatedLendingStabl3Percentage(transaction.id)
-  entity.transaction = transaction.id
-  entity.newLendingStabl3Percentage = event.params.newLendingStabl3Percentage
-  entity.oldLendingStabl3Percentage = event.params.oldLendingStabl3Percentage
-  entity.save()
-}
-
-export function handleUpdatedLockTime(event: UpdatedLockTimeEvent): void {
-  let transaction = loadOrCreateTransaction(event.transaction, event.block)
-  let entity = new UpdatedLockTime(transaction.id)
-  entity.transaction = transaction.id
-  entity.newLockTimes = event.params.newLockTimes
-  entity.oldLockTimes = event.params.oldLockTimes
-  entity.save()
-}
-
 export function handleUpdatedPermission(event: UpdatedPermissionEvent): void {
   let transaction = loadOrCreateTransaction(event.transaction, event.block)
   let entity = new UpdatedPermission(transaction.id)
@@ -147,15 +112,6 @@ export function handleUpdatedTreasury(event: UpdatedTreasuryEvent): void {
   entity.transaction = transaction.id
   entity.newTreasury = event.params.newTreasury
   entity.oldTreasury = event.params.oldTreasury
-  entity.save()
-}
-
-export function handleUpdatedUnstakeFeePercentage(event: UpdatedUnstakeFeePercentageEvent): void {
-  let transaction = loadOrCreateTransaction(event.transaction, event.block)
-  let entity = new UpdatedUnstakeFeePercentage(transaction.id)
-  entity.transaction = transaction.id
-  entity.newUnstakeFeePercentage = event.params.newUnstakeFeePercentage
-  entity.oldUnstakeFeePercentage = event.params.oldUnstakeFeePercentage
   entity.save()
 }
 

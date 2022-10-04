@@ -641,38 +641,6 @@ export class Treasury extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
-  getRateImpact1(_amountStabl3: BigInt, _token: Address): BigInt {
-    let result = super.call(
-      "getRateImpact",
-      "getRateImpact(uint256,address):(uint256)",
-      [
-        ethereum.Value.fromUnsignedBigInt(_amountStabl3),
-        ethereum.Value.fromAddress(_token)
-      ]
-    );
-
-    return result[0].toBigInt();
-  }
-
-  try_getRateImpact1(
-    _amountStabl3: BigInt,
-    _token: Address
-  ): ethereum.CallResult<BigInt> {
-    let result = super.tryCall(
-      "getRateImpact",
-      "getRateImpact(uint256,address):(uint256)",
-      [
-        ethereum.Value.fromUnsignedBigInt(_amountStabl3),
-        ethereum.Value.fromAddress(_token)
-      ]
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
   getReserves(): BigInt {
     let result = super.call("getReserves", "getReserves():(uint256)", []);
 
