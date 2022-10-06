@@ -1,7 +1,3 @@
-/**
- *Submitted for verification at FtmScan.com on 2022-07-07
-*/
-
 // SPDX-License-Identifier: MIT
 // OpenZeppelin Contracts (last updated v4.6.0) (token/ERC20/ERC20.sol)
 
