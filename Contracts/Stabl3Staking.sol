@@ -154,7 +154,7 @@ contract Stabl3Staking is Ownable {
         lockTimes = [0, 900, 1800, 2700, 3600];   // 0:45, 1:30, 2:15 and 3:00 hours time in seconds
         // oneDayTime = 86400;
         // oneYearTime = 31104000;
-        // lockTimes = [7776000, 15552000, 23328000, 31104000];   // 3, 6, 9 and 12 months time in seconds
+        // lockTimes = [0, 7776000, 15552000, 23328000, 31104000];   // 3, 6, 9 and 12 months time in seconds
 
         // TODO maybe consider times like this to complete 365 days
         // 31+28+31, 30+31+30, 31+31+30, 31+30+31
@@ -967,11 +967,6 @@ contract Stabl3Staking is Ownable {
 
     // modifier stakeActive() {
     //     require(stakeState, "Stabl3Staking: Stake and Lend not yet started");
-    //     _;
-    // }
-
-    // modifier permission() {
-    //     require(permitted[msg.sender] || msg.sender == owner(), "Stabl3Staking: Not permitted");
     //     _;
     // }
 
