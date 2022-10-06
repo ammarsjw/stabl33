@@ -525,37 +525,46 @@ contract Stabl3Staking is Ownable {
         );
     }
 
-    // @dev Permit Required (NO transfers, NO record keeping, NO updatePool, NO updateAPR, NO events)
-    function stakeWithPermit(address _user, IERC20 _token, uint256 _amountToken, uint8 _stakingType) public permission reserved(_token) {
-        require(_amountToken > 0, "Stabl3Staking: Amount should be greater than zero");
-        (uint256 maxPool, uint256 currentPool) = validatePool(_token, _amountToken);
-        require(maxPool >= currentPool, "Stabl3Staking: Staking pool limit");
+    // @notice requires permit
+    // @notice requires external checks
+    // @notice requires external transfers
+    // @notice requires external record keeping
+    // @notice requires external updatePool
+    // @notice requires external updateAPR
+    // @notice requires external events
+    function accessWithPermit(address _user, uint256 _index, IERC20 _token, uint256 _amountToken, bool _isStake) public permission reserved(_token) {
+        if (_isStake) {
+            if (!getStakers[msg.sender]) {
+                getStakers[msg.sender] = true;
+                allStakers.push(msg.sender);
+            }
 
-        if (!getStakers[msg.sender]) {
-            getStakers[msg.sender] = true;
-            allStakers.push(msg.sender);
+            uint256 timestampToConsider = block.timestamp;
+
+            Staking memory staking = Staking(
+                getStakings[_user].length,
+                _user,
+                true,
+                0,
+                _token,
+                _amountToken,
+                timestampToConsider,
+                0,
+                timestampToConsider,
+                false,
+                false,
+                0,
+                0,
+                true
+            );
+
+            getStakings[_user].push(staking);
         }
+        else {
+            Staking storage staking = getStakings[_user][_index];
 
-        uint256 timestampToConsider = block.timestamp;
-
-        Staking memory staking = Staking(
-            getStakings[_user].length,
-            _user,
-            true,
-            _stakingType,
-            _token,
-            _amountToken,
-            timestampToConsider,
-            0,
-            timestampToConsider,
-            false,
-            false,
-            0,
-            0,
-            true
-        );
-
-        getStakings[_user].push(staking);
+            staking.status = false;
+        }
     }
 
     function getAmountRewardSingle(
@@ -759,45 +768,45 @@ contract Stabl3Staking is Ownable {
         }
     }
 
-    function getAmountStakedAll(
-        address _user,
-        bool _isLending,
-        bool _isRealEstate
-    ) public view stakeActive returns (uint256 totalAmountStakedUnlocked, uint256 totalAmountStakedLocked) {
-        Staking[] memory unlocked;
-        Staking[] memory locked;
+    // function getAmountStakedAll(
+    //     address _user,
+    //     bool _isLending,
+    //     bool _isRealEstate
+    // ) public view stakeActive returns (uint256 totalAmountStakedUnlocked, uint256 totalAmountStakedLocked) {
+    //     Staking[] memory unlocked;
+    //     Staking[] memory locked;
 
-        if (_isLending) {
-            (unlocked, locked, , ) = allStakings(_user, _isRealEstate);
-        }
-        else {
-            (, , unlocked, locked) = allStakings(_user, _isRealEstate);
-        }
+    //     if (_isLending) {
+    //         (unlocked, locked, , ) = allStakings(_user, _isRealEstate);
+    //     }
+    //     else {
+    //         (, , unlocked, locked) = allStakings(_user, _isRealEstate);
+    //     }
 
-        uint256 maxLength = unlocked.length.max(locked.length);
+    //     uint256 maxLength = unlocked.length.max(locked.length);
 
-        for (uint256 i = 0 ; i < maxLength ; i++) {
-            if (i < unlocked.length) {
-                uint256 amountStakedUnlocked = unlocked[i].amountTokenStaked;
+    //     for (uint256 i = 0 ; i < maxLength ; i++) {
+    //         if (i < unlocked.length) {
+    //             uint256 amountStakedUnlocked = unlocked[i].amountTokenStaked;
 
-                if (unlocked[i].token.decimals() < 18) {
-                    amountStakedUnlocked *= 10 ** (18 - unlocked[i].token.decimals());
-                }
+    //             if (unlocked[i].token.decimals() < 18) {
+    //                 amountStakedUnlocked *= 10 ** (18 - unlocked[i].token.decimals());
+    //             }
 
-                totalAmountStakedUnlocked += amountStakedUnlocked;
-            }
+    //             totalAmountStakedUnlocked += amountStakedUnlocked;
+    //         }
 
-            if (i < locked.length) {
-                uint256 amountStakedLocked = locked[i].amountTokenStaked;
+    //         if (i < locked.length) {
+    //             uint256 amountStakedLocked = locked[i].amountTokenStaked;
 
-                if (locked[i].token.decimals() < 18) {
-                    amountStakedLocked *= 10 ** (18 - locked[i].token.decimals());
-                }
+    //             if (locked[i].token.decimals() < 18) {
+    //                 amountStakedLocked *= 10 ** (18 - locked[i].token.decimals());
+    //             }
 
-                totalAmountStakedLocked += amountStakedLocked;
-            }
-        }
-    }
+    //             totalAmountStakedLocked += amountStakedLocked;
+    //         }
+    //     }
+    // }
 
     function _unstakeSingle(uint256 _index, uint256 _amountToUnstake) internal {
         Staking storage staking = getStakings[msg.sender][_index];
@@ -875,34 +884,8 @@ contract Stabl3Staking is Ownable {
     }
 
     function unstakeMultiple(uint256[] memory _indexes) external stakeActive {
-        // TODO remove
-        // (uint256 amountLendedUnlocked, uint256 amountLendedLocked) = getAmountStakedAll(msg.sender, true, false);
-        // (uint256 amountStakedUnlocked, uint256 amountStakedLocked) = getAmountStakedAll(msg.sender, false, false);
-        // uint256 totalAmountStaked = amountLendedUnlocked + amountLendedLocked + amountStakedUnlocked + amountStakedLocked;
-        // require(totalAmountStaked > 0, "Stabl3Staking: No amount to unstake");
-
         for (uint256 i = 0 ; i < _indexes.length ; i++) {
             unstakeSingle(_indexes[i]);
-        }
-    }
-
-    // @dev Permit Required (NO transfers, NO record keeping, NO updatePool, NO updateAPR, NO events)
-    function unstakeSingleWithPermit(address _user, uint256 _index) public permission {
-        Staking storage staking = getStakings[_user][_index];
-
-        require(staking.status, "Stabl3Staking: Invalid Staking");
-        require(staking.isRealEstate, "Stabl3Staking: Not allowed");
-        if (staking.stakingType > 0) {
-            require(block.timestamp > staking.startTime + lockTimes[staking.stakingType - 1], "Stabl3Staking: Cannot unstake before end time");
-        }
-
-        staking.status = false;
-    }
-
-    // @dev Permit Required (NO transfers, NO record keeping, NO updatePool, NO updateAPR, NO events)
-    function unstakeMultipleWithPermit(address _user, uint256[] memory _indexes) external permission {
-        for (uint256 i = 0 ; i < _indexes.length ; i++) {
-            unstakeSingleWithPermit(_user, _indexes[i]);
         }
     }
 
