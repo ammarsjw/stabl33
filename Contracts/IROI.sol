@@ -5,6 +5,7 @@ pragma solidity ^0.8.0;
 import "./IERC20.sol";
 
 interface IROI {
+
     function permitted(address) external returns (bool);
 
     function updateTreasury(address _treasury) external;
@@ -18,6 +19,8 @@ interface IROI {
     function getReserves() external view returns (uint256);
 
     function getAPR() external view returns (uint256);
+
+    function validatePool(IERC20 _token, uint256 _amountToken) external view returns (uint256 maxPool, uint256 currentPool);
 
     function updateAPR() external;
 

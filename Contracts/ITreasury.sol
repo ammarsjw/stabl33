@@ -5,6 +5,7 @@ pragma solidity ^0.8.0;
 import "./IERC20.sol";
 
 interface ITreasury {
+
     function exchangeFee() external view returns (uint256);
 
     function isReservedToken(IERC20) external view returns (bool);
