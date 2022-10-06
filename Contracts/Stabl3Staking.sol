@@ -42,7 +42,9 @@ contract Stabl3Staking is Ownable {
 
     uint256 oneDayTime;
     uint256 oneYearTime;
-    uint256[4] public lockTimes;
+    uint256[5] public lockTimes;
+
+    address public stabl3RealEstate;
 
     bool public stakeState;
 
@@ -76,17 +78,12 @@ contract Stabl3Staking is Ownable {
     // user stakings
     mapping (address => Staking[]) public getStakings;
 
-    // users
-    mapping (address => bool) public getStakers;
-
     // all users
+    mapping (address => bool) public getStakers;
     address[] public allStakers;
 
     // user lifetime staking records
     mapping (address => mapping (bool => Record)) public getRecords;
-
-    // contracts with permission to access certain staking functions
-    mapping (address => bool) public permitted;
 
     // events
 
@@ -95,8 +92,6 @@ contract Stabl3Staking is Ownable {
     event UpdatedROI(address newROI, address oldROI);
 
     event UpdatedHQ(address newHQ, address oldHQ);
-
-    event UpdatedPermission(address contractAddress, bool state);
 
     event Stake(
         address indexed user,
@@ -156,7 +151,7 @@ contract Stabl3Staking is Ownable {
         // TODO remove
         oneDayTime = 10; // it is seen as 1 day in testing
         oneYearTime = 3600;
-        lockTimes = [900, 1800, 2700, 3600];   // 0:45, 1:30, 2:15 and 3:00 hours time in seconds
+        lockTimes = [0, 900, 1800, 2700, 3600];   // 0:45, 1:30, 2:15 and 3:00 hours time in seconds
         // oneDayTime = 86400;
         // oneYearTime = 31104000;
         // lockTimes = [7776000, 15552000, 23328000, 31104000];   // 3, 6, 9 and 12 months time in seconds
@@ -231,6 +226,11 @@ contract Stabl3Staking is Ownable {
         lendingStabl3ClaimTime = _lendingStabl3ClaimTime;
     }
 
+    function updateStabl3RealEstate(address _stabl3RealEstate) external onlyOwner {
+        require(stabl3RealEstate != _stabl3RealEstate, "Stabl3Staking: Stabl3RealEstate is already this address");
+        stabl3RealEstate = _stabl3RealEstate;
+    }
+
     function updateStakeState(bool _state) external onlyOwner {
         require(stakeState != _state, "Stabl3Staking: Stake State is already of the value 'state'");
         stakeState = _state;
@@ -262,7 +262,7 @@ contract Stabl3Staking is Ownable {
                 staking.status &&
                 staking.isRealEstate == _isRealEstate
             ) {
-                uint256 endTime = staking.startTime + lockTimes[staking.stakingType - 1];
+                uint256 endTime = staking.startTime + lockTimes[staking.stakingType];
 
                 if (block.timestamp >= endTime) {
                     if (staking.isLending) {
@@ -300,7 +300,7 @@ contract Stabl3Staking is Ownable {
                 staking.status &&
                 staking.isRealEstate == _isRealEstate
             ) {
-                uint256 endTime = staking.startTime + lockTimes[staking.stakingType - 1];
+                uint256 endTime = staking.startTime + lockTimes[staking.stakingType];
 
                 if (block.timestamp >= endTime) {
                     if (staking.isLending) {
@@ -324,12 +324,6 @@ contract Stabl3Staking is Ownable {
                 }
             }
         }
-    }
-
-    function updatePermission(address _contractAddress, bool _state) external onlyOwner {
-        require(permitted[_contractAddress] != _state, "Stabl3Staking: Address is already of the value 'state'");
-        permitted[_contractAddress] = _state;
-        emit UpdatedPermission(_contractAddress, _state);
     }
 
     function validatePool(
@@ -368,53 +362,52 @@ contract Stabl3Staking is Ownable {
  
         currentPool += _amountToken;
 
-        uint256 amountUnlocked;
+        // uint256 amountUnlocked;
 
-        for (uint256 i = 0 ; i < allStakers.length ; i++) {
-            address staker = allStakers[i];
+        // for (uint256 i = 0 ; i < allStakers.length ; i++) {
+        //     address staker = allStakers[i];
 
-            if (getStakers[staker]) {
-                (Staking[] memory unlockedLending, , Staking[] memory unlockedStaking, ) = allStakings(staker, false);
+        //     if (getStakers[staker]) {
+        //         (Staking[] memory unlockedLending, , Staking[] memory unlockedStaking, ) = allStakings(staker, false);
+        //         (, , Staking[] memory unlockedRealEstate, ) = allStakings(staker, true);
 
-                uint256 maxLength = unlockedLending.length.max(unlockedStaking.length);
+        //         uint256 maxLength = unlockedLending.length.max(unlockedStaking.length).max(unlockedRealEstate.length);
 
-                for (uint256 j = 0 ; j < maxLength ; j++) {
-                    if (j < unlockedLending.length) {
-                        uint256 amountLendedUnlocked = unlockedLending[j].amountTokenStaked;
+        //         for (uint256 j = 0 ; j < maxLength ; j++) {
+        //             if (j < unlockedLending.length) {
+        //                 uint256 amountLendedUnlocked = unlockedLending[j].amountTokenStaked;
 
-                        if (unlockedLending[j].token.decimals() < 18) {
-                            amountLendedUnlocked *= 10 ** (18 - unlockedLending[j].token.decimals());
-                        }
+        //                 if (unlockedLending[j].token.decimals() < 18) {
+        //                     amountLendedUnlocked *= 10 ** (18 - unlockedLending[j].token.decimals());
+        //                 }
 
-                        amountUnlocked += amountLendedUnlocked;
-                    }
+        //                 amountUnlocked += amountLendedUnlocked;
+        //             }
 
-                    if (j < unlockedStaking.length) {
-                        uint256 amountStakedUnlocked = unlockedStaking[j].amountTokenStaked;
+        //             if (j < unlockedStaking.length) {
+        //                 uint256 amountStakedUnlocked = unlockedStaking[j].amountTokenStaked;
 
-                        if (unlockedStaking[j].token.decimals() < 18) {
-                            amountStakedUnlocked *= 10 ** (18 - unlockedStaking[j].token.decimals());
-                        }
+        //                 if (unlockedStaking[j].token.decimals() < 18) {
+        //                     amountStakedUnlocked *= 10 ** (18 - unlockedStaking[j].token.decimals());
+        //                 }
 
-                        amountUnlocked += amountStakedUnlocked;
-                    }
-                }
+        //                 amountUnlocked += amountStakedUnlocked;
+        //             }
 
-                (, , unlockedStaking, ) = allStakings(staker, true);
+        //             if (j < unlockedRealEstate.length) {
+        //                 uint256 amountRealEstateUnlocked = unlockedRealEstate[j].amountTokenStaked;
 
-                for (uint256 j = 0 ; j < unlockedStaking.length ; j++) {
-                    uint256 amountStakedUnlocked = unlockedStaking[j].amountTokenStaked;
+        //                 if (unlockedRealEstate[j].token.decimals() < 18) {
+        //                     amountRealEstateUnlocked *= 10 ** (18 - unlockedRealEstate[j].token.decimals());
+        //                 }
 
-                    if (unlockedStaking[j].token.decimals() < 18) {
-                        amountStakedUnlocked *= 10 ** (18 - unlockedStaking[j].token.decimals());
-                    }
+        //                 amountUnlocked += amountRealEstateUnlocked;
+        //             }
+        //         }
+        //     }
+        // }
 
-                    amountUnlocked += amountStakedUnlocked;
-                }
-            }
-        }
-
-        currentPool = currentPool.safeSub(amountUnlocked);
+        // currentPool = currentPool.safeSub(amountUnlocked);
     }
 
     function stake(IERC20 _token, uint256 _amountToken, uint8 _stakingType, bool _isLending) public stakeActive reserved(_token) {
@@ -532,7 +525,8 @@ contract Stabl3Staking is Ownable {
     // @notice requires external updatePool
     // @notice requires external updateAPR
     // @notice requires external events
-    function accessWithPermit(address _user, uint256 _index, IERC20 _token, uint256 _amountToken, bool _isStake) public permission reserved(_token) {
+    function accessWithPermit(address _user, uint256 _index, IERC20 _token, uint256 _amountToken, bool _isStake) public {
+        require(msg.sender == stabl3RealEstate);
         if (_isStake) {
             if (!getStakers[msg.sender]) {
                 getStakers[msg.sender] = true;
@@ -578,7 +572,7 @@ contract Stabl3Staking is Ownable {
 
         Staking memory staking = getStakings[_user][_index];
 
-        uint256 endTime = staking.startTime + lockTimes[staking.stakingType - 1];
+        uint256 endTime = staking.startTime + lockTimes[staking.stakingType];
 
         if (
             staking.status &&
@@ -653,7 +647,7 @@ contract Stabl3Staking is Ownable {
 
             _evaluateReward(staking.token, reward, poolType);
 
-            uint256 endTime = staking.startTime + lockTimes[staking.stakingType - 1];
+            uint256 endTime = staking.startTime + lockTimes[staking.stakingType];
 
             staking.rewardWithdrawn += reward;
             if (_timestamp > endTime) {
@@ -768,45 +762,45 @@ contract Stabl3Staking is Ownable {
         }
     }
 
-    // function getAmountStakedAll(
-    //     address _user,
-    //     bool _isLending,
-    //     bool _isRealEstate
-    // ) public view stakeActive returns (uint256 totalAmountStakedUnlocked, uint256 totalAmountStakedLocked) {
-    //     Staking[] memory unlocked;
-    //     Staking[] memory locked;
+    function getAmountStakedAll(
+        address _user,
+        bool _isLending,
+        bool _isRealEstate
+    ) public view stakeActive returns (uint256 totalAmountStakedUnlocked, uint256 totalAmountStakedLocked) {
+        Staking[] memory unlocked;
+        Staking[] memory locked;
 
-    //     if (_isLending) {
-    //         (unlocked, locked, , ) = allStakings(_user, _isRealEstate);
-    //     }
-    //     else {
-    //         (, , unlocked, locked) = allStakings(_user, _isRealEstate);
-    //     }
+        if (_isLending) {
+            (unlocked, locked, , ) = allStakings(_user, _isRealEstate);
+        }
+        else {
+            (, , unlocked, locked) = allStakings(_user, _isRealEstate);
+        }
 
-    //     uint256 maxLength = unlocked.length.max(locked.length);
+        uint256 maxLength = unlocked.length.max(locked.length);
 
-    //     for (uint256 i = 0 ; i < maxLength ; i++) {
-    //         if (i < unlocked.length) {
-    //             uint256 amountStakedUnlocked = unlocked[i].amountTokenStaked;
+        for (uint256 i = 0 ; i < maxLength ; i++) {
+            if (i < unlocked.length) {
+                uint256 amountStakedUnlocked = unlocked[i].amountTokenStaked;
 
-    //             if (unlocked[i].token.decimals() < 18) {
-    //                 amountStakedUnlocked *= 10 ** (18 - unlocked[i].token.decimals());
-    //             }
+                if (unlocked[i].token.decimals() < 18) {
+                    amountStakedUnlocked *= 10 ** (18 - unlocked[i].token.decimals());
+                }
 
-    //             totalAmountStakedUnlocked += amountStakedUnlocked;
-    //         }
+                totalAmountStakedUnlocked += amountStakedUnlocked;
+            }
 
-    //         if (i < locked.length) {
-    //             uint256 amountStakedLocked = locked[i].amountTokenStaked;
+            if (i < locked.length) {
+                uint256 amountStakedLocked = locked[i].amountTokenStaked;
 
-    //             if (locked[i].token.decimals() < 18) {
-    //                 amountStakedLocked *= 10 ** (18 - locked[i].token.decimals());
-    //             }
+                if (locked[i].token.decimals() < 18) {
+                    amountStakedLocked *= 10 ** (18 - locked[i].token.decimals());
+                }
 
-    //             totalAmountStakedLocked += amountStakedLocked;
-    //         }
-    //     }
-    // }
+                totalAmountStakedLocked += amountStakedLocked;
+            }
+        }
+    }
 
     function _unstakeSingle(uint256 _index, uint256 _amountToUnstake) internal {
         Staking storage staking = getStakings[msg.sender][_index];
@@ -847,7 +841,7 @@ contract Stabl3Staking is Ownable {
 
         require(staking.status, "Stabl3Staking: Invalid Staking");
         require(!staking.isRealEstate, "Stabl3Staking: Not allowed");
-        require(block.timestamp > staking.startTime + lockTimes[staking.stakingType - 1], "Stabl3Staking: Cannot unstake before end time");
+        require(block.timestamp > staking.startTime + lockTimes[staking.stakingType], "Stabl3Staking: Cannot unstake before end time");
         require(_amountToWithdraw < staking.amountTokenStaked, "Stabl3Staking: Incorrect amount for restaking");
 
         uint256 timestampToConsider = block.timestamp;
@@ -870,7 +864,7 @@ contract Stabl3Staking is Ownable {
 
         require(staking.status, "Stabl3Staking: Invalid Staking");
         require(!staking.isRealEstate, "Stabl3Staking: Not allowed");
-        require(block.timestamp > staking.startTime + lockTimes[staking.stakingType - 1], "Stabl3Staking: Cannot unstake before end time");
+        require(block.timestamp > staking.startTime + lockTimes[staking.stakingType], "Stabl3Staking: Cannot unstake before end time");
 
         uint256 timestampToConsider = block.timestamp;
 
@@ -993,15 +987,6 @@ contract Stabl3Staking is Ownable {
 
     function _stakeActive() internal view {
         require(stakeState, "Stabl3Staking: Stake and Lend not yet started");
-    }
-
-    modifier permission() {
-        _permission();
-        _;
-    }
-
-    function _permission() internal view {
-        require(permitted[msg.sender] || msg.sender == owner(), "Stabl3Staking: Not permitted");
     }
 
     modifier reserved(IERC20 _token) {
