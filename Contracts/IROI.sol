@@ -5,11 +5,15 @@ pragma solidity 0.8.17;
 import "./IERC20.sol";
 
 interface IROI {
+    function permitted(address) external returns (bool);
+
     function updateTreasury(address _treasury) external;
 
     function initializeUCD(address _ucd) external;
 
     function updatePermission(address _contractAddress, bool _state) external;
+
+    function getTotalRewardDistributed() external view returns (uint256);
 
     function getReserves() external view returns (uint256);
 

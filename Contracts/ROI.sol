@@ -139,10 +139,10 @@ contract ROI is Ownable, ReentrancyGuard {
 
         for (uint256 i = 0 ; i < treasury.allReservedTokensLength() ; i++) {
             IERC20 reservedToken = treasury.allReservedTokens(i);
+
             if (treasury.isReservedToken(reservedToken)) {
                 uint256 stakedAmount = treasury.sumOfAllPools(STAKE_POOL, reservedToken);
-                uint256 lendedAmount = treasury.getTreasuryPool(LEND_POOL, reservedToken);
-                lendedAmount += treasury.getHQPool(LEND_POOL, reservedToken);
+                uint256 lendedAmount = treasury.sumOfAllPools(LEND_POOL, reservedToken);    // ROI Pool for lending is 0 by default
 
                 uint256 decimalsReservedToken = reservedToken.decimals();
 

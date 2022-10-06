@@ -8,6 +8,7 @@ import "./SafeERC20.sol";
 import "./ReentrancyGuard.sol";
 
 import "./ITreasury.sol";
+import "./IROI.sol";
 
 contract Stabl3Bonding is Ownable, ReentrancyGuard {
     using SafeMathUpgradeable for uint256;
@@ -16,7 +17,7 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
     uint8 private constant BOND_POOL = 1;
 
     ITreasury public treasury;
-    address public ROI;
+    IROI public ROI;
     address public HQ;
 
     IERC20 public stabl3;
@@ -116,7 +117,7 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
 
     constructor(address _treasury, address _ROI) {
         treasury = ITreasury(_treasury);
-        ROI = _ROI;
+        ROI = IROI(_ROI);
         HQ = 0x294d0487fdf7acecf342ae70AFc5549A6E90f3e0;
 
         stabl3 = IERC20(0xDf9c4990a8973b6cC069738592F27Ea54b27D569);
@@ -137,9 +138,9 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
     }
 
     function updateROI(address _ROI) external onlyOwner {
-        require(ROI != _ROI, "Stabl3Bonding: ROI is already this address");
-        emit UpdatedROI(_ROI, ROI);
-        ROI = _ROI;
+        require(address(ROI) != _ROI, "Stabl3Bonding: ROI is already this address");
+        emit UpdatedROI(_ROI, address(ROI));
+        ROI = IROI(_ROI);
     }
 
     function updateHQ(address _HQ) external onlyOwner {
@@ -264,6 +265,8 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
             treasury.updatePool(BOND_POOL, _token, amountTreasury, amountROI, amountHQ, true);
 
             treasury.updateRate(_token, _amountToken);
+
+            ROI.updateAPR();
         }
 
         uint256 amountStabl3 = treasury.getAmountOut(_token, _amountToken);

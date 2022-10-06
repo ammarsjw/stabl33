@@ -8,6 +8,7 @@ import "./SafeERC20.sol";
 import "./ReentrancyGuard.sol";
 
 import "./ITreasury.sol";
+import "./IROI.sol";
 
 contract Stabl3PublicSale is Ownable, ReentrancyGuard {
     using SafeMathUpgradeable for uint256;
@@ -16,7 +17,7 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
     uint8 constant BUY_POOL = 0;
 
     ITreasury public treasury;
-    address public ROI;
+    IROI public ROI;
     address public HQ;
 
     IERC20 public stabl3;
@@ -68,7 +69,7 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
 
     constructor(address _treasury, address _ROI) {
         treasury = ITreasury(_treasury);
-        ROI = _ROI;
+        ROI = IROI(_ROI);
         HQ = 0x294d0487fdf7acecf342ae70AFc5549A6E90f3e0;
 
         stabl3 = IERC20(0xDf9c4990a8973b6cC069738592F27Ea54b27D569);
@@ -89,9 +90,9 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
     }
 
     function updateROI(address _ROI) external onlyOwner {
-        require(ROI != _ROI, "Stabl3PublicSale: ROI is already this address");
-        emit UpdatedROI(_ROI, ROI);
-        ROI = _ROI;
+        require(address(ROI) != _ROI, "Stabl3PublicSale: ROI is already this address");
+        emit UpdatedROI(_ROI, address(ROI));
+        ROI = IROI(_ROI);
     }
 
     function updateHQ(address _HQ) external onlyOwner {
@@ -148,7 +149,7 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
         }
 
         SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), amountTreasury);
-        SafeERC20.safeTransferFrom(_token, msg.sender, ROI, amountROI);
+        SafeERC20.safeTransferFrom(_token, msg.sender, address(ROI), amountROI);
         SafeERC20.safeTransferFrom(_token, msg.sender, HQ, amountHQ);
 
         uint256 amountStabl3 = treasury.getAmountOut(_token, _amountToken);
@@ -158,6 +159,8 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
         treasury.updatePool(BUY_POOL, _token, amountTreasury, amountROI, amountHQ, true);
         treasury.updateStabl3CirculatingSupply(amountStabl3, true);
         treasury.updateRate(_token, _amountToken);
+
+        ROI.updateAPR();
 
         emit Buy(msg.sender, amountStabl3, _token, _amountToken, block.timestamp);
     }
@@ -217,7 +220,7 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
 
         _handleLimit(_exchangingToken, amountExchangingToken);
 
-        SafeERC20.safeTransferFrom(_token, msg.sender, ROI, fee);
+        SafeERC20.safeTransferFrom(_token, msg.sender, address(ROI), fee);
 
         uint256 amountStabl3 = treasury.getAmountOut(_token, fee);
 
@@ -226,6 +229,8 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
         treasury.updatePool(BUY_POOL, _token, 0, fee, 0, true);
         treasury.updateStabl3CirculatingSupply(fee, true);
         treasury.updateRate(_token, fee);
+
+        ROI.updateAPR();
 
         emit Buy(msg.sender, amountStabl3, _token, fee, block.timestamp);
 

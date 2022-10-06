@@ -287,7 +287,15 @@ contract Treasury is Ownable, ReentrancyGuard {
 
             uint256 stabl3WindowToConsider = rateInfo.stabl3Window;
 
-            uint256 amountStabl3ToConsider;
+            uint256 tokenWindowRemainingToConsider = tokenWindowToConsider - rateInfo.tokenWindowConsumed;
+
+            uint256 amountStabl3ToConsider = (tokenWindowRemainingToConsider * stabl3WindowToConsider) / tokenWindowToConsider;
+
+            amountTokenToConsider = amountTokenToConsider.checkSub(tokenWindowRemainingToConsider);
+
+            tokenWindowToConsider += _compoundSingle(tokenWindowToConsider, rateInfo.compoundPercentage);
+
+            stabl3WindowToConsider -= _compoundSingle(stabl3WindowToConsider, rateInfo.compoundPercentage);
 
             while (amountTokenToConsider > tokenWindowToConsider) {
                 amountStabl3ToConsider += stabl3WindowToConsider;
@@ -324,6 +332,16 @@ contract Treasury is Ownable, ReentrancyGuard {
             uint256 tokenWindowToConsider = rateInfo.tokenWindow;
 
             uint256 stabl3WindowToConsider = rateInfo.stabl3Window;
+
+            uint256 stabl3WindowRemainingToConsider = stabl3WindowToConsider - stabl3WindowConsumed;
+
+            amountTokenToConsider = (stabl3WindowRemainingToConsider * tokenWindowToConsider) / stabl3WindowToConsider;
+
+            amountStabl3ToConsider = amountStabl3ToConsider.checkSub(stabl3WindowRemainingToConsider);
+
+            tokenWindowToConsider += _compoundSingle(tokenWindowToConsider, rateInfo.compoundPercentage);
+
+            stabl3WindowToConsider -= _compoundSingle(stabl3WindowToConsider, rateInfo.compoundPercentage);
 
             while (amountStabl3ToConsider > stabl3WindowToConsider) {
                 amountTokenToConsider += tokenWindowToConsider;
@@ -414,9 +432,9 @@ contract Treasury is Ownable, ReentrancyGuard {
             getHQPool[_type][_token] += _amountTokenHQ;
         }
         else {
-            getTreasuryPool[_type][_token].safeSub(_amountTokenTreasury);
-            getROIPool[_type][_token].safeSub(_amountTokenROI);
-            getHQPool[_type][_token].safeSub(_amountTokenHQ);
+            getTreasuryPool[_type][_token] = getTreasuryPool[_type][_token].safeSub(_amountTokenTreasury);
+            getROIPool[_type][_token] = getROIPool[_type][_token].safeSub(_amountTokenROI);
+            getHQPool[_type][_token] = getHQPool[_type][_token].safeSub(_amountTokenHQ);
         }
     }
 
