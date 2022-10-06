@@ -184,28 +184,6 @@ export class UpdatedHQ__Params {
   }
 }
 
-export class UpdatedPermission extends ethereum.Event {
-  get params(): UpdatedPermission__Params {
-    return new UpdatedPermission__Params(this);
-  }
-}
-
-export class UpdatedPermission__Params {
-  _event: UpdatedPermission;
-
-  constructor(event: UpdatedPermission) {
-    this._event = event;
-  }
-
-  get contractAddress(): Address {
-    return this._event.parameters[0].value.toAddress();
-  }
-
-  get state(): boolean {
-    return this._event.parameters[1].value.toBoolean();
-  }
-}
-
 export class UpdatedROI extends ethereum.Event {
   get params(): UpdatedROI__Params {
     return new UpdatedROI__Params(this);
@@ -576,6 +554,31 @@ export class Stabl3Staking__allStakingsResult {
   }
 }
 
+export class Stabl3Staking__getAmountStakedAllResult {
+  value0: BigInt;
+  value1: BigInt;
+
+  constructor(value0: BigInt, value1: BigInt) {
+    this.value0 = value0;
+    this.value1 = value1;
+  }
+
+  toMap(): TypedMap<string, ethereum.Value> {
+    let map = new TypedMap<string, ethereum.Value>();
+    map.set("value0", ethereum.Value.fromUnsignedBigInt(this.value0));
+    map.set("value1", ethereum.Value.fromUnsignedBigInt(this.value1));
+    return map;
+  }
+
+  getTotalAmountStakedUnlocked(): BigInt {
+    return this.value0;
+  }
+
+  getTotalAmountStakedLocked(): BigInt {
+    return this.value1;
+  }
+}
+
 export class Stabl3Staking__getRecordsResult {
   value0: BigInt;
   value1: BigInt;
@@ -841,6 +844,48 @@ export class Stabl3Staking extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
+  allStakers(param0: BigInt): Address {
+    let result = super.call("allStakers", "allStakers(uint256):(address)", [
+      ethereum.Value.fromUnsignedBigInt(param0)
+    ]);
+
+    return result[0].toAddress();
+  }
+
+  try_allStakers(param0: BigInt): ethereum.CallResult<Address> {
+    let result = super.tryCall("allStakers", "allStakers(uint256):(address)", [
+      ethereum.Value.fromUnsignedBigInt(param0)
+    ]);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+
+  allStakersLength(): BigInt {
+    let result = super.call(
+      "allStakersLength",
+      "allStakersLength():(uint256)",
+      []
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_allStakersLength(): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "allStakersLength",
+      "allStakersLength():(uint256)",
+      []
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
   allStakings(
     _user: Address,
     _isRealEstate: boolean
@@ -1013,6 +1058,53 @@ export class Stabl3Staking extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
+  getAmountStakedAll(
+    _user: Address,
+    _isLending: boolean,
+    _isRealEstate: boolean
+  ): Stabl3Staking__getAmountStakedAllResult {
+    let result = super.call(
+      "getAmountStakedAll",
+      "getAmountStakedAll(address,bool,bool):(uint256,uint256)",
+      [
+        ethereum.Value.fromAddress(_user),
+        ethereum.Value.fromBoolean(_isLending),
+        ethereum.Value.fromBoolean(_isRealEstate)
+      ]
+    );
+
+    return new Stabl3Staking__getAmountStakedAllResult(
+      result[0].toBigInt(),
+      result[1].toBigInt()
+    );
+  }
+
+  try_getAmountStakedAll(
+    _user: Address,
+    _isLending: boolean,
+    _isRealEstate: boolean
+  ): ethereum.CallResult<Stabl3Staking__getAmountStakedAllResult> {
+    let result = super.tryCall(
+      "getAmountStakedAll",
+      "getAmountStakedAll(address,bool,bool):(uint256,uint256)",
+      [
+        ethereum.Value.fromAddress(_user),
+        ethereum.Value.fromBoolean(_isLending),
+        ethereum.Value.fromBoolean(_isRealEstate)
+      ]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(
+      new Stabl3Staking__getAmountStakedAllResult(
+        value[0].toBigInt(),
+        value[1].toBigInt()
+      )
+    );
+  }
+
   getClaimableStabl3LendingAll(_user: Address): BigInt {
     let result = super.call(
       "getClaimableStabl3LendingAll",
@@ -1114,6 +1206,25 @@ export class Stabl3Staking extends ethereum.SmartContract {
         value[2].toBigInt()
       )
     );
+  }
+
+  getStakers(param0: Address): boolean {
+    let result = super.call("getStakers", "getStakers(address):(bool)", [
+      ethereum.Value.fromAddress(param0)
+    ]);
+
+    return result[0].toBoolean();
+  }
+
+  try_getStakers(param0: Address): ethereum.CallResult<boolean> {
+    let result = super.tryCall("getStakers", "getStakers(address):(bool)", [
+      ethereum.Value.fromAddress(param0)
+    ]);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBoolean());
   }
 
   getStakings(
@@ -1286,25 +1397,6 @@ export class Stabl3Staking extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toAddress());
   }
 
-  permitted(param0: Address): boolean {
-    let result = super.call("permitted", "permitted(address):(bool)", [
-      ethereum.Value.fromAddress(param0)
-    ]);
-
-    return result[0].toBoolean();
-  }
-
-  try_permitted(param0: Address): ethereum.CallResult<boolean> {
-    let result = super.tryCall("permitted", "permitted(address):(bool)", [
-      ethereum.Value.fromAddress(param0)
-    ]);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBoolean());
-  }
-
   stabl3(): Address {
     let result = super.call("stabl3", "stabl3():(address)", []);
 
@@ -1313,6 +1405,29 @@ export class Stabl3Staking extends ethereum.SmartContract {
 
   try_stabl3(): ethereum.CallResult<Address> {
     let result = super.tryCall("stabl3", "stabl3():(address)", []);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+
+  stabl3RealEstate(): Address {
+    let result = super.call(
+      "stabl3RealEstate",
+      "stabl3RealEstate():(address)",
+      []
+    );
+
+    return result[0].toAddress();
+  }
+
+  try_stabl3RealEstate(): ethereum.CallResult<Address> {
+    let result = super.tryCall(
+      "stabl3RealEstate",
+      "stabl3RealEstate():(address)",
+      []
+    );
     if (result.reverted) {
       return new ethereum.CallResult();
     }
@@ -1474,6 +1589,52 @@ export class ConstructorCall__Outputs {
   }
 }
 
+export class AccessWithPermitCall extends ethereum.Call {
+  get inputs(): AccessWithPermitCall__Inputs {
+    return new AccessWithPermitCall__Inputs(this);
+  }
+
+  get outputs(): AccessWithPermitCall__Outputs {
+    return new AccessWithPermitCall__Outputs(this);
+  }
+}
+
+export class AccessWithPermitCall__Inputs {
+  _call: AccessWithPermitCall;
+
+  constructor(call: AccessWithPermitCall) {
+    this._call = call;
+  }
+
+  get _user(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+
+  get _index(): BigInt {
+    return this._call.inputValues[1].value.toBigInt();
+  }
+
+  get _token(): Address {
+    return this._call.inputValues[2].value.toAddress();
+  }
+
+  get _amountToken(): BigInt {
+    return this._call.inputValues[3].value.toBigInt();
+  }
+
+  get _isStake(): boolean {
+    return this._call.inputValues[4].value.toBoolean();
+  }
+}
+
+export class AccessWithPermitCall__Outputs {
+  _call: AccessWithPermitCall;
+
+  constructor(call: AccessWithPermitCall) {
+    this._call = call;
+  }
+}
+
 export class ClaimStabl3LendingAllCall extends ethereum.Call {
   get inputs(): ClaimStabl3LendingAllCall__Inputs {
     return new ClaimStabl3LendingAllCall__Inputs(this);
@@ -1606,48 +1767,6 @@ export class StakeCall__Outputs {
   }
 }
 
-export class StakeWithPermitCall extends ethereum.Call {
-  get inputs(): StakeWithPermitCall__Inputs {
-    return new StakeWithPermitCall__Inputs(this);
-  }
-
-  get outputs(): StakeWithPermitCall__Outputs {
-    return new StakeWithPermitCall__Outputs(this);
-  }
-}
-
-export class StakeWithPermitCall__Inputs {
-  _call: StakeWithPermitCall;
-
-  constructor(call: StakeWithPermitCall) {
-    this._call = call;
-  }
-
-  get _user(): Address {
-    return this._call.inputValues[0].value.toAddress();
-  }
-
-  get _token(): Address {
-    return this._call.inputValues[1].value.toAddress();
-  }
-
-  get _amountToken(): BigInt {
-    return this._call.inputValues[2].value.toBigInt();
-  }
-
-  get _stakingType(): i32 {
-    return this._call.inputValues[3].value.toI32();
-  }
-}
-
-export class StakeWithPermitCall__Outputs {
-  _call: StakeWithPermitCall;
-
-  constructor(call: StakeWithPermitCall) {
-    this._call = call;
-  }
-}
-
 export class TransferOwnershipCall extends ethereum.Call {
   get inputs(): TransferOwnershipCall__Inputs {
     return new TransferOwnershipCall__Inputs(this);
@@ -1708,40 +1827,6 @@ export class UnstakeMultipleCall__Outputs {
   }
 }
 
-export class UnstakeMultipleWithPermitCall extends ethereum.Call {
-  get inputs(): UnstakeMultipleWithPermitCall__Inputs {
-    return new UnstakeMultipleWithPermitCall__Inputs(this);
-  }
-
-  get outputs(): UnstakeMultipleWithPermitCall__Outputs {
-    return new UnstakeMultipleWithPermitCall__Outputs(this);
-  }
-}
-
-export class UnstakeMultipleWithPermitCall__Inputs {
-  _call: UnstakeMultipleWithPermitCall;
-
-  constructor(call: UnstakeMultipleWithPermitCall) {
-    this._call = call;
-  }
-
-  get _user(): Address {
-    return this._call.inputValues[0].value.toAddress();
-  }
-
-  get _indexes(): Array<BigInt> {
-    return this._call.inputValues[1].value.toBigIntArray();
-  }
-}
-
-export class UnstakeMultipleWithPermitCall__Outputs {
-  _call: UnstakeMultipleWithPermitCall;
-
-  constructor(call: UnstakeMultipleWithPermitCall) {
-    this._call = call;
-  }
-}
-
 export class UnstakeSingleCall extends ethereum.Call {
   get inputs(): UnstakeSingleCall__Inputs {
     return new UnstakeSingleCall__Inputs(this);
@@ -1768,40 +1853,6 @@ export class UnstakeSingleCall__Outputs {
   _call: UnstakeSingleCall;
 
   constructor(call: UnstakeSingleCall) {
-    this._call = call;
-  }
-}
-
-export class UnstakeSingleWithPermitCall extends ethereum.Call {
-  get inputs(): UnstakeSingleWithPermitCall__Inputs {
-    return new UnstakeSingleWithPermitCall__Inputs(this);
-  }
-
-  get outputs(): UnstakeSingleWithPermitCall__Outputs {
-    return new UnstakeSingleWithPermitCall__Outputs(this);
-  }
-}
-
-export class UnstakeSingleWithPermitCall__Inputs {
-  _call: UnstakeSingleWithPermitCall;
-
-  constructor(call: UnstakeSingleWithPermitCall) {
-    this._call = call;
-  }
-
-  get _user(): Address {
-    return this._call.inputValues[0].value.toAddress();
-  }
-
-  get _index(): BigInt {
-    return this._call.inputValues[1].value.toBigInt();
-  }
-}
-
-export class UnstakeSingleWithPermitCall__Outputs {
-  _call: UnstakeSingleWithPermitCall;
-
-  constructor(call: UnstakeSingleWithPermitCall) {
     this._call = call;
   }
 }
@@ -1972,40 +2023,6 @@ export class UpdateMaxPoolPercentageCall__Outputs {
   }
 }
 
-export class UpdatePermissionCall extends ethereum.Call {
-  get inputs(): UpdatePermissionCall__Inputs {
-    return new UpdatePermissionCall__Inputs(this);
-  }
-
-  get outputs(): UpdatePermissionCall__Outputs {
-    return new UpdatePermissionCall__Outputs(this);
-  }
-}
-
-export class UpdatePermissionCall__Inputs {
-  _call: UpdatePermissionCall;
-
-  constructor(call: UpdatePermissionCall) {
-    this._call = call;
-  }
-
-  get _contractAddress(): Address {
-    return this._call.inputValues[0].value.toAddress();
-  }
-
-  get _state(): boolean {
-    return this._call.inputValues[1].value.toBoolean();
-  }
-}
-
-export class UpdatePermissionCall__Outputs {
-  _call: UpdatePermissionCall;
-
-  constructor(call: UpdatePermissionCall) {
-    this._call = call;
-  }
-}
-
 export class UpdateROICall extends ethereum.Call {
   get inputs(): UpdateROICall__Inputs {
     return new UpdateROICall__Inputs(this);
@@ -2032,6 +2049,36 @@ export class UpdateROICall__Outputs {
   _call: UpdateROICall;
 
   constructor(call: UpdateROICall) {
+    this._call = call;
+  }
+}
+
+export class UpdateStabl3RealEstateCall extends ethereum.Call {
+  get inputs(): UpdateStabl3RealEstateCall__Inputs {
+    return new UpdateStabl3RealEstateCall__Inputs(this);
+  }
+
+  get outputs(): UpdateStabl3RealEstateCall__Outputs {
+    return new UpdateStabl3RealEstateCall__Outputs(this);
+  }
+}
+
+export class UpdateStabl3RealEstateCall__Inputs {
+  _call: UpdateStabl3RealEstateCall;
+
+  constructor(call: UpdateStabl3RealEstateCall) {
+    this._call = call;
+  }
+
+  get _stabl3RealEstate(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+}
+
+export class UpdateStabl3RealEstateCall__Outputs {
+  _call: UpdateStabl3RealEstateCall;
+
+  constructor(call: UpdateStabl3RealEstateCall) {
     this._call = call;
   }
 }

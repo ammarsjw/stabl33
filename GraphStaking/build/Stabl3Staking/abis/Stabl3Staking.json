@@ -212,25 +212,6 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "contractAddress",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "bool",
-        "name": "state",
-        "type": "bool"
-      }
-    ],
-    "name": "UpdatedPermission",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
         "name": "newROI",
         "type": "address"
       },
@@ -366,6 +347,71 @@
       }
     ],
     "name": "ROIPercentages",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_index",
+        "type": "uint256"
+      },
+      {
+        "internalType": "contract IERC20",
+        "name": "_token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amountToken",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isStake",
+        "type": "bool"
+      }
+    ],
+    "name": "accessWithPermit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "allStakers",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "allStakersLength",
     "outputs": [
       {
         "internalType": "uint256",
@@ -803,6 +849,40 @@
         "internalType": "address",
         "name": "_user",
         "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isLending",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isRealEstate",
+        "type": "bool"
+      }
+    ],
+    "name": "getAmountStakedAll",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "totalAmountStakedUnlocked",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalAmountStakedLocked",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
       }
     ],
     "name": "getClaimableStabl3LendingAll",
@@ -874,6 +954,25 @@
         "internalType": "uint256",
         "name": "totalAmountStabl3Withdrawn",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "getStakers",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -1040,25 +1139,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "permitted",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "renounceOwnership",
     "outputs": [],
@@ -1094,6 +1174,19 @@
     "outputs": [
       {
         "internalType": "contract IERC20",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "stabl3RealEstate",
+    "outputs": [
+      {
+        "internalType": "address",
         "name": "",
         "type": "address"
       }
@@ -1140,34 +1233,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_user",
-        "type": "address"
-      },
-      {
-        "internalType": "contract IERC20",
-        "name": "_token",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_amountToken",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint8",
-        "name": "_stakingType",
-        "type": "uint8"
-      }
-    ],
-    "name": "stakeWithPermit",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -1244,48 +1309,12 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_user",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "_indexes",
-        "type": "uint256[]"
-      }
-    ],
-    "name": "unstakeMultipleWithPermit",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "uint256",
         "name": "_index",
         "type": "uint256"
       }
     ],
     "name": "unstakeSingle",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_user",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_index",
-        "type": "uint256"
-      }
-    ],
-    "name": "unstakeSingleWithPermit",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1379,16 +1408,11 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_contractAddress",
+        "name": "_ROI",
         "type": "address"
-      },
-      {
-        "internalType": "bool",
-        "name": "_state",
-        "type": "bool"
       }
     ],
-    "name": "updatePermission",
+    "name": "updateROI",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1397,11 +1421,11 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_ROI",
+        "name": "_stabl3RealEstate",
         "type": "address"
       }
     ],
-    "name": "updateROI",
+    "name": "updateStabl3RealEstate",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

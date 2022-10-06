@@ -6,7 +6,6 @@ import {
   Stake as StakeEvent,
   Unstake as UnstakeEvent,
   UpdatedHQ as UpdatedHQEvent,
-  UpdatedPermission as UpdatedPermissionEvent,
   UpdatedROI as UpdatedROIEvent,
   UpdatedTreasury as UpdatedTreasuryEvent,
   WithdrewReward as WithdrewRewardEvent
@@ -18,7 +17,6 @@ import {
   Stake,
   Unstake,
   UpdatedHQ,
-  UpdatedPermission,
   UpdatedROI,
   UpdatedTreasury,
   WithdrewReward
@@ -85,15 +83,6 @@ export function handleUpdatedHQ(event: UpdatedHQEvent): void {
   entity.transaction = transaction.id
   entity.newHQ = event.params.newHQ
   entity.oldHQ = event.params.oldHQ
-  entity.save()
-}
-
-export function handleUpdatedPermission(event: UpdatedPermissionEvent): void {
-  let transaction = loadOrCreateTransaction(event.transaction, event.block)
-  let entity = new UpdatedPermission(transaction.id)
-  entity.transaction = transaction.id
-  entity.contractAddress = event.params.contractAddress
-  entity.state = event.params.state
   entity.save()
 }
 

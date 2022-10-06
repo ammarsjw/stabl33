@@ -37,13 +37,6 @@ type UpdatedHQ @entity {
   oldHQ: Bytes
 }
 
-type UpdatedPermission @entity {
-  id: ID!
-  transaction: Transaction!
-  contractAddress: Bytes
-  state: Boolean
-}
-
 type Stake @entity {
   id: ID!
   transaction: Transaction!

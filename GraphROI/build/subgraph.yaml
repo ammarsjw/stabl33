@@ -6,9 +6,9 @@ dataSources:
     name: ROI
     network: goerli
     source:
-      address: "0xeD3C83b4ceA3A03b9F6B4Cf1d18AddDFa808a05E"
+      address: "0xaBe70d6611e634DE18fEd0083B7539eE3d5C4385"
       abi: ROI
-      startBlock: 7680059
+      startBlock: 7721212
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6

@@ -6,9 +6,9 @@ dataSources:
     name: Stabl3Staking
     network: goerli
     source:
-      address: "0xDa0AE4c2C98aA33438Aedae5bCf4D043B97B3F59"
+      address: "0x788761651De09D09585fE14135319520e2BB1f06"
       abi: Stabl3Staking
-      startBlock: 7709301
+      startBlock: 7721217
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -19,7 +19,6 @@ dataSources:
         - Stake
         - Unstake
         - UpdatedHQ
-        - UpdatedPermission
         - UpdatedROI
         - UpdatedTreasury
         - WithdrewReward
@@ -38,8 +37,6 @@ dataSources:
           handler: handleUnstake
         - event: UpdatedHQ(address,address)
           handler: handleUpdatedHQ
-        - event: UpdatedPermission(address,bool)
-          handler: handleUpdatedPermission
         - event: UpdatedROI(address,address)
           handler: handleUpdatedROI
         - event: UpdatedTreasury(address,address)
