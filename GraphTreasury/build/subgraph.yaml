@@ -6,9 +6,9 @@ dataSources:
     name: Treasury
     network: goerli
     source:
-      address: "0x3b51f8fAB3A6163aeEE9c5821ebf23B748c251fE"
+      address: "0xd5E3c038feC4040193ceC7d3FBF34403251743b9"
       abi: Treasury
-      startBlock: 7726954
+      startBlock: 7727966
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
