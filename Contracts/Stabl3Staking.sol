@@ -49,31 +49,6 @@ contract Stabl3Staking is Ownable, IStabl3StakingStruct {
 
     bool public stakeState;
 
-    // structs
-
-    // struct Staking {
-    //     uint256 index;
-    //     address user;
-    //     bool status;
-    //     uint8 stakingType;
-    //     IERC20 token;
-    //     uint256 amountTokenStaked;
-    //     uint256 startTime;
-    //     uint256 rewardWithdrawn;
-    //     uint256 rewardWithdrawTimeLast;
-    //     bool isLending;
-    //     bool isClaimedStabl3Lending;
-    //     uint256 amountTokenLending;
-    //     uint256 amountStabl3Lending;
-    //     bool isRealEstate;
-    // }
-
-    // struct Record {
-    //     uint256 totalAmountTokenStaked;
-    //     uint256 totalRewardWithdrawn;
-    //     uint256 totalAmountStabl3Withdrawn;
-    // }
-
     // mappings
 
     // user stakings

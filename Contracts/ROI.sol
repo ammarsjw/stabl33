@@ -22,10 +22,8 @@ contract ROI is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
     uint8 private constant STAKE_POOL = 2;
     uint8 private constant STAKE_REWARD_POOL = 3;
-    // uint8 private constant STAKE_FEE_POOL = 4;
     uint8 private constant LEND_POOL = 5;
     uint8 private constant LEND_REWARD_POOL = 6;
-    // uint8 private constant LEND_FEE_POOL = 7;
 
     ITreasury public treasury;
 
@@ -165,8 +163,11 @@ contract ROI is Ownable, ReentrancyGuard, IStabl3StakingStruct {
             IERC20 reservedToken = treasury.allReservedTokens(i);
 
             if (treasury.isReservedToken(reservedToken)) {
-                uint256 stakedAmount = treasury.sumOfAllPools(STAKE_POOL, reservedToken);
-                uint256 lendedAmount = treasury.sumOfAllPools(LEND_POOL, reservedToken);    // ROI Pool for lending is 0 by default
+                // HQ Pool is included in the Treasury Pool since it earns APR, hence no need to it to either staked or lended amounts
+                uint256 stakedAmount = treasury.getTreasuryPool(STAKE_POOL, reservedToken);
+                stakedAmount += treasury.getROIPool(STAKE_POOL, reservedToken);                 // ROI Pool for staking is 0 by default
+                uint256 lendedAmount = treasury.getTreasuryPool(LEND_POOL, reservedToken);
+                lendedAmount += treasury.getROIPool(LEND_POOL, reservedToken);                  // ROI Pool for lending is 0 by default
 
                 uint256 decimalsReservedToken = reservedToken.decimals();
 
@@ -201,8 +202,10 @@ contract ROI is Ownable, ReentrancyGuard, IStabl3StakingStruct {
                 uint256 boughtAmountReservedToken = treasury.getTreasuryPool(BUY_POOL, reservedToken);
                 uint256 bondedAmountReservedToken = treasury.getTreasuryPool(BOND_POOL, reservedToken);
 
-                uint256 stakedAmountReservedToken = treasury.sumOfAllPools(STAKE_POOL, reservedToken);
-                uint256 lendedAmountReservedToken = treasury.sumOfAllPools(LEND_POOL, reservedToken);
+                uint256 stakedAmountReservedToken = treasury.getTreasuryPool(STAKE_POOL, reservedToken);
+                stakedAmountReservedToken += treasury.getROIPool(STAKE_POOL, reservedToken);
+                uint256 lendedAmountReservedToken = treasury.getTreasuryPool(LEND_POOL, reservedToken);
+                lendedAmountReservedToken += treasury.getROIPool(LEND_POOL, reservedToken);
 
                 uint256 decimalsReservedToken = reservedToken.decimals();
 
