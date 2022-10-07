@@ -298,46 +298,6 @@ contract Stabl3Staking is Ownable, IStabl3StakingStruct {
         }
     }
 
-    // function parseAllStakings(
-    //     Staking[] memory unlockedLending,
-    //     Staking[] memory lockedLending,
-    //     Staking[] memory unlockedStaking,
-    //     Staking[] memory lockedStaking
-    // ) external pure returns (
-    //     uint256[] memory return1,
-    //     address[] memory return2,
-    //     uint256[] memory return3,
-    //     address[] memory return4,
-    //     uint256[] memory return5,
-    //     address[] memory return6,
-    //     uint256[] memory return7,
-    //     address[] memory return8
-    // ) {
-    //     uint256 maxLength = unlockedLending.length.max(lockedLending.length).max(unlockedStaking.length).max(lockedStaking.length);
-
-    //     for (uint256 i = 0 ; i < maxLength ; i++) {
-    //         if (i < unlockedLending.length) {
-    //             return1[i] = unlockedLending[i].amountTokenStaked;
-    //             return2[i] = address(unlockedLending[i].token);
-    //         }
-
-    //         if (i < lockedLending.length) {
-    //             return3[i] = lockedLending[i].amountTokenStaked;
-    //             return4[i] = address(lockedLending[i].token);
-    //         }
-
-    //         if (i < unlockedStaking.length) {
-    //             return5[i] = unlockedStaking[i].amountTokenStaked;
-    //             return6[i] = address(unlockedStaking[i].token);
-    //         }
-
-    //         if (i < lockedStaking.length) {
-    //             return7[i] = lockedStaking[i].amountTokenStaked;
-    //             return8[i] = address(lockedStaking[i].token);
-    //         }
-    //     }
-    // }
-
     function stake(IERC20 _token, uint256 _amountToken, uint8 _stakingType, bool _isLending) public stakeActive reserved(_token) {
         require(_amountToken > 0, "Stabl3Staking: Amount should be greater than zero");
         require(1 <= _stakingType && _stakingType <= 4, "Stabl3Staking: Incorrect staking type");
@@ -822,7 +782,6 @@ contract Stabl3Staking is Ownable, IStabl3StakingStruct {
 
                 _amountRewardToken -= amountRewardTokenROI;
 
-                treasury.updatePool(_poolType, _rewardToken, 0, amountRewardTokenROI, 0, false);
                 treasury.updatePool(rewardPoolType, _rewardToken, 0, amountRewardTokenROI, 0, true);
             }
 
@@ -851,7 +810,6 @@ contract Stabl3Staking is Ownable, IStabl3StakingStruct {
                     if (amountRewardTokenConverted > amountReservedTokenROI) {
                         SafeERC20.safeTransferFrom(reservedToken, address(ROI), msg.sender, amountReservedTokenROI);
 
-                        treasury.updatePool(_poolType, reservedToken, 0, amountReservedTokenROI, 0, false);
                         treasury.updatePool(rewardPoolType, reservedToken, 0, amountReservedTokenROI, 0, true);
 
                         if (decimalsRewardToken > decimalsReservedToken) {
@@ -864,7 +822,6 @@ contract Stabl3Staking is Ownable, IStabl3StakingStruct {
                     else {
                         SafeERC20.safeTransferFrom(reservedToken, address(ROI), msg.sender, amountRewardTokenConverted);
 
-                        treasury.updatePool(_poolType, reservedToken, 0, amountRewardTokenConverted, 0, false);
                         treasury.updatePool(rewardPoolType, reservedToken, 0, amountRewardTokenConverted, 0, true);
 
                         _amountRewardToken = 0;
@@ -876,7 +833,6 @@ contract Stabl3Staking is Ownable, IStabl3StakingStruct {
         else {
             SafeERC20.safeTransferFrom(_rewardToken, address(ROI), msg.sender, _amountRewardToken);
 
-            treasury.updatePool(_poolType, _rewardToken, 0, _amountRewardToken, 0, false);
             treasury.updatePool(rewardPoolType, _rewardToken, 0, _amountRewardToken, 0, true);
         }
     }
