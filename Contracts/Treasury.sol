@@ -293,7 +293,8 @@ contract Treasury is Ownable, ReentrancyGuard {
 
             uint256 amountStabl3ToConsider = (tokenWindowRemainingToConsider * stabl3WindowToConsider) / tokenWindowToConsider;
 
-            amountTokenToConsider = amountTokenToConsider.checkSub(tokenWindowRemainingToConsider);
+            // change
+            amountTokenToConsider = amountTokenToConsider.checkSub(tokenWindowToConsider);
 
             tokenWindowToConsider += _compoundSingle(tokenWindowToConsider, rateInfo.compoundPercentage);
 
@@ -339,7 +340,7 @@ contract Treasury is Ownable, ReentrancyGuard {
 
             amountTokenToConsider = (stabl3WindowRemainingToConsider * tokenWindowToConsider) / stabl3WindowToConsider;
 
-            amountStabl3ToConsider = amountStabl3ToConsider.checkSub(stabl3WindowRemainingToConsider);
+            amountStabl3ToConsider = amountStabl3ToConsider.checkSub(stabl3WindowToConsider);
 
             tokenWindowToConsider += _compoundSingle(tokenWindowToConsider, rateInfo.compoundPercentage);
 
@@ -467,7 +468,7 @@ contract Treasury is Ownable, ReentrancyGuard {
             uint256 tokenWindowConsumedToConsider = rateInfo.tokenWindowConsumed;
 
             amountTokenToConsider = amountTokenToConsider.safeSub(tokenWindowToConsider);
-
+// TODO rate
             while (amountTokenToConsider > 0) {
                 rateToConsider += _compoundSingle(rateToConsider, rateInfo.compoundPercentage);
 

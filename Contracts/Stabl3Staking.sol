@@ -4,7 +4,6 @@ pragma solidity 0.8.17;
 
 import "./Ownable.sol";
 import "./SafeMathUpgradeable.sol";
-import "./ABDKMath64x64.sol";
 import "./SafeERC20.sol";
 
 import "./ITreasury.sol";
@@ -478,11 +477,7 @@ contract Stabl3Staking is Ownable, IStabl3StakingStruct {
             if (numberOfMinutes > 0) {
                 uint256 ratio = ROI.getAPR();
 
-                uint256 rewardTotal = _compound(
-                    staking.amountTokenStaked,
-                    ratio,
-                    1
-                );
+                uint256 rewardTotal = _compoundSingle(staking.amountTokenStaked, ratio);
 
                 amountReward = (rewardTotal * oneDayTime * numberOfMinutes) / oneYearTime;
             }
@@ -526,12 +521,7 @@ contract Stabl3Staking is Ownable, IStabl3StakingStruct {
         if (reward > 0) {
             Record storage record = getRecords[msg.sender][staking.isLending];
 
-            uint8 poolType = STAKE_POOL;
-            if (staking.isLending) {
-                poolType = LEND_POOL;
-            }
-
-            _evaluateReward(staking.token, reward, poolType);
+            _evaluateReward(staking.token, reward, staking.isLending);
 
             uint256 endTime = staking.startTime + lockTimes[staking.stakingType];
 
@@ -771,8 +761,11 @@ contract Stabl3Staking is Ownable, IStabl3StakingStruct {
         }
     }
 
-    function _evaluateReward(IERC20 _rewardToken, uint256 _amountRewardToken, uint8 _poolType) internal {
-        uint8 rewardPoolType = _poolType + 1;
+    function _evaluateReward(IERC20 _rewardToken, uint256 _amountRewardToken, bool _isLending) internal {
+        uint8 rewardPoolType = STAKE_POOL + 1;
+        if (_isLending) {
+            rewardPoolType = LEND_POOL + 1;
+        }
 
         uint256 amountRewardTokenROI = _rewardToken.balanceOf(address(ROI));
 
@@ -837,43 +830,21 @@ contract Stabl3Staking is Ownable, IStabl3StakingStruct {
         }
     }
 
-    function _compound(uint256 _principal, uint256 _ratio, uint256 _exponent) internal pure returns (uint256) {
-        if (_exponent == 0) {
-            return 0;
-        }
+    function _compoundSingle(uint256 _principal, uint256 _ratio) internal pure returns (uint256) {
+        uint256 accruedAmount = _principal.mul(_ratio).div(10 ** 18);
 
-        uint256 accruedReward = ABDKMath64x64.mulu(ABDKMath64x64.pow(ABDKMath64x64.add(ABDKMath64x64.fromUInt(1), ABDKMath64x64.divu(_ratio,10**18)), _exponent), _principal);
-
-        return accruedReward.sub(_principal);
+        return accruedAmount;
     }
 
     // modifiers
 
-    // modifier stakeActive() {
-    //     require(stakeState, "Stabl3Staking: Stake and Lend not yet started");
-    //     _;
-    // }
-
-    // modifier reserved(IERC20 _token) {
-    //     require(treasury.isReservedToken(_token), "Stabl3Staking: Not a reserved token");
-    //     _;
-    // }
-
     modifier stakeActive() {
-        _stakeActive();
-        _;
-    }
-
-    function _stakeActive() internal view {
         require(stakeState, "Stabl3Staking: Stake and Lend not yet started");
+        _;
     }
 
     modifier reserved(IERC20 _token) {
-        _reserved(_token);
-        _;
-    }
-
-    function _reserved(IERC20 _token) internal view {
         require(treasury.isReservedToken(_token), "Stabl3Staking: Not a reserved token");
+        _;
     }
 }
