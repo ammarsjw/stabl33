@@ -297,6 +297,8 @@ contract Stabl3Staking is Ownable, IStabl3StakingStruct {
         }
     }
 
+    // TODO use 0.8 of amount here for validatePool if lending
+    // TODO check SushiChef
     function stake(IERC20 _token, uint256 _amountToken, uint8 _stakingType, bool _isLending) public stakeActive reserved(_token) {
         require(_amountToken > 0, "Stabl3Staking: Amount should be greater than zero");
         require(1 <= _stakingType && _stakingType <= 4, "Stabl3Staking: Incorrect staking type");

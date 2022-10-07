@@ -468,7 +468,7 @@ contract Treasury is Ownable, ReentrancyGuard {
             uint256 tokenWindowConsumedToConsider = rateInfo.tokenWindowConsumed;
 
             amountTokenToConsider = amountTokenToConsider.safeSub(tokenWindowToConsider);
-// TODO rate
+
             while (amountTokenToConsider > 0) {
                 rateToConsider += _compoundSingle(rateToConsider, rateInfo.compoundPercentage);
 
