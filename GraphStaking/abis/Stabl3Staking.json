@@ -510,7 +510,7 @@
             "type": "bool"
           }
         ],
-        "internalType": "struct Stabl3Staking.Staking[]",
+        "internalType": "struct IStabl3StakingStruct.Staking[]",
         "name": "unlockedLending",
         "type": "tuple[]"
       },
@@ -587,7 +587,7 @@
             "type": "bool"
           }
         ],
-        "internalType": "struct Stabl3Staking.Staking[]",
+        "internalType": "struct IStabl3StakingStruct.Staking[]",
         "name": "lockedLending",
         "type": "tuple[]"
       },
@@ -664,7 +664,7 @@
             "type": "bool"
           }
         ],
-        "internalType": "struct Stabl3Staking.Staking[]",
+        "internalType": "struct IStabl3StakingStruct.Staking[]",
         "name": "unlockedStaking",
         "type": "tuple[]"
       },
@@ -741,7 +741,7 @@
             "type": "bool"
           }
         ],
-        "internalType": "struct Stabl3Staking.Staking[]",
+        "internalType": "struct IStabl3StakingStruct.Staking[]",
         "name": "lockedStaking",
         "type": "tuple[]"
       }
@@ -1114,19 +1114,6 @@
   },
   {
     "inputs": [],
-    "name": "maxPoolPercentage",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "owner",
     "outputs": [
       {
@@ -1394,19 +1381,6 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_maxPoolPercentage",
-        "type": "uint256"
-      }
-    ],
-    "name": "updateMaxPoolPercentage",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address",
         "name": "_ROI",
         "type": "address"
@@ -1467,35 +1441,6 @@
     "name": "updateUnstakeFeePercentage",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "contract IERC20",
-        "name": "_token",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_amountToken",
-        "type": "uint256"
-      }
-    ],
-    "name": "validatePool",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "maxPool",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "currentPool",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {

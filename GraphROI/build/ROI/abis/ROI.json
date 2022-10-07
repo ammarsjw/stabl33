@@ -175,6 +175,19 @@
   },
   {
     "inputs": [],
+    "name": "maxPoolPercentage",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "owner",
     "outputs": [
       {
@@ -218,6 +231,19 @@
     "outputs": [
       {
         "internalType": "contract IERC20",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "stabl3Staking",
+    "outputs": [
+      {
+        "internalType": "contract IStabl3Staking",
         "name": "",
         "type": "address"
       }
@@ -287,6 +313,19 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "_maxPoolPercentage",
+        "type": "uint256"
+      }
+    ],
+    "name": "updateMaxPoolPercentage",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_contractAddress",
         "type": "address"
@@ -306,6 +345,19 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "_stabl3Staking",
+        "type": "address"
+      }
+    ],
+    "name": "updateStabl3Staking",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "_treasury",
         "type": "address"
       }
@@ -313,6 +365,35 @@
     "name": "updateTreasury",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract IERC20",
+        "name": "_token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amountToken",
+        "type": "uint256"
+      }
+    ],
+    "name": "validatePool",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "maxPool",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "currentPool",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {

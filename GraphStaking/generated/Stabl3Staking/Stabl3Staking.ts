@@ -738,31 +738,6 @@ export class Stabl3Staking__getStakingsResult {
   }
 }
 
-export class Stabl3Staking__validatePoolResult {
-  value0: BigInt;
-  value1: BigInt;
-
-  constructor(value0: BigInt, value1: BigInt) {
-    this.value0 = value0;
-    this.value1 = value1;
-  }
-
-  toMap(): TypedMap<string, ethereum.Value> {
-    let map = new TypedMap<string, ethereum.Value>();
-    map.set("value0", ethereum.Value.fromUnsignedBigInt(this.value0));
-    map.set("value1", ethereum.Value.fromUnsignedBigInt(this.value1));
-    return map;
-  }
-
-  getMaxPool(): BigInt {
-    return this.value0;
-  }
-
-  getCurrentPool(): BigInt {
-    return this.value1;
-  }
-}
-
 export class Stabl3Staking extends ethereum.SmartContract {
   static bind(address: Address): Stabl3Staking {
     return new Stabl3Staking("Stabl3Staking", address);
@@ -1359,29 +1334,6 @@ export class Stabl3Staking extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
-  maxPoolPercentage(): BigInt {
-    let result = super.call(
-      "maxPoolPercentage",
-      "maxPoolPercentage():(uint256)",
-      []
-    );
-
-    return result[0].toBigInt();
-  }
-
-  try_maxPoolPercentage(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall(
-      "maxPoolPercentage",
-      "maxPoolPercentage():(uint256)",
-      []
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
   owner(): Address {
     let result = super.call("owner", "owner():(address)", []);
 
@@ -1509,49 +1461,6 @@ export class Stabl3Staking extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
-  validatePool(
-    _token: Address,
-    _amountToken: BigInt
-  ): Stabl3Staking__validatePoolResult {
-    let result = super.call(
-      "validatePool",
-      "validatePool(address,uint256):(uint256,uint256)",
-      [
-        ethereum.Value.fromAddress(_token),
-        ethereum.Value.fromUnsignedBigInt(_amountToken)
-      ]
-    );
-
-    return new Stabl3Staking__validatePoolResult(
-      result[0].toBigInt(),
-      result[1].toBigInt()
-    );
-  }
-
-  try_validatePool(
-    _token: Address,
-    _amountToken: BigInt
-  ): ethereum.CallResult<Stabl3Staking__validatePoolResult> {
-    let result = super.tryCall(
-      "validatePool",
-      "validatePool(address,uint256):(uint256,uint256)",
-      [
-        ethereum.Value.fromAddress(_token),
-        ethereum.Value.fromUnsignedBigInt(_amountToken)
-      ]
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(
-      new Stabl3Staking__validatePoolResult(
-        value[0].toBigInt(),
-        value[1].toBigInt()
-      )
-    );
   }
 }
 
@@ -1989,36 +1898,6 @@ export class UpdateLockTimesCall__Outputs {
   _call: UpdateLockTimesCall;
 
   constructor(call: UpdateLockTimesCall) {
-    this._call = call;
-  }
-}
-
-export class UpdateMaxPoolPercentageCall extends ethereum.Call {
-  get inputs(): UpdateMaxPoolPercentageCall__Inputs {
-    return new UpdateMaxPoolPercentageCall__Inputs(this);
-  }
-
-  get outputs(): UpdateMaxPoolPercentageCall__Outputs {
-    return new UpdateMaxPoolPercentageCall__Outputs(this);
-  }
-}
-
-export class UpdateMaxPoolPercentageCall__Inputs {
-  _call: UpdateMaxPoolPercentageCall;
-
-  constructor(call: UpdateMaxPoolPercentageCall) {
-    this._call = call;
-  }
-
-  get _maxPoolPercentage(): BigInt {
-    return this._call.inputValues[0].value.toBigInt();
-  }
-}
-
-export class UpdateMaxPoolPercentageCall__Outputs {
-  _call: UpdateMaxPoolPercentageCall;
-
-  constructor(call: UpdateMaxPoolPercentageCall) {
     this._call = call;
   }
 }
