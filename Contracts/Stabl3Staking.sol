@@ -5,12 +5,13 @@ pragma solidity 0.8.17;
 import "./Ownable.sol";
 import "./SafeMathUpgradeable.sol";
 import "./SafeERC20.sol";
+import "./ReentrancyGuard.sol";
 
 import "./ITreasury.sol";
 import "./IROI.sol";
 import "./IStabl3StakingStruct.sol";
 
-contract Stabl3Staking is Ownable, IStabl3StakingStruct {
+contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
     using SafeMathUpgradeable for uint256;
     using SafeERC20 for IERC20;
 
@@ -295,21 +296,25 @@ contract Stabl3Staking is Ownable, IStabl3StakingStruct {
         }
     }
 
-    // TODO check SushiChef, SuchiStaking, rewardPerBlock etc for Commited Reward Flow
-    function stake(IERC20 _token, uint256 _amountToken, uint8 _stakingType, bool _isLending) public stakeActive reserved(_token) {
+    // TODO check SushiChef, SuchiStaking, rewardPerBlock etc for Committed Reward Flow
+    function stake(
+        IERC20 _token,
+        uint256 _amountToken,
+        uint8 _stakingType,
+        bool _isLending
+    ) public stakeActive reserved(_token) nonReentrant {
         {
             require(1 <= _stakingType && _stakingType <= 4, "Stabl3Staking: Incorrect staking type");
+            require(_amountToken > 1, "Stabl3Staking: Insufficient amount");
             uint256 maxPool;
             uint256 currentPool;
             if (_isLending) {
-                require(_amountToken > 1, "Stabl3Staking: Lend Amount should be greater than one");
                 (maxPool, currentPool) = ROI.validatePool(_token, _amountToken.mul(1000 - lendingStabl3Percentage).div(1000));
             }
             else {
-                require(_amountToken > 0, "Stabl3Staking: Stake Amount should be greater than zero");
                 (maxPool, currentPool) = ROI.validatePool(_token, _amountToken);
             }
-            require(currentPool <= maxPool, "Stabl3Staking: Staking pool limit");
+            require(currentPool <= maxPool, "Stabl3Staking: Staking pool limit reached. Please try again later or try a smaller amount");
         }
 
         if (!getStakers[msg.sender]) {
@@ -418,41 +423,26 @@ contract Stabl3Staking is Ownable, IStabl3StakingStruct {
      * @notice requires permit
      * @notice requires external checks, transfers, records, updatePool calls, updateAPR calls and event emissions
      */
-    function accessWithPermit(address _user, uint256 _index, IERC20 _token, uint256 _amountToken, bool _isStake) public {
+    function accessWithPermit(address _user, Staking memory _staking, uint8 _identifier) external {
         require(msg.sender == stabl3RealEstate, "Stabl3Staking: Not allowed");
 
-        if (_isStake) {
+        if (_identifier == 0) {
             if (!getStakers[msg.sender]) {
                 getStakers[msg.sender] = true;
                 allStakers.push(msg.sender);
             }
 
-            uint256 timestampToConsider = block.timestamp;
-
-            Staking memory staking = Staking(
-                getStakings[_user].length,
-                _user,
-                true,
-                0,
-                _token,
-                _amountToken,
-                timestampToConsider,
-                0,
-                timestampToConsider,
-                false,
-                false,
-                0,
-                0,
-                true
-            );
-
-            getStakings[_user].push(staking);
+            getStakings[_user].push(_staking);
         }
-        else {
-            Staking storage staking = getStakings[_user][_index];
-
-            staking.status = false;
+        else if (_identifier == 1) {
+            getStakings[_user][_staking.index] = _staking;
         }
+        // TODO confirm
+        // else if (_identifier == 2) {
+        //     getStakings[_user][_staking.index] = _staking;
+
+        //     getStakings[_user][_staking.index].status = false;
+        // }
     }
 
     function getAmountRewardSingle(
@@ -461,7 +451,7 @@ contract Stabl3Staking is Ownable, IStabl3StakingStruct {
         bool _isLending,
         bool _isRealEstate,
         uint256 _timestamp
-    ) public view stakeActive returns (uint256) {
+    ) public view returns (uint256) {
         uint256 amountReward;
 
         Staking memory staking = getStakings[_user][_index];
@@ -495,7 +485,7 @@ contract Stabl3Staking is Ownable, IStabl3StakingStruct {
         return amountReward;
     }
 
-    function getAmountRewardAll(address _user, bool _isLending, bool _isRealEstate) public view stakeActive returns (uint256) {
+    function getAmountRewardAll(address _user, bool _isLending, bool _isRealEstate) public view returns (uint256) {
         uint256 totalAmountReward;
 
         uint256 timestampToConsider = block.timestamp;
@@ -522,7 +512,7 @@ contract Stabl3Staking is Ownable, IStabl3StakingStruct {
         return totalAmountReward;
     }
 
-    function _withdrawAmountRewardSingle(uint256 _index, bool _isLending, uint256 _timestamp) internal {
+    function _withdrawAmountRewardSingle(uint256 _index, bool _isLending, uint256 _timestamp) internal nonReentrant {
         Staking storage staking = getStakings[msg.sender][_index];
 
         uint256 reward = getAmountRewardSingle(msg.sender, _index, _isLending, false, _timestamp);
@@ -576,7 +566,7 @@ contract Stabl3Staking is Ownable, IStabl3StakingStruct {
         address _user,
         uint256 _index,
         uint256 _timestamp
-    ) public view stakeActive returns (uint256) {
+    ) public view returns (uint256) {
         uint256 claimableStabl3Lending;
 
         Staking memory staking = getStakings[_user][_index];
@@ -593,7 +583,7 @@ contract Stabl3Staking is Ownable, IStabl3StakingStruct {
         return claimableStabl3Lending;
     }
 
-    function getClaimableStabl3LendingAll(address _user) public view stakeActive returns (uint256) {
+    function getClaimableStabl3LendingAll(address _user) public view returns (uint256) {
         uint256 totalClaimableStabl3Lending;
 
         uint256 timestampToConsider = block.timestamp;
@@ -609,7 +599,7 @@ contract Stabl3Staking is Ownable, IStabl3StakingStruct {
         return totalClaimableStabl3Lending;
     }
 
-    function _claimStabl3LendingSingle(uint256 _index, uint256 _timestamp) internal {
+    function _claimStabl3LendingSingle(uint256 _index, uint256 _timestamp) internal nonReentrant {
         Staking storage staking = getStakings[msg.sender][_index];
 
         Record storage record = getRecords[msg.sender][true];
@@ -651,7 +641,7 @@ contract Stabl3Staking is Ownable, IStabl3StakingStruct {
         address _user,
         bool _isLending,
         bool _isRealEstate
-    ) public view stakeActive returns (uint256 totalAmountStakedUnlocked, uint256 totalAmountStakedLocked) {
+    ) public view returns (uint256 totalAmountStakedUnlocked, uint256 totalAmountStakedLocked) {
         Staking[] memory unlocked;
         Staking[] memory locked;
 
@@ -687,7 +677,7 @@ contract Stabl3Staking is Ownable, IStabl3StakingStruct {
         }
     }
 
-    function _unstakeSingle(uint256 _index, uint256 _amountToUnstake) internal {
+    function _unstakeSingle(uint256 _index, uint256 _amountToUnstake) internal nonReentrant {
         Staking storage staking = getStakings[msg.sender][_index];
 
         uint256 fee = staking.amountTokenStaked.mul(unstakeFeePercentage).div(1000);

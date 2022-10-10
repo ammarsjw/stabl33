@@ -5,13 +5,12 @@ pragma solidity 0.8.17;
 import "./Ownable.sol";
 import "./SafeMathUpgradeable.sol";
 import "./SafeERC20.sol";
-import "./ReentrancyGuard.sol";
 
 import "./IUniswapV2Router.sol";
 import "./IUniswapV2Factory.sol";
 import "./IUniswapV2Pair.sol";
 
-contract Treasury is Ownable, ReentrancyGuard {
+contract Treasury is Ownable {
     using SafeMathUpgradeable for uint256;
     using SafeERC20 for IERC20;
 
@@ -271,7 +270,6 @@ contract Treasury is Ownable, ReentrancyGuard {
 
             uint256 amountStabl3ToConsider = (tokenWindowRemainingToConsider * stabl3WindowToConsider) / tokenWindowToConsider;
 
-            // change
             amountTokenToConsider = amountTokenToConsider.checkSub(tokenWindowToConsider);
 
             tokenWindowToConsider += _compoundSingle(tokenWindowToConsider, rateInfo.compoundPercentage);
@@ -428,7 +426,7 @@ contract Treasury is Ownable, ReentrancyGuard {
         }
     }
 
-    function updateRate(IERC20 _token, uint256 _amountToken) external permission reserved(_token) nonReentrant {
+    function updateRate(IERC20 _token, uint256 _amountToken) external permission reserved(_token) {
         uint256 amountTokenConverted = _amountToken;
         if (_token.decimals() < 18) {
             amountTokenConverted *= 10 ** (18 - _token.decimals());

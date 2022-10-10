@@ -5,12 +5,11 @@ pragma solidity 0.8.17;
 import "./Ownable.sol";
 import "./SafeMathUpgradeable.sol";
 import "./SafeERC20.sol";
-import "./ReentrancyGuard.sol";
 
 import "./ITreasury.sol";
 import "./IStabl3Staking.sol";
 
-contract ROI is Ownable, ReentrancyGuard, IStabl3StakingStruct {
+contract ROI is Ownable, IStabl3StakingStruct {
     using SafeMathUpgradeable for uint256;
     using SafeERC20 for IERC20;
 
@@ -71,7 +70,7 @@ contract ROI is Ownable, ReentrancyGuard, IStabl3StakingStruct {
     }
 
     function updateStabl3Staking(address _stabl3Staking) external onlyOwner {
-        require(address(stabl3Staking) != _stabl3Staking, "ROI: Stabl3 Staking is already this address");
+        require(address(stabl3Staking) != _stabl3Staking, "ROI: Stabl3Staking is already this address");
         updatePermission(address(stabl3Staking), false);
         updatePermission(_stabl3Staking, true);
         stabl3Staking = IStabl3Staking(_stabl3Staking);
@@ -277,7 +276,7 @@ contract ROI is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         currentPool = currentPool.safeSub(amountUnlocked);
     }
 
-    function updateAPR() public permission nonReentrant {
+    function updateAPR() public permission {
         uint256 currentAPR = getAPR();
 
         uint256 reserves = getReserves();

@@ -187,7 +187,7 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
             limit.lastExchangeTime = block.timestamp;
         }
         else {
-            revert("Stabl3PublicSale: Exchange Paused");
+            revert("Stabl3PublicSale: Consecutive exchanges not allowed. Please try again after a few minutes");
         }
 
         // TODO confirm
@@ -199,7 +199,7 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
 
         if (limit.amount + _amountExchangingToken > amountExchangingTokenToConsider.mul(exchangeLimitPercentage).div(1000)) {
             require(block.timestamp > limit.startTime.add(exchangeLimitTime),
-                "Stabl3PublicSale: Exchange limited");
+                "Stabl3PublicSale: Daily exchange limit reached. Please try again after limit expires or try a smaller amount");
         }
 
         if (block.timestamp > limit.startTime + exchangeLimitTime) {

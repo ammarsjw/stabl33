@@ -53,7 +53,7 @@ interface IStabl3Staking is IStabl3StakingStruct {
 
     function stake(IERC20 _token, uint256 _amountToken, uint8 _stakingType, bool _isLending) external;
 
-    function accessWithPermit(address _user, uint256 _index, IERC20 _token, uint256 _amountToken, bool _isStake) external;
+    function accessWithPermit(address _user, Staking memory _staking, uint8 _identifier) external;
 
     function getAmountRewardSingle(
         address _user,
