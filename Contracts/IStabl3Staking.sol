@@ -51,22 +51,6 @@ interface IStabl3Staking is IStabl3StakingStruct {
         Staking[] memory lockedStaking
     );
 
-    // function parseAllStakings(
-    //     Staking[] memory unlockedLending,
-    //     Staking[] memory lockedLending,
-    //     Staking[] memory unlockedStaking,
-    //     Staking[] memory lockedStaking
-    // ) external pure returns (
-    //     uint256[] memory return1,
-    //     address[] memory return2,
-    //     uint256[] memory return3,
-    //     address[] memory return4,
-    //     uint256[] memory return5,
-    //     address[] memory return6,
-    //     uint256[] memory return7,
-    //     address[] memory return8
-    // );
-
     function stake(IERC20 _token, uint256 _amountToken, uint8 _stakingType, bool _isLending) external;
 
     function accessWithPermit(address _user, uint256 _index, IERC20 _token, uint256 _amountToken, bool _isStake) external;
