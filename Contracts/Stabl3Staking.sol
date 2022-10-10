@@ -16,8 +16,6 @@ contract Stabl3Staking is Ownable, IStabl3StakingStruct {
 
     uint8 private constant BUY_POOL = 0;
 
-    uint8 private constant BOND_POOL = 1;
-
     uint8 private constant STAKE_POOL = 2;
     uint8 private constant STAKE_REWARD_POOL = 3;
     uint8 private constant STAKE_FEE_POOL = 4;
