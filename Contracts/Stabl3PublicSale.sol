@@ -187,7 +187,7 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
             limit.lastExchangeTime = block.timestamp;
         }
         else {
-            revert("Stabl3PublicSale: Exchange Time Lock. Try again later");
+            revert("Stabl3PublicSale: Exchange Paused");
         }
 
         // TODO confirm

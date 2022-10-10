@@ -61,8 +61,6 @@ contract ROI is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
     function updateTreasury(address _treasury) external onlyOwner {
         require(address(treasury) != _treasury, "ROI: Treasury is already this address");
-        updatePermission(address(treasury), false);
-        updatePermission(_treasury, true);
         emit UpdatedTreasury(_treasury, address(treasury));
         treasury = ITreasury(_treasury);
     }
@@ -74,6 +72,8 @@ contract ROI is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
     function updateStabl3Staking(address _stabl3Staking) external onlyOwner {
         require(address(stabl3Staking) != _stabl3Staking, "ROI: Stabl3 Staking is already this address");
+        updatePermission(address(stabl3Staking), false);
+        updatePermission(_stabl3Staking, true);
         stabl3Staking = IStabl3Staking(_stabl3Staking);
     }
 
