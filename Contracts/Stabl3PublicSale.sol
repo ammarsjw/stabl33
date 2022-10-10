@@ -14,7 +14,10 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
     using SafeMathUpgradeable for uint256;
     using SafeERC20 for IERC20;
 
-    uint8 constant BUY_POOL = 0;
+    uint8 private constant BUY_POOL = 0;
+
+    uint8 private constant STAKE_POOL = 2;
+    uint8 private constant LEND_POOL = 5;
 
     ITreasury public treasury;
     IROI public ROI;
@@ -78,8 +81,8 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
         ROIPercentage = 161;
         HQPercentage = 39;
 
-        exchangePauseTime = 300;
-        exchangeLimitTime = 86400;
+        exchangePauseTime = 180;        // 3 minutes
+        exchangeLimitTime = 86400;      // 1 day
         exchangeLimitPercentage = 300;
     }
 
@@ -168,14 +171,15 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
     function _handleLimit(IERC20 _exchangingToken, uint256 _amountExchangingToken) internal {
         Limit storage limit = getLimit[msg.sender];
 
-        uint256 amountExchangingTokenConverted = _amountExchangingToken;
-        if (_exchangingToken.decimals() < 18) {
-            amountExchangingTokenConverted *= 10 ** (18 - _exchangingToken.decimals());
-        }
+        // TODO confirm
+        // uint256 amountExchangingTokenConverted = _amountExchangingToken;
+        // if (_exchangingToken.decimals() < 18) {
+        //     amountExchangingTokenConverted *= 10 ** (18 - _exchangingToken.decimals());
+        // }
 
         if (limit.user != msg.sender) {
             limit.user = msg.sender;
-            limit.amount = amountExchangingTokenConverted;
+            limit.amount = 0;
             limit.startTime = block.timestamp;
         }
 
@@ -186,21 +190,24 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
             revert("Stabl3PublicSale: Exchange Time Lock. Try again later");
         }
 
-        // TODO
-        // uint256 treasuryReserves = treasury.getReserves();
-        uint256 amountExchangingTokenTreasury = _exchangingToken.balanceOf(address(treasury));
+        // TODO confirm
+        uint256 amountExchangingTokenToConsider =
+            // treasury.getReserves()
+            _exchangingToken.balanceOf(address(treasury))
+            .safeSub(treasury.getTreasuryPool(STAKE_POOL, _exchangingToken))
+            .safeSub(treasury.getTreasuryPool(LEND_POOL, _exchangingToken));
 
-        if (limit.amount + amountExchangingTokenConverted > amountExchangingTokenTreasury.mul(exchangeLimitPercentage).div(1000)) {
+        if (limit.amount + _amountExchangingToken > amountExchangingTokenToConsider.mul(exchangeLimitPercentage).div(1000)) {
             require(block.timestamp > limit.startTime.add(exchangeLimitTime),
-                "Stabl3PublicSale: Exchange Limit Reached. Try again later or try a smaller value");
+                "Stabl3PublicSale: Exchange limited");
         }
 
-        if (block.timestamp > limit.startTime.add(exchangeLimitTime)) {
-            limit.amount = amountExchangingTokenConverted;
+        if (block.timestamp > limit.startTime + exchangeLimitTime) {
+            limit.amount = _amountExchangingToken;
             limit.startTime = block.timestamp;
         }
         else {
-            limit.amount += amountExchangingTokenConverted;
+            limit.amount += _amountExchangingToken;
         }
     }
 

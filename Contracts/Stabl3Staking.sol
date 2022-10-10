@@ -297,13 +297,22 @@ contract Stabl3Staking is Ownable, IStabl3StakingStruct {
         }
     }
 
-    // TODO use 0.8 of amount here for validatePool if lending
-    // TODO check SushiChef
+    // TODO check SushiChef, SuchiStaking, rewardPerBlock etc for Commited Reward Flow
     function stake(IERC20 _token, uint256 _amountToken, uint8 _stakingType, bool _isLending) public stakeActive reserved(_token) {
-        require(_amountToken > 0, "Stabl3Staking: Amount should be greater than zero");
-        require(1 <= _stakingType && _stakingType <= 4, "Stabl3Staking: Incorrect staking type");
-        (uint256 maxPool, uint256 currentPool) = ROI.validatePool(_token, _amountToken);
-        require(currentPool <= maxPool, "Stabl3Staking: Staking pool limit");
+        {
+            require(1 <= _stakingType && _stakingType <= 4, "Stabl3Staking: Incorrect staking type");
+            uint256 maxPool;
+            uint256 currentPool;
+            if (_isLending) {
+                require(_amountToken > 1, "Stabl3Staking: Lend Amount should be greater than one");
+                (maxPool, currentPool) = ROI.validatePool(_token, _amountToken.mul(1000 - lendingStabl3Percentage).div(1000));
+            }
+            else {
+                require(_amountToken > 0, "Stabl3Staking: Stake Amount should be greater than zero");
+                (maxPool, currentPool) = ROI.validatePool(_token, _amountToken);
+            }
+            require(currentPool <= maxPool, "Stabl3Staking: Staking pool limit");
+        }
 
         if (!getStakers[msg.sender]) {
             getStakers[msg.sender] = true;
