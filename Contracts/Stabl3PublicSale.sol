@@ -211,7 +211,11 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
         }
     }
 
-    // 5 minute pause per user, limited to 30% of treasury exchangeable within 24 hour per user, AMM for price
+    /**
+     * @notice 3 minute pause per user
+     * @notice limited to 30% of exchanging token in the treasury minus the amount for staking and lending within 24 hours per user
+     * @notice Chain's highest liquidity AMM for price
+     */
     function exchange(
         IERC20 _exchangingToken,
         IERC20 _token,
