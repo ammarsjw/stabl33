@@ -73,8 +73,8 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
     // user lifetime bonding records
     mapping (address => Record) public getRecords;
 
-    // users with permission to access certain bonding functions
-    mapping (address => bool) public permitted;
+    // admins are users that have permission to access certain bonding functions
+    mapping (address => bool) public admin;
 
     // events
 
@@ -86,7 +86,7 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
 
     event UpdatedBondingClaimTime(uint256 newBondingClaimTime, uint256 oldBondingClaimTime);
 
-    event UpdatedPermission(address userAddress, bool state);
+    event UpdatedAdmin(address userAddress, bool state);
 
     event CreatedBond(uint256 bondType, IERC20 token, uint256 bondAmount, uint256 discount, uint256 expiryTime);
 
@@ -173,10 +173,10 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
         bondState = _state;
     }
 
-    function updatePermission(address _contractAddress, bool _state) external onlyOwner {
-        require(permitted[_contractAddress] != _state, "Stabl3Bonding: Address is already of the value 'state'");
-        permitted[_contractAddress] = _state;
-        emit UpdatedPermission(_contractAddress, _state);
+    function updateAdmin(address _address, bool _state) external onlyOwner {
+        require(admin[_address] != _state, "Stabl3Bonding: Address is already of the value 'state'");
+        admin[_address] = _state;
+        emit UpdatedAdmin(_address, _state);
     }
 
     function createBond(
@@ -184,21 +184,21 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
         uint256 _bondAmount,
         uint256 _discount,
         uint256 _expiryTime
-    ) external bondActive permission reserved(_token) {
+    ) external bondActive onlyAdmin reserved(_token) {
         require(_bondAmount > 0, "Stabl3Bonding: Insufficient amount");
 
         uint256 timestampToConsider = block.timestamp;
 
-        BondInfo memory bondInfo = BondInfo(
-            totalBondTypes,
-            true,
-            _token,
-            _bondAmount,
-            0,
-            _discount,
-            timestampToConsider,
-            timestampToConsider + _expiryTime
-        );
+        BondInfo memory bondInfo = BondInfo({
+            bondType: totalBondTypes,
+            status: true,
+            token: _token,
+            bondAmount: _bondAmount,
+            bondAmountConsumed: 0,
+            discount: _discount,
+            startTime: timestampToConsider,
+            expiryTime: timestampToConsider + _expiryTime
+        });
 
         getBondInfo.push(bondInfo);
 
@@ -214,7 +214,7 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
         uint256 _bondAmount,
         uint256 _discount,
         uint256 _expiryTime
-    ) external bondActive permission reserved(_token) {
+    ) external bondActive onlyAdmin reserved(_token) {
         require(_bondAmount > 0, "Stabl3Bonding: Insufficient amount");
 
         BondInfo storage bondInfo = getBondInfo[_bondType];
@@ -273,17 +273,17 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
 
         amountStabl3 = amountStabl3.mul(1000).div(1000 - bondInfo.discount);
 
-        Bonding memory bonding = Bonding(
-            getBondings[msg.sender].length,
-            msg.sender,
-            true,
-            bondInfo.bondType,
-            _token,
-            _amountToken,
-            amountStabl3,
-            timestampToConsider,
-            timestampToConsider + bondingClaimTime
-        );
+        Bonding memory bonding = Bonding({
+            index: getBondings[msg.sender].length,
+            user: msg.sender,
+            status: true,
+            bondType: bondInfo.bondType,
+            token: _token,
+            amountToken: _amountToken,
+            amountStabl3: amountStabl3,
+            startTime: timestampToConsider,
+            endTime: timestampToConsider + bondingClaimTime
+        });
 
         getBondings[msg.sender].push(bonding);
 
@@ -345,8 +345,8 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
         _;
     }
 
-    modifier permission() {
-        require(permitted[msg.sender] || msg.sender == owner(), "Stabl3Bonding: Not permitted");
+    modifier onlyAdmin() {
+        require(admin[msg.sender] || msg.sender == owner(), "Stabl3Bonding: Caller is not an admin");
         _;
     }
 

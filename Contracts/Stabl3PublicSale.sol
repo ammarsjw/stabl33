@@ -238,7 +238,7 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
         stabl3.transferFrom(address(treasury), msg.sender, amountStabl3);
 
         treasury.updatePool(BUY_POOL, _token, 0, fee, 0, true);
-        treasury.updateStabl3CirculatingSupply(fee, true);
+        treasury.updateStabl3CirculatingSupply(amountStabl3, true);
         treasury.updateRate(_token, fee);
 
         ROI.updateAPR();

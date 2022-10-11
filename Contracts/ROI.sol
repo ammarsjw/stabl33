@@ -119,12 +119,10 @@ contract ROI is Ownable, IStabl3StakingStruct {
 
                 uint256 decimals = reservedToken.decimals();
 
-                if (decimals < 18) {
-                    stakeRewardAmount *= 10 ** (18 - decimals);
-                    lendRewardAmount *= 10 ** (18 - decimals);
-                }
-
-                totalRewardDistributed += stakeRewardAmount + lendRewardAmount;
+                totalRewardDistributed +=
+                    decimals < 18 ?
+                    (stakeRewardAmount * 10 ** (18 - decimals)) + (lendRewardAmount * 10 ** (18 - decimals)) :
+                    stakeRewardAmount + lendRewardAmount;
             }
         }
 
@@ -142,11 +140,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
 
                 uint256 decimals = reservedToken.decimals();
 
-                if (decimals < 18) {
-                    amount *= 10 ** (18 - decimals);
-                }
-
-                totalReserves += amount;
+                totalReserves += decimals < 18 ? amount * 10 ** (18 - decimals) : amount;
             }
         }
 
@@ -155,8 +149,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
 
     // APR is in 18 decimals
     function getAPR() public view returns (uint256) {
-        uint256 totalStakedAmount;
-        uint256 totalLendedAmount;
+        uint256 totalStakedAndLendedAmount;
 
         for (uint256 i = 0 ; i < treasury.allReservedTokensLength() ; i++) {
             IERC20 reservedToken = treasury.allReservedTokens(i);
@@ -168,24 +161,18 @@ contract ROI is Ownable, IStabl3StakingStruct {
                 uint256 lendedAmount = treasury.getTreasuryPool(LEND_POOL, reservedToken);
                 lendedAmount += treasury.getROIPool(LEND_POOL, reservedToken);                  // ROI Pool for lending is 0 by default
 
-                uint256 decimalsReservedToken = reservedToken.decimals();
+                uint256 decimals = reservedToken.decimals();
 
-                if (decimalsReservedToken < 18) {
-                    stakedAmount *= 10 ** (18 - decimalsReservedToken);
-                    lendedAmount *= 10 ** (18 - decimalsReservedToken);
-                }
-
-                totalStakedAmount += stakedAmount;
-                totalLendedAmount += lendedAmount;
+                totalStakedAndLendedAmount +=
+                    decimals < 18 ?
+                    (stakedAmount * 10 ** (18 - decimals)) + (lendedAmount * 10 ** (18 - decimals)) :
+                    stakedAmount + lendedAmount;
             }
         }
 
         uint256 totalROIReserves = getReserves();
 
-        uint256 currentAPR;
-        if (totalStakedAmount != 0 || totalLendedAmount != 0) {
-            currentAPR = (totalROIReserves * (10 ** 18)) / (totalStakedAmount + totalLendedAmount);
-        }
+        uint256 currentAPR = totalStakedAndLendedAmount != 0 ? (totalROIReserves * (10 ** 18)) / (totalStakedAndLendedAmount) : 0;
 
         return currentAPR;
     }
@@ -222,11 +209,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
 
         maxPool = maxPool.mul(maxPoolPercentage).div(1000);
 
-        if (_token.decimals() < 18) {
-            _amountToken *= 10 ** (18 - _token.decimals());
-        }
- 
-        currentPool += _amountToken;
+        currentPool += _token.decimals() < 18 ? _amountToken * 10 ** (18 - _token.decimals()) : _amountToken;
 
         uint256 amountUnlocked;
 

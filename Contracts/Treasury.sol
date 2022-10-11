@@ -175,11 +175,7 @@ contract Treasury is Ownable {
 
                 uint256 decimals = allReservedTokens[i].decimals();
 
-                if (decimals < 18) {
-                    amount *= 10 ** (18 - decimals);
-                }
-
-                totalReserves += amount;
+                totalReserves += decimals < 18 ? amount * 10 ** (18 - decimals) : amount;
             }
         }
 
@@ -187,7 +183,7 @@ contract Treasury is Ownable {
     }
 
     function getTotalValueLocked() public view returns (uint256) {
-        uint256 totalReserves;
+        uint256 totalValueLocked;
 
         for (uint256 i = 0 ; i < allReservedTokens.length ; i++) {
             if (isReservedToken[allReservedTokens[i]]) {
@@ -198,15 +194,11 @@ contract Treasury is Ownable {
 
                 uint256 decimals = allReservedTokens[i].decimals();
 
-                if (decimals < 18) {
-                    amount *= 10 ** (18 - decimals);
-                }
-
-                totalReserves += amount;
+                totalValueLocked += decimals < 18 ? amount * 10 ** (18 - decimals) : amount;
             }
         }
 
-        return totalReserves;
+        return totalValueLocked;
     }
 
     // rate is in 18 decimals
@@ -216,10 +208,7 @@ contract Treasury is Ownable {
 
     // rate is in 18 decimals
     function getRateImpact(IERC20 _token, uint256 _amountToken) public view reserved(_token) returns (uint256) {
-        uint256 amountTokenConverted = _amountToken;
-        if (_token.decimals() < 18) {
-            amountTokenConverted *= 10 ** (18 - _token.decimals());
-        }
+        uint256 amountTokenConverted = _token.decimals() < 18 ? _amountToken * 10 ** (18 - _token.decimals()) : _amountToken;
 
         uint256 amountTokenToConsider = amountTokenConverted + rateInfo.tokenWindowConsumed;
 
@@ -246,15 +235,12 @@ contract Treasury is Ownable {
     }
 
     function getAmountOut(IERC20 _token, uint256 _amountToken) external view reserved(_token) returns (uint256) {
-        require(_amountToken > 0, "Treasury: Insufficient input amount");
+        require(_amountToken > 0, "Treasury: Insufficient amount");
         if (stabl3.balanceOf(address(this)) == 0) {
             return 0;
         }
 
-        uint256 amountTokenConverted = _amountToken;
-        if (_token.decimals() < 18) {
-            amountTokenConverted *= (10 ** (18 - _token.decimals()));
-        }
+        uint256 amountTokenConverted = _token.decimals() < 18 ? _amountToken * 10 ** (18 - _token.decimals()) : _amountToken;
 
         uint256 amountTokenToConsider = amountTokenConverted + rateInfo.tokenWindowConsumed;
 
@@ -293,7 +279,7 @@ contract Treasury is Ownable {
     }
 
     function getAmountIn(uint256 _amountStabl3, IERC20 _token) external view reserved(_token) returns (uint256) {
-        require(_amountStabl3 > 0, "Treasury: Insufficient input amount");
+        require(_amountStabl3 > 0, "Treasury: Insufficient amount");
         if (stabl3.balanceOf(address(this)) == 0) {
             return 0;
         }
@@ -347,7 +333,7 @@ contract Treasury is Ownable {
         IERC20 _token,
         uint256 _amountToken
     ) external view reserved(_token) returns (uint256) {
-        require(_amountToken > 0, "Treasury: Insufficient input amount");
+        require(_amountToken > 0, "Treasury: Insufficient amount");
         if (_exchangingToken.balanceOf(address(this)) == 0) {
             return 0;
         }
@@ -359,13 +345,10 @@ contract Treasury is Ownable {
 
         (uint256 reserve0, uint256 reserve1, ) = IUniswapV2Pair(pair).getReserves();
 
-        uint256 amountExchangingToken;
-        if (IUniswapV2Pair(pair).token0() == address(_token)) {
-            amountExchangingToken = uniswapRouter.quote(amountTokenWithFee, reserve0, reserve1);
-        }
-        else {
-            amountExchangingToken = uniswapRouter.quote(amountTokenWithFee, reserve1, reserve0);
-        }
+        uint256 amountExchangingToken =
+            IUniswapV2Pair(pair).token0() == address(_token) ?
+            uniswapRouter.quote(amountTokenWithFee, reserve0, reserve1) :
+            uniswapRouter.quote(amountTokenWithFee, reserve1, reserve0);
 
         return amountExchangingToken;
     }
@@ -375,7 +358,7 @@ contract Treasury is Ownable {
         uint256 _amountExchangingToken,
         IERC20 _token
     ) external view reserved(_token) returns (uint256) {
-        require(_amountExchangingToken > 0, "Treasury: Insufficient input amount");
+        require(_amountExchangingToken > 0, "Treasury: Insufficient amount");
         if (_exchangingToken.balanceOf(address(this)) == 0) {
             return 0;
         }
@@ -384,13 +367,10 @@ contract Treasury is Ownable {
 
         (uint256 reserve0, uint256 reserve1, ) = IUniswapV2Pair(pair).getReserves();
 
-        uint256 amountToken;
-        if (IUniswapV2Pair(pair).token0() == address(_exchangingToken)) {
-            amountToken = uniswapRouter.quote(_amountExchangingToken, reserve0, reserve1);
-        }
-        else {
-            amountToken = uniswapRouter.quote(_amountExchangingToken, reserve1, reserve0);
-        }
+        uint256 amountToken =
+            IUniswapV2Pair(pair).token0() == address(_exchangingToken) ?
+            uniswapRouter.quote(_amountExchangingToken, reserve0, reserve1) :
+            uniswapRouter.quote(_amountExchangingToken, reserve1, reserve0);
 
         uint256 amountTokenWithFee = (amountToken * 1000) / (1000 - exchangeFee);
 
@@ -427,10 +407,7 @@ contract Treasury is Ownable {
     }
 
     function updateRate(IERC20 _token, uint256 _amountToken) external permission reserved(_token) {
-        uint256 amountTokenConverted = _amountToken;
-        if (_token.decimals() < 18) {
-            amountTokenConverted *= 10 ** (18 - _token.decimals());
-        }
+        uint256 amountTokenConverted = _token.decimals() < 18 ? _amountToken * 10 ** (18 - _token.decimals()) : _amountToken;
 
         uint256 amountTokenToConsider = amountTokenConverted + rateInfo.tokenWindowConsumed;
 

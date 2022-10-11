@@ -296,6 +296,8 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         }
     }
 
+    // TODO stop withdraw (when)
+    // TODO move funds from ROI to Treasury if not enough amount
     // TODO check SushiChef, SuchiStaking, rewardPerBlock etc for Committed Reward Flow
     function stake(
         IERC20 _token,
@@ -303,19 +305,13 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         uint8 _stakingType,
         bool _isLending
     ) public stakeActive reserved(_token) nonReentrant {
-        {
-            require(1 <= _stakingType && _stakingType <= 4, "Stabl3Staking: Incorrect staking type");
-            require(_amountToken > 1, "Stabl3Staking: Insufficient amount");
-            uint256 maxPool;
-            uint256 currentPool;
-            if (_isLending) {
-                (maxPool, currentPool) = ROI.validatePool(_token, _amountToken.mul(1000 - lendingStabl3Percentage).div(1000));
-            }
-            else {
-                (maxPool, currentPool) = ROI.validatePool(_token, _amountToken);
-            }
-            require(currentPool <= maxPool, "Stabl3Staking: Staking pool limit reached. Please try again later or try a smaller amount");
-        }
+        require(1 <= _stakingType && _stakingType <= 4, "Stabl3Staking: Incorrect staking type");
+        require(_amountToken > 1, "Stabl3Staking: Insufficient amount");
+        (uint256 maxPool, uint256 currentPool) =
+            _isLending ?
+            ROI.validatePool(_token, _amountToken.mul(1000 - lendingStabl3Percentage).div(1000)) :
+            ROI.validatePool(_token, _amountToken);
+        require(currentPool <= maxPool, "Stabl3Staking: Staking pool limit reached. Please try again later or try a smaller amount");
 
         if (!getStakers[msg.sender]) {
             getStakers[msg.sender] = true;
@@ -351,8 +347,8 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
             SafeERC20.safeTransferFrom(_token, msg.sender, address(ROI), amountTokenLending);
 
             treasury.updatePool(LEND_POOL, _token, amountTreasury + amountHQ, amountROI, amountHQ, true);
-            treasury.updatePool(BUY_POOL, _token, 0, amountTokenLending, 0, true);
 
+            treasury.updatePool(BUY_POOL, _token, 0, amountTokenLending, 0, true);
             treasury.updateRate(_token, amountTokenLending);
         }
         else {
@@ -378,31 +374,28 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
         uint256 timestampToConsider = block.timestamp;
 
-        Staking memory staking = Staking(
-            getStakings[msg.sender].length,
-            msg.sender,
-            true,
-            _stakingType,
-            _token,
-            _amountToken,
-            timestampToConsider,
-            0,
-            timestampToConsider,
-            _isLending,
-            false,
-            amountTokenLending,
-            amountStabl3Lending,
-            false
-        );
+        Staking memory staking = Staking({
+            index: getStakings[msg.sender].length,
+            user: msg.sender,
+            status: true,
+            stakingType: _stakingType,
+            token: _token,
+            amountTokenStaked: _amountToken,
+            startTime: timestampToConsider,
+            rewardWithdrawn: 0,
+            rewardWithdrawTimeLast: timestampToConsider,
+            isLending: _isLending,
+            isClaimedStabl3Lending: false,
+            amountTokenLending: amountTokenLending,
+            amountStabl3Lending: amountStabl3Lending,
+            isRealEstate: false
+        });
 
         getStakings[msg.sender].push(staking);
 
         Record storage record = getRecords[msg.sender][_isLending];
 
-        uint256 amountTokenConverted = _amountToken;
-        if (_token.decimals() < 18) {
-            amountTokenConverted *= 10 ** (18 - _token.decimals());
-        }
+        uint256 amountTokenConverted = _token.decimals() < 18 ? _amountToken * 10 ** (18 - _token.decimals()) : _amountToken;
         record.totalAmountTokenStaked += amountTokenConverted;
 
         ROI.updateAPR();
@@ -464,14 +457,10 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
             staking.isRealEstate == _isRealEstate &&
             staking.rewardWithdrawTimeLast < endTime
         ) {
-            uint256 numberOfMinutes;
-
-            if (_timestamp > endTime) {
-                numberOfMinutes = (endTime - staking.rewardWithdrawTimeLast) / oneDayTime;
-            }
-            else {
-                numberOfMinutes = (_timestamp - staking.rewardWithdrawTimeLast) / oneDayTime;
-            }
+            uint256 numberOfMinutes =
+                _timestamp > endTime ?
+                (endTime - staking.rewardWithdrawTimeLast) / oneDayTime :
+                (_timestamp - staking.rewardWithdrawTimeLast) / oneDayTime;
 
             if (numberOfMinutes > 0) {
                 uint256 ratio = ROI.getAPR();
@@ -525,17 +514,9 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
             uint256 endTime = staking.startTime + lockTimes[staking.stakingType];
 
             staking.rewardWithdrawn += reward;
-            if (_timestamp > endTime) {
-                staking.rewardWithdrawTimeLast = endTime;
-            }
-            else {
-                staking.rewardWithdrawTimeLast = _timestamp;
-            }
+            staking.rewardWithdrawTimeLast = _timestamp > endTime ? endTime : _timestamp;
 
-            uint256 rewardConverted = reward;
-            if (staking.token.decimals() < 18) {
-                rewardConverted *= 10 ** (18 - staking.token.decimals());
-            }
+            uint256 rewardConverted = staking.token.decimals() < 18 ? reward * 10 ** (18 - staking.token.decimals()) : reward;
             record.totalRewardWithdrawn += rewardConverted;
 
             ROI.updateAPR();
@@ -684,12 +665,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
         uint256 amountToWithdrawWithFee = staking.amountTokenStaked - fee;
 
-        uint8 poolType = STAKE_POOL;
-        uint8 feeType = STAKE_FEE_POOL;
-        if (staking.isLending) {
-            poolType = LEND_POOL;
-            feeType = LEND_FEE_POOL;
-        }
+        (uint8 poolType, uint8 feeType) = staking.isLending ? (LEND_POOL, LEND_FEE_POOL) : (STAKE_POOL, STAKE_FEE_POOL);
 
         SafeERC20.safeTransferFrom(staking.token, address(treasury), address(ROI), fee);
 
@@ -761,10 +737,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
     }
 
     function _evaluateReward(IERC20 _rewardToken, uint256 _amountRewardToken, bool _isLending) internal {
-        uint8 rewardPoolType = STAKE_POOL + 1;
-        if (_isLending) {
-            rewardPoolType = LEND_POOL + 1;
-        }
+        uint8 rewardPoolType = _isLending ? LEND_REWARD_POOL : STAKE_REWARD_POOL;
 
         uint256 amountRewardTokenROI = _rewardToken.balanceOf(address(ROI));
 
