@@ -2,14 +2,14 @@
 
 pragma solidity 0.8.17;
 
-import "./Ownable.sol";
-import "./SafeMathUpgradeable.sol";
-import "./SafeERC20.sol";
-import "./ReentrancyGuard.sol";
+import "../../Contracts/Ownable.sol";
+import "../../Contracts/SafeMathUpgradeable.sol";
+import "../../Contracts/SafeERC20.sol";
+import "../../Contracts/ReentrancyGuard.sol";
 
-import "./ITreasury.sol";
-import "./IROI.sol";
-import "./IStabl3StakingStruct.sol";
+import "../../Contracts/ITreasury.sol";
+import "../../Contracts/IROI.sol";
+import "../../Contracts/IStabl3StakingStruct.sol";
 
 contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
     using SafeMathUpgradeable for uint256;
@@ -321,50 +321,92 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         uint256 amountTokenLending;
         uint256 amountStabl3Lending;
 
-        if (_isLending) {
-            uint256 amountTreasury = _amountToken.mul(treasuryPercentages[1]).div(1000);
+        // if (_isLending) {
+        //     uint256 amountTreasury = _amountToken.mul(treasuryPercentages[1]).div(1000);
 
-            uint256 amountROI = _amountToken.mul(ROIPercentages[1]).div(1000);
+        //     uint256 amountROI = _amountToken.mul(ROIPercentages[1]).div(1000);
 
-            uint256 amountHQ = _amountToken.mul(HQPercentages[1]).div(1000);
+        //     uint256 amountHQ = _amountToken.mul(HQPercentages[1]).div(1000);
 
-            amountTokenLending = _amountToken.mul(lendingStabl3Percentage).div(1000);
-            amountStabl3Lending = treasury.getAmountOut(_token, amountTokenLending);
+        //     amountTokenLending = _amountToken.mul(lendingStabl3Percentage).div(1000);
+        //     amountStabl3Lending = treasury.getAmountOut(_token, amountTokenLending);
 
-            uint256 totalAmountDistributed = amountTreasury + amountROI + amountHQ + amountTokenLending;
-            if (_amountToken > totalAmountDistributed) {
-                amountTreasury += _amountToken - totalAmountDistributed;
+        //     uint256 totalAmountDistributed = amountTreasury + amountROI + amountHQ + amountTokenLending;
+        //     if (_amountToken > totalAmountDistributed) {
+        //         amountTreasury += _amountToken - totalAmountDistributed;
+        //     }
+
+        //     _amountToken -= amountTokenLending;
+
+        //     SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), amountTreasury);
+        //     SafeERC20.safeTransferFrom(_token, msg.sender, address(ROI), amountROI);
+        //     SafeERC20.safeTransferFrom(_token, msg.sender, HQ, amountHQ);
+        //     SafeERC20.safeTransferFrom(_token, msg.sender, address(ROI), amountTokenLending);
+
+        //     treasury.updatePool(LEND_POOL, _token, amountTreasury + amountHQ, amountROI, amountHQ, true);
+
+        //     treasury.updatePool(BUY_POOL, _token, 0, amountTokenLending, 0, true);
+        //     treasury.updateRate(_token, amountTokenLending);
+        // }
+        // else {
+        //     uint256 amountTreasury = _amountToken.mul(treasuryPercentages[0]).div(1000);
+
+        //     uint256 amountROI = _amountToken.mul(ROIPercentages[0]).div(1000);
+
+        //     uint256 amountHQ = _amountToken.mul(HQPercentages[0]).div(1000);
+
+        //     uint256 totalAmountDistributed = amountTreasury + amountROI + amountHQ;
+        //     if (_amountToken > totalAmountDistributed) {
+        //         amountTreasury += _amountToken - totalAmountDistributed;
+        //     }
+
+        //     SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), amountTreasury);
+        //     SafeERC20.safeTransferFrom(_token, msg.sender, address(ROI), amountROI);
+        //     SafeERC20.safeTransferFrom(_token, msg.sender, HQ, amountHQ);
+
+        //     treasury.updatePool(STAKE_POOL, _token, amountTreasury + amountHQ, amountROI, amountHQ, true);
+        // }
+
+        {
+            (uint8 poolType, uint256 distributionType) = _isLending ? (LEND_POOL, 1) : (STAKE_POOL, 0);
+
+            uint256 amountTreasury = _amountToken.mul(treasuryPercentages[distributionType]).div(1000);
+
+            uint256 amountROI = _amountToken.mul(ROIPercentages[distributionType]).div(1000);
+
+            uint256 amountHQ = _amountToken.mul(HQPercentages[distributionType]).div(1000);
+
+            if (_isLending) {
+                amountTokenLending = _amountToken.mul(lendingStabl3Percentage).div(1000);
+
+                amountStabl3Lending = treasury.getAmountOut(_token, amountTokenLending);
+
+                uint256 totalAmountDistributed = amountTreasury + amountROI + amountHQ + amountTokenLending;
+
+                if (_amountToken > totalAmountDistributed) {
+                    amountTreasury += _amountToken - totalAmountDistributed;
+                }
+
+                _amountToken -= amountTokenLending;
+
+                SafeERC20.safeTransferFrom(_token, msg.sender, address(ROI), amountTokenLending);
+
+                treasury.updatePool(BUY_POOL, _token, 0, amountTokenLending, 0, true);
+                treasury.updateRate(_token, amountTokenLending);
             }
+            else {
+                uint256 totalAmountDistributed = amountTreasury + amountROI + amountHQ;
 
-            _amountToken -= amountTokenLending;
+                if (_amountToken > totalAmountDistributed) {
+                    amountTreasury += _amountToken - totalAmountDistributed;
+                }
+            }
 
             SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), amountTreasury);
             SafeERC20.safeTransferFrom(_token, msg.sender, address(ROI), amountROI);
             SafeERC20.safeTransferFrom(_token, msg.sender, HQ, amountHQ);
-            SafeERC20.safeTransferFrom(_token, msg.sender, address(ROI), amountTokenLending);
 
-            treasury.updatePool(LEND_POOL, _token, amountTreasury + amountHQ, amountROI, amountHQ, true);
-
-            treasury.updatePool(BUY_POOL, _token, 0, amountTokenLending, 0, true);
-            treasury.updateRate(_token, amountTokenLending);
-        }
-        else {
-            uint256 amountTreasury = _amountToken.mul(treasuryPercentages[0]).div(1000);
-
-            uint256 amountROI = _amountToken.mul(ROIPercentages[0]).div(1000);
-
-            uint256 amountHQ = _amountToken.mul(HQPercentages[0]).div(1000);
-
-            uint256 totalAmountDistributed = amountTreasury + amountROI + amountHQ;
-            if (_amountToken > totalAmountDistributed) {
-                amountTreasury += _amountToken - totalAmountDistributed;
-            }
-
-            SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), amountTreasury);
-            SafeERC20.safeTransferFrom(_token, msg.sender, address(ROI), amountROI);
-            SafeERC20.safeTransferFrom(_token, msg.sender, HQ, amountHQ);
-
-            treasury.updatePool(STAKE_POOL, _token, amountTreasury + amountHQ, amountROI, amountHQ, true);
+            treasury.updatePool(poolType, _token, amountTreasury + amountHQ, amountROI, amountHQ, true);
         }
 
         uint256 timestampToConsider = block.timestamp;
