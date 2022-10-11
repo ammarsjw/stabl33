@@ -199,7 +199,7 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
 
         if (limit.amount + _amountExchangingToken > amountExchangingTokenToConsider.mul(exchangeLimitPercentage).div(1000)) {
             require(block.timestamp > limit.startTime.add(exchangeLimitTime),
-                "Stabl3PublicSale: Daily exchange limit reached. Please try again after limit expires or try a smaller amount");
+                "Stabl3PublicSale: Daily exchange limit reached. Please try again after limit expires or try a different amount");
         }
 
         if (block.timestamp > limit.startTime + exchangeLimitTime) {

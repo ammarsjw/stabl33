@@ -71,7 +71,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
 
     function updateStabl3Staking(address _stabl3Staking) external onlyOwner {
         require(address(stabl3Staking) != _stabl3Staking, "ROI: Stabl3Staking is already this address");
-        updatePermission(address(stabl3Staking), false);
+        if (address(stabl3Staking) != address(0)) updatePermission(address(stabl3Staking), false);
         updatePermission(_stabl3Staking, true);
         stabl3Staking = IStabl3Staking(_stabl3Staking);
     }

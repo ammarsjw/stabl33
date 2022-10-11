@@ -1519,20 +1519,14 @@ export class AccessWithPermitCall__Inputs {
     return this._call.inputValues[0].value.toAddress();
   }
 
-  get _index(): BigInt {
-    return this._call.inputValues[1].value.toBigInt();
+  get _staking(): AccessWithPermitCall_stakingStruct {
+    return changetype<AccessWithPermitCall_stakingStruct>(
+      this._call.inputValues[1].value.toTuple()
+    );
   }
 
-  get _token(): Address {
-    return this._call.inputValues[2].value.toAddress();
-  }
-
-  get _amountToken(): BigInt {
-    return this._call.inputValues[3].value.toBigInt();
-  }
-
-  get _isStake(): boolean {
-    return this._call.inputValues[4].value.toBoolean();
+  get _identifier(): i32 {
+    return this._call.inputValues[2].value.toI32();
   }
 }
 
@@ -1541,6 +1535,64 @@ export class AccessWithPermitCall__Outputs {
 
   constructor(call: AccessWithPermitCall) {
     this._call = call;
+  }
+}
+
+export class AccessWithPermitCall_stakingStruct extends ethereum.Tuple {
+  get index(): BigInt {
+    return this[0].toBigInt();
+  }
+
+  get user(): Address {
+    return this[1].toAddress();
+  }
+
+  get status(): boolean {
+    return this[2].toBoolean();
+  }
+
+  get stakingType(): i32 {
+    return this[3].toI32();
+  }
+
+  get token(): Address {
+    return this[4].toAddress();
+  }
+
+  get amountTokenStaked(): BigInt {
+    return this[5].toBigInt();
+  }
+
+  get startTime(): BigInt {
+    return this[6].toBigInt();
+  }
+
+  get rewardWithdrawn(): BigInt {
+    return this[7].toBigInt();
+  }
+
+  get rewardWithdrawTimeLast(): BigInt {
+    return this[8].toBigInt();
+  }
+
+  get isLending(): boolean {
+    return this[9].toBoolean();
+  }
+
+  get isClaimedStabl3Lending(): boolean {
+    return this[10].toBoolean();
+  }
+
+  get amountTokenLending(): BigInt {
+    return this[11].toBigInt();
+  }
+
+  get amountStabl3Lending(): BigInt {
+    return this[12].toBigInt();
+  }
+
+  get isRealEstate(): boolean {
+    return this[13].toBoolean();
   }
 }
 

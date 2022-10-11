@@ -6,9 +6,9 @@ dataSources:
     name: Stabl3Staking
     network: goerli
     source:
-      address: "0xabfDD66a1fc37941f0138b4114883Bf1fDe57b50"
+      address: "0x76b0f62dD9D456cdd095fAc383A97cAdD6848a00"
       abi: Stabl3Staking
-      startBlock: 7744035
+      startBlock: 7750456
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
