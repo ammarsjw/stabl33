@@ -339,11 +339,8 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
             _amountToken -= amountTokenLending;
 
             SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), amountTreasury);
-
             SafeERC20.safeTransferFrom(_token, msg.sender, address(ROI), amountROI);
-
             SafeERC20.safeTransferFrom(_token, msg.sender, HQ, amountHQ);
-
             SafeERC20.safeTransferFrom(_token, msg.sender, address(ROI), amountTokenLending);
 
             treasury.updatePool(LEND_POOL, _token, amountTreasury + amountHQ, amountROI, amountHQ, true);
@@ -364,9 +361,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
             }
 
             SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), amountTreasury);
-
             SafeERC20.safeTransferFrom(_token, msg.sender, address(ROI), amountROI);
-
             SafeERC20.safeTransferFrom(_token, msg.sender, HQ, amountHQ);
 
             treasury.updatePool(STAKE_POOL, _token, amountTreasury + amountHQ, amountROI, amountHQ, true);
@@ -590,11 +585,11 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         if (amountStabl3Lending > 0) {
             stabl3.transferFrom(address(treasury), msg.sender, amountStabl3Lending);
 
-            treasury.updateStabl3CirculatingSupply(amountStabl3Lending, true);
-
             staking.isClaimedStabl3Lending = true;
 
             record.totalAmountStabl3Withdrawn += amountStabl3Lending;
+
+            treasury.updateStabl3CirculatingSupply(amountStabl3Lending, true);
 
             emit ClaimedLendingStabl3(
                 staking.user,
@@ -662,21 +657,20 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         Staking storage staking = getStakings[msg.sender][_index];
 
         uint256 fee = staking.amountTokenStaked.mul(unstakeFeePercentage).div(1000);
-
         uint256 amountToWithdrawWithFee = staking.amountTokenStaked - fee;
-
-        (uint8 poolType, uint8 feeType) = staking.isLending ? (LEND_POOL, LEND_FEE_POOL) : (STAKE_POOL, STAKE_FEE_POOL);
 
         SafeERC20.safeTransferFrom(staking.token, address(treasury), address(ROI), fee);
 
         SafeERC20.safeTransferFrom(staking.token, address(treasury), msg.sender, amountToWithdrawWithFee);
 
+        staking.status = false;
+
+        (uint8 poolType, uint8 feeType) = staking.isLending ? (LEND_POOL, LEND_FEE_POOL) : (STAKE_POOL, STAKE_FEE_POOL);
+
         treasury.updatePool(poolType, staking.token, staking.amountTokenStaked, 0, 0, false);
         treasury.updatePool(feeType, staking.token, 0, fee, 0, true);
 
         ROI.updateAPR();
-
-        staking.status = false;
 
         emit Unstake(
             staking.user,

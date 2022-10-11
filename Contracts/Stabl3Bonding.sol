@@ -263,10 +263,6 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
             SafeERC20.safeTransferFrom(_token, msg.sender, HQ, amountHQ);
 
             treasury.updatePool(BOND_POOL, _token, amountTreasury, amountROI, amountHQ, true);
-
-            treasury.updateRate(_token, _amountToken);
-
-            ROI.updateAPR();
         }
 
         uint256 amountStabl3 = treasury.getAmountOut(_token, _amountToken);
@@ -291,11 +287,12 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
 
         Record storage record = getRecords[msg.sender];
 
-        uint256 amountTokenConverted = _amountToken;
-        if (_token.decimals() < 18) {
-            amountTokenConverted *= 10 ** (18 - _token.decimals());
-        }
+        uint256 amountTokenConverted = _token.decimals() < 18 ? _amountToken * 10 ** (18 - _token.decimals()) : _amountToken;
         record.totalAmountToken += amountTokenConverted;
+
+        treasury.updateRate(_token, _amountToken);
+
+        ROI.updateAPR();
 
         emit Bond(
             bonding.user,
@@ -319,13 +316,13 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
 
         stabl3.transferFrom(address(treasury), msg.sender, bonding.amountStabl3);
 
-        treasury.updateStabl3CirculatingSupply(bonding.amountStabl3, true);
-
         bonding.status = false;
 
         Record storage record = getRecords[msg.sender];
 
         record.totalAmountStabl3 += bonding.amountStabl3;
+
+        treasury.updateStabl3CirculatingSupply(bonding.amountStabl3, true);
 
         emit ClaimedBond(
             bonding.user,
@@ -341,7 +338,7 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
     // modifiers
 
     modifier bondActive() {
-        require(bondState, "Stabl3Bonding: Sale not yet started");
+        require(bondState, "Stabl3Bonding: Bond not yet started");
         _;
     }
 
