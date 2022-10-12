@@ -2,14 +2,14 @@
 
 pragma solidity 0.8.17;
 
-import "./Ownable.sol";
-import "./SafeMathUpgradeable.sol";
-import "./SafeERC20.sol";
-import "./ReentrancyGuard.sol";
+import "../../Contracts/Ownable.sol";
+import "../../Contracts/SafeMathUpgradeable.sol";
+import "../../Contracts/SafeERC20.sol";
+import "../../Contracts/ReentrancyGuard.sol";
 
-import "./IUniswapV2Router.sol";
-import "./IUniswapV2Factory.sol";
-import "./IUniswapV2Pair.sol";
+import "../../Contracts/IUniswapV2Router.sol";
+import "../../Contracts/IUniswapV2Factory.sol";
+import "../../Contracts/IUniswapV2Pair.sol";
 
 contract Treasury is Ownable, ReentrancyGuard {
     using SafeMathUpgradeable for uint256;

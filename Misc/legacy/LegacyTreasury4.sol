@@ -2,13 +2,13 @@
 
 pragma solidity 0.8.17;
 
-import "./Ownable.sol";
-import "./SafeMathUpgradeable.sol";
-import "./SafeERC20.sol";
+import "../../Contracts/Ownable.sol";
+import "../../Contracts/SafeMathUpgradeable.sol";
+import "../../Contracts/SafeERC20.sol";
 
-import "./IUniswapV2Router.sol";
-import "./IUniswapV2Factory.sol";
-import "./IUniswapV2Pair.sol";
+import "../../Contracts/IUniswapV2Router.sol";
+import "../../Contracts/IUniswapV2Factory.sol";
+import "../../Contracts/IUniswapV2Pair.sol";
 
 contract Treasury is Ownable {
     using SafeMathUpgradeable for uint256;
@@ -84,7 +84,7 @@ contract Treasury is Ownable {
 
         exchangeFee = 3;
 
-        rateInfo = RateInfo(3* (10 ** 14), 0.0007 * (10 ** 18), 1000 * (10 ** 18), 0, 0);
+        rateInfo = RateInfo(1 * (10 ** 15), 0.0007 * (10 ** 18), 10000 * (10 ** 18), 0, 0);
         rateInfo.stabl3Window = (rateInfo.tokenWindow * (10 ** 6)) / rateInfo.rate;
 
         IERC20 USDC = IERC20(0x1092d50E8E14479bB769b687427B72BeE70c9534);
