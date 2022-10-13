@@ -22,7 +22,7 @@ contract Treasury is Ownable {
     address public ROI;
     address public HQ;
 
-    IERC20 public stabl3;
+    IERC20 public immutable stabl3;
     uint256 public stabl3CirculatingSupply;
 
     IERC20 public ucd;

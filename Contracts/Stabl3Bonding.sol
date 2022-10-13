@@ -20,7 +20,7 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
     IROI public ROI;
     address public HQ;
 
-    IERC20 public stabl3;
+    IERC20 public immutable stabl3;
 
     uint256 public treasuryPercentage;
     uint256 public ROIPercentage;
@@ -188,10 +188,10 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
         bondState = _state;
     }
 
-    function updateAdmin(address _address, bool _state) external onlyOwner {
-        require(admin[_address] != _state, "Stabl3Bonding: Address is already of the value 'state'");
-        admin[_address] = _state;
-        emit UpdatedAdmin(_address, _state);
+    function updateAdmin(address _userAddress, bool _state) external onlyOwner {
+        require(admin[_userAddress] != _state, "Stabl3Bonding: Address is already of the value 'state'");
+        admin[_userAddress] = _state;
+        emit UpdatedAdmin(_userAddress, _state);
     }
 
     function createBond(

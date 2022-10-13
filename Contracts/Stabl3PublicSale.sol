@@ -23,7 +23,7 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
     IROI public ROI;
     address public HQ;
 
-    IERC20 public stabl3;
+    IERC20 public immutable stabl3;
 
     uint256 public treasuryPercentage;
     uint256 public ROIPercentage;

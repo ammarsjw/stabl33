@@ -42,7 +42,7 @@ contract Treasury is Ownable, ReentrancyGuard {
     address public ROI;
     address public HQ;
 
-    IERC20 public stabl3;
+    IERC20 public immutable stabl3;
 
     IERC20 public ucd;
 

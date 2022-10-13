@@ -26,7 +26,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
 
     ITreasury public treasury;
 
-    IERC20 public stabl3;
+    IERC20 public immutable stabl3;
 
     IERC20 public ucd;
 

@@ -28,7 +28,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
     IROI public ROI;
     address public HQ;
 
-    IERC20 public stabl3;
+    IERC20 public immutable stabl3;
 
     uint256[2] public treasuryPercentages;
     uint256[2] public ROIPercentages;
