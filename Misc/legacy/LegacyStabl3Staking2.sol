@@ -39,8 +39,8 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
     uint256 public unstakeFeePercentage;
 
-    uint256 oneDayTime;
-    uint256 oneYearTime;
+    uint256 private immutable oneDayTime;
+    uint256 private immutable oneYearTime;
     uint256[5] public lockTimes;
 
     address public stabl3RealEstate;

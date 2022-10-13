@@ -14,7 +14,7 @@ import "../../Contracts/IUniswapV2Pair.sol";
 contract Treasury is Ownable, ReentrancyGuard {
     using SafeMathUpgradeable for uint256;
 
-    uint256 private immutable MAX_INT = 2 ** 256 - 1;
+    uint256 private constant MAX_INT = 2 ** 256 - 1;
 
     // uint8 private constant BUY_POOL = 0;
 

@@ -14,7 +14,7 @@ contract Treasury is Ownable {
     using SafeMathUpgradeable for uint256;
     using SafeERC20 for IERC20;
 
-    uint256 private immutable MAX_INT = 2 ** 256 - 1;
+    uint256 private constant MAX_INT = 2 ** 256 - 1;
 
     IUniswapV2Router02 public uniswapRouter;
     IUniswapV2Factory public uniswapFactory;

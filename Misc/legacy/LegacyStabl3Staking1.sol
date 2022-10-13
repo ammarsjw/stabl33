@@ -40,8 +40,8 @@ contract Stabl3Staking is Ownable {
 
     uint256 public maxPoolPercentage;
 
-    uint256 oneDayTime;
-    uint256 oneYearTime;
+    uint256 private immutable oneDayTime;
+    uint256 private immutable oneYearTime;
     uint256[4] public lockTimes;
 
     bool public stakeState;
