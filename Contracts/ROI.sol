@@ -13,7 +13,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
     using SafeMathUpgradeable for uint256;
     using SafeERC20 for IERC20;
 
-    uint256 private immutable MAX_INT = 2 ** 256 - 1;
+    uint256 private constant MAX_INT = 2 ** 256 - 1;
 
     uint8 private constant BUY_POOL = 0;
 
@@ -44,7 +44,12 @@ contract ROI is Ownable, IStabl3StakingStruct {
 
     event UpdatedPermission(address contractAddress, bool state);
 
-    event APR(uint256 APR, uint256 reserves, uint256 totalRewardDistributed, uint256 blockTimestampLast);
+    event APR(
+        uint256 APR,
+        uint256 reserves,
+        uint256 totalRewardDistributed,
+        uint256 blockTimestampLast
+    );
 
     // constructor
 

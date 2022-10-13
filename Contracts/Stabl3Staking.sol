@@ -30,17 +30,17 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
     IERC20 public stabl3;
 
-    uint256[] public treasuryPercentages;
-    uint256[] public ROIPercentages;
-    uint256[] public HQPercentages;
+    uint256[2] public treasuryPercentages;
+    uint256[2] public ROIPercentages;
+    uint256[2] public HQPercentages;
 
     uint256 public lendingStabl3ClaimTime;
     uint256 public lendingStabl3Percentage;
 
     uint256 public unstakeFeePercentage;
 
-    uint256 oneDayTime;
-    uint256 oneYearTime;
+    uint256 private immutable oneDayTime;
+    uint256 private immutable oneYearTime;
     uint256[5] public lockTimes;
 
     address public stabl3RealEstate;
@@ -98,7 +98,15 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         uint256 timestamp
     );
 
-    event Unstake(address indexed user, uint256 index, IERC20 token, uint256 amountToken, uint256 reward, uint8 stakingType, bool isLend);
+    event Unstake(
+        address indexed user,
+        uint256 index,
+        IERC20 token,
+        uint256 amountToken,
+        uint256 reward,
+        uint8 stakingType,
+        bool isLend
+    );
 
     // constructor
 
@@ -300,7 +308,9 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
     // TODO stop withdraw (when)
     // TODO move funds from ROI to Treasury if not enough amount
-    // TODO check SushiChef, SuchiStaking, rewardPerBlock etc for Committed Reward Flow
+    // TODO can we use this? -> (Your Staked Amount / (70% of Treasury)) * ROI
+    // TODO ticketing?
+    // TODO SushiChef, MasterChef, rewardPerBlock etc for Reward allocation/APR Flow?
     function stake(
         IERC20 _token,
         uint256 _amountToken,

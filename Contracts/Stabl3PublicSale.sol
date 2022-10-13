@@ -56,7 +56,13 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
 
     event UpdatedHQ(address newHQ, address oldHQ);
 
-    event Buy(address indexed recipient, uint256 amountStabl3, IERC20 token, uint256 amountToken, uint256 timestamp);
+    event Buy(
+        address indexed recipient,
+        uint256 amountStabl3,
+        IERC20 token,
+        uint256 amountToken,
+        uint256 timestamp
+    );
 
     event Exchange(
         address indexed recipient,

@@ -88,9 +88,22 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
 
     event UpdatedAdmin(address userAddress, bool state);
 
-    event CreatedBond(uint256 bondType, IERC20 token, uint256 bondAmount, uint256 discount, uint256 expiryTime);
+    event CreatedBond(
+        uint256 bondType,
+        IERC20 token,
+        uint256 bondAmount,
+        uint256 discount,
+        uint256 expiryTime
+    );
 
-    event UpdatedBond(uint256 bondType, bool status, IERC20 token, uint256 bondAmount, uint256 discount, uint256 expiryTime);
+    event UpdatedBond(
+        uint256 bondType,
+        bool status,
+        IERC20 token,
+        uint256 bondAmount,
+        uint256 discount,
+        uint256 expiryTime
+    );
 
     event Bond(
         address indexed user,
