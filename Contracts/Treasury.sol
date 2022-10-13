@@ -12,7 +12,6 @@ import "./IUniswapV2Pair.sol";
 
 contract Treasury is Ownable {
     using SafeMathUpgradeable for uint256;
-    using SafeERC20 for IERC20;
 
     uint256 private constant MAX_INT = 2 ** 256 - 1;
 

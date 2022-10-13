@@ -12,7 +12,6 @@ import "./IROI.sol";
 
 contract Stabl3Bonding is Ownable, ReentrancyGuard {
     using SafeMathUpgradeable for uint256;
-    using SafeERC20 for IERC20;
 
     uint8 private constant BOND_POOL = 1;
 

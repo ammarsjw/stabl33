@@ -11,7 +11,6 @@ import "./IStabl3Staking.sol";
 
 contract ROI is Ownable, IStabl3StakingStruct {
     using SafeMathUpgradeable for uint256;
-    using SafeERC20 for IERC20;
 
     uint256 private constant MAX_INT = 2 ** 256 - 1;
 
