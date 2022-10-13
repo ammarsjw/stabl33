@@ -78,15 +78,18 @@ contract Treasury is Ownable {
         uniswapRouter = IUniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
         uniswapFactory = IUniswapV2Factory(uniswapRouter.factory());
 
+        // TODO change
         HQ = 0x294d0487fdf7acecf342ae70AFc5549A6E90f3e0;
 
+        // TODO change
         stabl3 = IERC20(0xDf9c4990a8973b6cC069738592F27Ea54b27D569);
 
         exchangeFee = 3;
 
-        rateInfo = RateInfo(3* (10 ** 14), 0.0007 * (10 ** 18), 1000 * (10 ** 18), 0, 0);
+        rateInfo = RateInfo(3 * (10 ** 14), 0.0007 * (10 ** 18), 1000 * (10 ** 18), 0, 0);
         rateInfo.stabl3Window = (rateInfo.tokenWindow * (10 ** 6)) / rateInfo.rate;
 
+        // TODO change
         IERC20 USDC = IERC20(0x1092d50E8E14479bB769b687427B72BeE70c9534);
         IERC20 DAI = IERC20(0x59f78fB97FB36adbaDCbB43Fa9031797faAad54A);
 

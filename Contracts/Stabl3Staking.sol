@@ -105,8 +105,10 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
     constructor(address _treasury, address _ROI) {
         treasury = ITreasury(_treasury);
         ROI = IROI(_ROI);
+        // TODO change
         HQ = 0x294d0487fdf7acecf342ae70AFc5549A6E90f3e0;
 
+        // TODO change
         stabl3 = IERC20(0xDf9c4990a8973b6cC069738592F27Ea54b27D569);
 
         treasuryPercentages = [975, 761];
