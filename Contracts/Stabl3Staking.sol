@@ -55,8 +55,17 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
     mapping (address => bool) public getStakers;
     address[] public allStakers;
 
-    // user lifetime staking records
+    /**
+     * @notice This mapping stores each user's lifetime staking records
+     * @dev No deductions when unstaking
+     */
     mapping (address => mapping (bool => Record)) public getRecords;
+
+    /**
+     * @notice This mapping stores the current amounts staked per staking type
+     * @dev Deductions when unstaking
+     */
+    mapping (uint8 => uint256) public getAmountStakedPerStakingType;
 
     // events
 
@@ -241,9 +250,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
                 staking.status &&
                 staking.isRealEstate == _isRealEstate
             ) {
-                uint256 endTime = staking.startTime + lockTimes[staking.stakingType];
-
-                if (block.timestamp >= endTime) {
+                if (block.timestamp >= staking.endTime) {
                     if (staking.isLending) {
                         unlockedLendingLength++;
                     }
@@ -279,9 +286,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
                 staking.status &&
                 staking.isRealEstate == _isRealEstate
             ) {
-                uint256 endTime = staking.startTime + lockTimes[staking.stakingType];
-
-                if (block.timestamp >= endTime) {
+                if (block.timestamp >= staking.endTime) {
                     if (staking.isLending) {
                         unlockedLending[unlockedLendingLength] = staking;
                         unlockedLendingLength++;
@@ -305,11 +310,8 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         }
     }
 
-    // TODO stop withdraw (when)
-    // TODO move funds from ROI to Treasury if not enough amount
-    // TODO can we use this? -> (Your Staked Amount / (70% of Treasury)) * ROI
-    // TODO ticketing?
-    // TODO SushiChef, MasterChef, rewardPerBlock etc for Reward allocation/APR Flow?
+    // TODO Wait for amounts for ticketing
+    // TODO Wait for APR calculation flow confirmation
     function stake(
         IERC20 _token,
         uint256 _amountToken,
@@ -388,6 +390,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
             token: _token,
             amountTokenStaked: _amountToken,
             startTime: timestampToConsider,
+            endTime: timestampToConsider + lockTimes[_stakingType],
             rewardWithdrawn: 0,
             rewardWithdrawTimeLast: timestampToConsider,
             isLending: _isLending,
@@ -402,7 +405,9 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         Record storage record = getRecords[msg.sender][_isLending];
 
         uint256 amountTokenConverted = _token.decimals() < 18 ? _amountToken * 10 ** (18 - _token.decimals()) : _amountToken;
+
         record.totalAmountTokenStaked += amountTokenConverted;
+        getAmountStakedPerStakingType[_stakingType] += amountTokenConverted;
 
         ROI.updateAPR();
 
@@ -419,8 +424,9 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
     }
 
     /**
-     * @notice requires permit
-     * @notice requires external checks, transfers, records, updatePool calls, updateAPR calls and event emissions
+     * @notice This function is called externally by the Stabl3RealEstate contract to provide APR on a certain value
+     * @dev Requires permit
+     * @dev Requires external checks, transfers, records, updatePool calls, updateAPR calls and event emissions
      */
     function accessWithPermit(address _user, Staking memory _staking, uint8 _identifier) external {
         require(msg.sender == stabl3RealEstate, "Stabl3Staking: Not allowed");
@@ -455,17 +461,15 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
         Staking memory staking = getStakings[_user][_index];
 
-        uint256 endTime = staking.startTime + lockTimes[staking.stakingType];
-
         if (
             staking.status &&
             staking.isLending == _isLending &&
             staking.isRealEstate == _isRealEstate &&
-            staking.rewardWithdrawTimeLast < endTime
+            staking.rewardWithdrawTimeLast < staking.endTime
         ) {
             uint256 numberOfMinutes =
-                _timestamp > endTime ?
-                (endTime - staking.rewardWithdrawTimeLast) / oneDayTime :
+                _timestamp > staking.endTime ?
+                (staking.endTime - staking.rewardWithdrawTimeLast) / oneDayTime :
                 (_timestamp - staking.rewardWithdrawTimeLast) / oneDayTime;
 
             if (numberOfMinutes > 0) {
@@ -517,10 +521,8 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
             _evaluateReward(staking.token, reward, staking.isLending);
 
-            uint256 endTime = staking.startTime + lockTimes[staking.stakingType];
-
             staking.rewardWithdrawn += reward;
-            staking.rewardWithdrawTimeLast = _timestamp > endTime ? endTime : _timestamp;
+            staking.rewardWithdrawTimeLast = _timestamp > staking.endTime ? staking.endTime : _timestamp;
 
             uint256 rewardConverted = staking.token.decimals() < 18 ? reward * 10 ** (18 - staking.token.decimals()) : reward;
             record.totalRewardWithdrawn += rewardConverted;
@@ -628,7 +630,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         address _user,
         bool _isLending,
         bool _isRealEstate
-    ) public view returns (uint256 totalAmountStakedUnlocked, uint256 totalAmountStakedLocked) {
+    ) external view returns (uint256 totalAmountStakedUnlocked, uint256 totalAmountStakedLocked) {
         Staking[] memory unlocked;
         Staking[] memory locked;
 
@@ -681,6 +683,11 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         treasury.updatePool(poolType, staking.token, staking.amountTokenStaked, 0, 0, false);
         treasury.updatePool(feeType, staking.token, 0, fee, 0, true);
 
+        uint256 amountTokenConverted =
+            staking.token.decimals() < 18 ? staking.amountTokenStaked * 10 ** (18 - staking.token.decimals()) : staking.amountTokenStaked;
+
+        getAmountStakedPerStakingType[staking.stakingType] -= amountTokenConverted;
+
         ROI.updateAPR();
 
         emit Unstake(
@@ -699,7 +706,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
         require(staking.status, "Stabl3Staking: Invalid Staking");
         require(!staking.isRealEstate, "Stabl3Staking: Not allowed");
-        require(block.timestamp > staking.startTime + lockTimes[staking.stakingType], "Stabl3Staking: Cannot unstake before end time");
+        require(block.timestamp > staking.endTime, "Stabl3Staking: Cannot unstake before end time");
         require(_amountToWithdraw < staking.amountTokenStaked, "Stabl3Staking: Incorrect amount for restaking");
 
         uint256 timestampToConsider = block.timestamp;
@@ -722,7 +729,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
         require(staking.status, "Stabl3Staking: Invalid Staking");
         require(!staking.isRealEstate, "Stabl3Staking: Not allowed");
-        require(block.timestamp > staking.startTime + lockTimes[staking.stakingType], "Stabl3Staking: Cannot unstake before end time");
+        require(block.timestamp > staking.endTime, "Stabl3Staking: Cannot unstake before end time");
 
         uint256 timestampToConsider = block.timestamp;
 

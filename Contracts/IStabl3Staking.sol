@@ -6,12 +6,16 @@ import "./IStabl3StakingStruct.sol";
 
 interface IStabl3Staking is IStabl3StakingStruct {
 
+    function lendingStabl3Percentage() external view returns (uint256);
+
     function getStakings(address) external view returns (Staking[] memory);
 
     function getStakers(address) external view returns (bool);
     function allStakers(uint256) external view returns (address);
 
     function getRecords(address, bool) external view returns (Record memory);
+
+    function getAmountStakedPerStakingType(uint8) external view returns (uint256);
 
     function updateTreasury(address _treasury) external;
 

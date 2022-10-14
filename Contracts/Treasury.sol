@@ -104,6 +104,8 @@ contract Treasury is Ownable {
 
     function updateROI(address _ROI) external onlyOwner {
         require(ROI != _ROI, "Treasury: ROI is already this address");
+        if (address(ROI) != address(0)) updatePermission(address(ROI), false);
+        updatePermission(_ROI, true);
         emit UpdatedROI(_ROI, ROI);
         ROI = _ROI;
     }
@@ -125,7 +127,7 @@ contract Treasury is Ownable {
         exchangeFee = _exchangeFee;
     }
 
-    function updatePermission(address _contractAddress, bool _state) external onlyOwner {
+    function updatePermission(address _contractAddress, bool _state) public onlyOwner {
         require(permitted[_contractAddress] != _state, "Treasury: Address is already of the value 'state'");
         permitted[_contractAddress] = _state;
 
@@ -179,11 +181,11 @@ contract Treasury is Ownable {
 
         for (uint256 i = 0 ; i < allReservedTokens.length ; i++) {
             if (isReservedToken[allReservedTokens[i]]) {
-                uint256 amount = allReservedTokens[i].balanceOf(address(this));
+                uint256 amountToken = allReservedTokens[i].balanceOf(address(this));
 
                 uint256 decimals = allReservedTokens[i].decimals();
 
-                totalReserves += decimals < 18 ? amount * 10 ** (18 - decimals) : amount;
+                totalReserves += decimals < 18 ? amountToken * 10 ** (18 - decimals) : amountToken;
             }
         }
 
@@ -195,14 +197,14 @@ contract Treasury is Ownable {
 
         for (uint256 i = 0 ; i < allReservedTokens.length ; i++) {
             if (isReservedToken[allReservedTokens[i]]) {
-                uint256 amount = allReservedTokens[i].balanceOf(address(this));
+                uint256 amountToken = allReservedTokens[i].balanceOf(address(this));
 
-                amount += allReservedTokens[i].balanceOf(ROI);
-                amount += allReservedTokens[i].balanceOf(HQ);
+                amountToken += allReservedTokens[i].balanceOf(ROI);
+                amountToken += allReservedTokens[i].balanceOf(HQ);
 
                 uint256 decimals = allReservedTokens[i].decimals();
 
-                totalValueLocked += decimals < 18 ? amount * 10 ** (18 - decimals) : amount;
+                totalValueLocked += decimals < 18 ? amountToken * 10 ** (18 - decimals) : amountToken;
             }
         }
 

@@ -20,7 +20,12 @@ interface IROI {
 
     function getAPR() external view returns (uint256);
 
-    function validatePool(IERC20 _token, uint256 _amountToken) external view returns (uint256 maxPool, uint256 currentPool);
+    function validatePool(
+        IERC20 _token,
+        uint256 _amountToken,
+        uint8 _stakingType,
+        bool _isLending
+    ) external view returns (uint256 maxPool, uint256 currentPool);
 
     function updateAPR() external;
 

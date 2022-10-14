@@ -219,9 +219,11 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @notice 3 minute pause per user
-     * @notice limited to 30% of exchanging token in the treasury minus the amount for staking and lending within 24 hours per user
-     * @notice Chain's highest liquidity AMM for price
+     * @notice This function has multiple security features incorporated to secure funds
+     * @dev Each user has a certain time wait before each consecutive exchange call
+     * @dev Each user is limited to take out a maximum of 30% within 24 hours of the token they want which is currently in the treasury
+            minus the amounts that came in through staking and lending
+     * @dev Using the current chain's highest liquidity AMM for exchange price
      */
     function exchange(
         IERC20 _exchangingToken,
