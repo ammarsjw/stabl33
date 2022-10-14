@@ -54,10 +54,12 @@ export function handleStake(event: StakeEvent): void {
   entity.transaction = transaction.id
   entity.user = event.params.user
   entity.index = event.params.index
+  entity.status = event.params.status
   entity.stakingType = event.params.stakingType
   entity.token = event.params.token
   entity.amountToken = event.params.amountToken
   entity.totalAmountToken = event.params.totalAmountToken
+  entity.endTime = event.params.endTime
   entity.isLend = event.params.isLend
   entity.timestamp = event.params.timestamp
   entity.save()
@@ -75,6 +77,13 @@ export function handleUnstake(event: UnstakeEvent): void {
   entity.stakingType = event.params.stakingType
   entity.isLend = event.params.isLend
   entity.save()
+
+  let id = event.params.user.toHexString().concat("-").concat(event.params.index.toString());
+  let entityToUpdate = Stake.load(id);
+  if (entityToUpdate) {
+    entityToUpdate.status = false
+    entityToUpdate.save()
+  }
 }
 
 export function handleUpdatedHQ(event: UpdatedHQEvent): void {

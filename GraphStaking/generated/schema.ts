@@ -474,6 +474,15 @@ export class Stake extends Entity {
     }
   }
 
+  get status(): boolean {
+    let value = this.get("status");
+    return value!.toBoolean();
+  }
+
+  set status(value: boolean) {
+    this.set("status", Value.fromBoolean(value));
+  }
+
   get stakingType(): i32 {
     let value = this.get("stakingType");
     return value!.toI32();
@@ -531,6 +540,23 @@ export class Stake extends Entity {
       this.unset("totalAmountToken");
     } else {
       this.set("totalAmountToken", Value.fromBigInt(<BigInt>value));
+    }
+  }
+
+  get endTime(): BigInt | null {
+    let value = this.get("endTime");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set endTime(value: BigInt | null) {
+    if (!value) {
+      this.unset("endTime");
+    } else {
+      this.set("endTime", Value.fromBigInt(<BigInt>value));
     }
   }
 

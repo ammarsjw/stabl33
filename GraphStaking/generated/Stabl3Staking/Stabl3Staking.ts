@@ -95,28 +95,36 @@ export class Stake__Params {
     return this._event.parameters[1].value.toBigInt();
   }
 
+  get status(): boolean {
+    return this._event.parameters[2].value.toBoolean();
+  }
+
   get stakingType(): i32 {
-    return this._event.parameters[2].value.toI32();
+    return this._event.parameters[3].value.toI32();
   }
 
   get token(): Address {
-    return this._event.parameters[3].value.toAddress();
+    return this._event.parameters[4].value.toAddress();
   }
 
   get amountToken(): BigInt {
-    return this._event.parameters[4].value.toBigInt();
-  }
-
-  get totalAmountToken(): BigInt {
     return this._event.parameters[5].value.toBigInt();
   }
 
+  get endTime(): BigInt {
+    return this._event.parameters[6].value.toBigInt();
+  }
+
+  get totalAmountToken(): BigInt {
+    return this._event.parameters[7].value.toBigInt();
+  }
+
   get isLend(): boolean {
-    return this._event.parameters[6].value.toBoolean();
+    return this._event.parameters[8].value.toBoolean();
   }
 
   get timestamp(): BigInt {
-    return this._event.parameters[7].value.toBigInt();
+    return this._event.parameters[9].value.toBigInt();
   }
 }
 
@@ -1078,6 +1086,31 @@ export class Stabl3Staking extends ethereum.SmartContract {
         value[1].toBigInt()
       )
     );
+  }
+
+  getAmountStakedPerStakingType(param0: BigInt): BigInt {
+    let result = super.call(
+      "getAmountStakedPerStakingType",
+      "getAmountStakedPerStakingType(uint256):(uint256)",
+      [ethereum.Value.fromUnsignedBigInt(param0)]
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_getAmountStakedPerStakingType(
+    param0: BigInt
+  ): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "getAmountStakedPerStakingType",
+      "getAmountStakedPerStakingType(uint256):(uint256)",
+      [ethereum.Value.fromUnsignedBigInt(param0)]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
   getClaimableStabl3LendingAll(_user: Address): BigInt {

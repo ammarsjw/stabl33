@@ -14,7 +14,6 @@ interface IStabl3StakingStruct {
         IERC20 token;
         uint256 amountTokenStaked;
         uint256 startTime;
-        uint256 endTime;
         uint256 rewardWithdrawn;
         uint256 rewardWithdrawTimeLast;
         bool isLending;

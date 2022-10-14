@@ -42,10 +42,12 @@ type Stake @entity {
   transaction: Transaction!
   user: Bytes
   index: BigInt
+  status: Boolean
   stakingType: Int
   token: Bytes
   amountToken: BigInt
   totalAmountToken: BigInt
+  endTime: BigInt
   isLend: Boolean
   timestamp: BigInt
 }

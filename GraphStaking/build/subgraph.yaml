@@ -31,7 +31,8 @@ dataSources:
           handler: handleClaimedLendingStabl3
         - event: OwnershipTransferred(indexed address,indexed address)
           handler: handleOwnershipTransferred
-        - event: Stake(indexed address,uint256,uint8,address,uint256,uint256,bool,uint256)
+        - event: Stake(indexed
+            address,uint256,bool,uint8,address,uint256,uint256,uint256,bool,uint256)
           handler: handleStake
         - event: Unstake(indexed address,uint256,address,uint256,uint256,uint8,bool)
           handler: handleUnstake

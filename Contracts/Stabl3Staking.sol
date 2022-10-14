@@ -65,7 +65,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
      * @notice This mapping stores the current amounts staked per staking type
      * @dev Deductions when unstaking
      */
-    mapping (uint8 => uint256) public getAmountStakedPerStakingType;
+    uint256[5] public getAmountStakedPerStakingType;
 
     // events
 
@@ -78,10 +78,12 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
     event Stake(
         address indexed user,
         uint256 index,
+        bool status,
         uint8 stakingType,
         IERC20 token,
         uint256 amountToken,
         uint256 totalAmountToken,
+        uint256 endTime,
         bool isLend,
         uint256 timestamp
     );
@@ -250,7 +252,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
                 staking.status &&
                 staking.isRealEstate == _isRealEstate
             ) {
-                if (block.timestamp >= staking.endTime) {
+                if (block.timestamp >= staking.startTime + lockTimes[staking.stakingType]) {
                     if (staking.isLending) {
                         unlockedLendingLength++;
                     }
@@ -286,7 +288,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
                 staking.status &&
                 staking.isRealEstate == _isRealEstate
             ) {
-                if (block.timestamp >= staking.endTime) {
+                if (block.timestamp >= staking.startTime + lockTimes[staking.stakingType]) {
                     if (staking.isLending) {
                         unlockedLending[unlockedLendingLength] = staking;
                         unlockedLendingLength++;
@@ -385,7 +387,6 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
             token: _token,
             amountTokenStaked: _amountToken,
             startTime: timestampToConsider,
-            endTime: timestampToConsider + lockTimes[_stakingType],
             rewardWithdrawn: 0,
             rewardWithdrawTimeLast: timestampToConsider,
             isLending: _isLending,
@@ -409,10 +410,12 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         emit Stake(
             staking.user,
             staking.index,
+            staking.status,
             staking.stakingType,
             staking.token,
             staking.amountTokenStaked,
             record.totalAmountTokenStaked,
+            timestampToConsider + lockTimes[staking.stakingType],
             staking.isLending,
             timestampToConsider
         );
@@ -456,15 +459,17 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
         Staking memory staking = getStakings[_user][_index];
 
+        uint256 endTime = staking.startTime + lockTimes[staking.stakingType];
+
         if (
             staking.status &&
             staking.isLending == _isLending &&
             staking.isRealEstate == _isRealEstate &&
-            staking.rewardWithdrawTimeLast < staking.endTime
+            staking.rewardWithdrawTimeLast < endTime
         ) {
             uint256 numberOfMinutes =
-                _timestamp > staking.endTime ?
-                (staking.endTime - staking.rewardWithdrawTimeLast) / oneDayTime :
+                _timestamp > endTime ?
+                (endTime - staking.rewardWithdrawTimeLast) / oneDayTime :
                 (_timestamp - staking.rewardWithdrawTimeLast) / oneDayTime;
 
             if (numberOfMinutes > 0) {
@@ -512,12 +517,14 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         uint256 reward = getAmountRewardSingle(msg.sender, _index, _isLending, false, _timestamp);
 
         if (reward > 0) {
+            uint256 endTime = staking.startTime + lockTimes[staking.stakingType];
+
             Record storage record = getRecords[msg.sender][staking.isLending];
 
             _evaluateReward(staking.token, reward, staking.isLending);
 
             staking.rewardWithdrawn += reward;
-            staking.rewardWithdrawTimeLast = _timestamp > staking.endTime ? staking.endTime : _timestamp;
+            staking.rewardWithdrawTimeLast = _timestamp > endTime ? endTime : _timestamp;
 
             uint256 rewardConverted = staking.token.decimals() < 18 ? reward * 10 ** (18 - staking.token.decimals()) : reward;
             record.totalRewardWithdrawn += rewardConverted;
@@ -701,7 +708,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
         require(staking.status, "Stabl3Staking: Invalid Staking");
         require(!staking.isRealEstate, "Stabl3Staking: Not allowed");
-        require(block.timestamp > staking.endTime, "Stabl3Staking: Cannot unstake before end time");
+        require(block.timestamp > staking.startTime + lockTimes[staking.stakingType], "Stabl3Staking: Cannot unstake before end time");
         require(_amountToWithdraw < staking.amountTokenStaked, "Stabl3Staking: Incorrect amount for restaking");
 
         uint256 timestampToConsider = block.timestamp;
@@ -724,7 +731,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
         require(staking.status, "Stabl3Staking: Invalid Staking");
         require(!staking.isRealEstate, "Stabl3Staking: Not allowed");
-        require(block.timestamp > staking.endTime, "Stabl3Staking: Cannot unstake before end time");
+        require(block.timestamp > staking.startTime + lockTimes[staking.stakingType], "Stabl3Staking: Cannot unstake before end time");
 
         uint256 timestampToConsider = block.timestamp;
 

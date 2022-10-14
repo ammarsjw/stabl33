@@ -100,6 +100,12 @@
       },
       {
         "indexed": false,
+        "internalType": "bool",
+        "name": "status",
+        "type": "bool"
+      },
+      {
+        "indexed": false,
         "internalType": "uint8",
         "name": "stakingType",
         "type": "uint8"
@@ -114,6 +120,12 @@
         "indexed": false,
         "internalType": "uint256",
         "name": "amountToken",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "endTime",
         "type": "uint256"
       },
       {
@@ -933,6 +945,25 @@
       {
         "internalType": "uint256",
         "name": "totalAmountStakedLocked",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "getAmountStakedPerStakingType",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
         "type": "uint256"
       }
     ],
