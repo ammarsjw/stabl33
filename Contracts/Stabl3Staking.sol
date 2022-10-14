@@ -310,8 +310,6 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         }
     }
 
-    // TODO Wait for amounts for ticketing
-    // TODO Wait for APR calculation flow confirmation
     function stake(
         IERC20 _token,
         uint256 _amountToken,
@@ -320,10 +318,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
     ) public stakeActive reserved(_token) nonReentrant {
         require(1 <= _stakingType && _stakingType <= 4, "Stabl3Staking: Incorrect staking type");
         require(_amountToken > 1, "Stabl3Staking: Insufficient amount");
-        (uint256 maxPool, uint256 currentPool) =
-            _isLending ?
-            ROI.validatePool(_token, _amountToken.mul(1000 - lendingStabl3Percentage).div(1000)) :
-            ROI.validatePool(_token, _amountToken);
+        (uint256 maxPool, uint256 currentPool) = ROI.validatePool(_token, _amountToken, _stakingType, _isLending);
         require(currentPool <= maxPool, "Stabl3Staking: Staking pool limit reached. Please try again later or try a different amount");
 
         if (!getStakers[msg.sender]) {
