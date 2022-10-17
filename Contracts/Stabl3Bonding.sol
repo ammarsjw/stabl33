@@ -72,7 +72,7 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
     // user lifetime bonding records
     mapping (address => Record) public getRecords;
 
-    // admins are users that have permission to access certain bonding functions
+    // admins are accounts that have permission to access certain bonding functions
     mapping (address => bool) public admin;
 
     // events
@@ -85,7 +85,7 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
 
     event UpdatedBondingClaimTime(uint256 newBondingClaimTime, uint256 oldBondingClaimTime);
 
-    event UpdatedAdmin(address userAddress, bool state);
+    event UpdatedAdmin(address account, bool state);
 
     event CreatedBond(
         uint256 bondType,
@@ -187,10 +187,10 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
         bondState = _state;
     }
 
-    function updateAdmin(address _userAddress, bool _state) external onlyOwner {
-        require(admin[_userAddress] != _state, "Stabl3Bonding: Address is already of the value 'state'");
-        admin[_userAddress] = _state;
-        emit UpdatedAdmin(_userAddress, _state);
+    function updateAdmin(address _account, bool _state) external onlyOwner {
+        require(admin[_account] != _state, "Stabl3Bonding: Account is already of the value 'state'");
+        admin[_account] = _state;
+        emit UpdatedAdmin(_account, _state);
     }
 
     function createBond(

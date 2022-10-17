@@ -129,6 +129,7 @@ contract Treasury is Ownable {
 
     function updatePermission(address _contractAddress, bool _state) public onlyOwner {
         require(permitted[_contractAddress] != _state, "Treasury: Address is already of the value 'state'");
+
         permitted[_contractAddress] = _state;
 
         if (_state) {
