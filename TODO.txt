@@ -24,8 +24,3 @@ Q. What factor differentiates both the Lending and Staking APR if we are using t
 A. 
 Q. Would it be fine if used the APR calculation from the excel sheet?
 A. 
-
-TODOs:
-
-// TODO figure out if borrowing mechanics be handled by Treasury, ROI or the Other Contract including minting UCD -> Other Contract
-// TODO figure out if APR mechanics should be handled by Treasury, ROI or the Other Contract -> ROI

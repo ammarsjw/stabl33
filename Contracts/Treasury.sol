@@ -116,7 +116,7 @@ contract Treasury is Ownable {
         HQ = _HQ;
     }
 
-    function initializeUCD(address _ucd) external onlyOwner {
+    function updateUCD(address _ucd) external onlyOwner {
         require(address(ucd) != _ucd, "Treasury: UCD is already this address");
         ucd = IERC20(_ucd);
     }

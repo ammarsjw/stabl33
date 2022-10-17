@@ -73,7 +73,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
         treasury = ITreasury(_treasury);
     }
 
-    function initializeUCD(address _ucd) external onlyOwner {
+    function updateUCD(address _ucd) external onlyOwner {
         require(address(ucd) != _ucd, "ROI: UCD is already this address");
         ucd = IERC20(_ucd);
     }
