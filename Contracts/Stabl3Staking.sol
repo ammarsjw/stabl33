@@ -33,14 +33,16 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
     uint256[2] public ROIPercentages;
     uint256[2] public HQPercentages;
 
-    uint256 public lendingStabl3ClaimTime;
     uint256 public lendingStabl3Percentage;
-
-    uint256 public unstakeFeePercentage;
+    uint256 public lendingStabl3ClaimTime;
 
     uint256 private immutable oneDayTime;
     uint256 private immutable oneYearTime;
     uint256[5] public lockTimes;
+
+    uint8[] public returnPools;
+
+    uint256 public unstakeFeePercentage;
 
     address public stabl3RealEstate;
 
@@ -133,12 +135,10 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         ROIPercentages = [0, 0];
         HQPercentages = [25, 39];
 
+        lendingStabl3Percentage = 200;
         // TODO remove
         lendingStabl3ClaimTime = 300; // 0:15 hours time in seconds
         // lendingStabl3ClaimTime = 2592000; // 1 month time in seconds
-        lendingStabl3Percentage = 200;
-
-        unstakeFeePercentage = 50;
 
         // TODO remove
         oneDayTime = 10; // it is seen as 1 day in testing
@@ -148,9 +148,14 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         // oneYearTime = 31104000;
         // lockTimes = [0, 7776000, 15552000, 23328000, 31104000];   // 3, 6, 9 and 12 months time in seconds
 
-        // TODO maybe consider times like this to complete 365 days
+        // TODO use times like this to complete 365 days
         // 31+28+31, 30+31+30, 31+31+30, 31+30+31
         // 90, 91, 92, 92
+
+        // TODO adjust
+        returnPools = [0, 1, 14];
+
+        unstakeFeePercentage = 50;
     }
 
     function updateTreasury(address _treasury) external onlyOwner {
@@ -185,9 +190,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
             treasuryPercentages[1] = _treasuryPercentage;
             ROIPercentages[1] = _ROIPercentage;
             HQPercentages[1] = _HQPercentage;
-            if (lendingStabl3Percentage != _lendingStabl3Percentage) {
-                lendingStabl3Percentage = _lendingStabl3Percentage;
-            }
+            lendingStabl3Percentage = _lendingStabl3Percentage;
         }
         else {
             require(_treasuryPercentage + _ROIPercentage + _HQPercentage == 1000,
@@ -199,22 +202,26 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         }
     }
 
-    function updateUnstakeFeePercentage(uint256 _unstakeFeePercentage) external onlyOwner {
-        require(unstakeFeePercentage != _unstakeFeePercentage, "Stabl3Staking: Unstake Fee is already this value");
-        unstakeFeePercentage = _unstakeFeePercentage;
-    }
-
-    function updateLockTimes(uint256[4] memory _lockTimes) external onlyOwner {
-        lockTimes = _lockTimes;
-    }
-
     function updateLendingStabl3ClaimTime(uint256 _lendingStabl3ClaimTime) external onlyOwner {
         require(lendingStabl3ClaimTime != _lendingStabl3ClaimTime, "Stabl3Staking: Lending Stabl3 Claim Time is already this value");
         lendingStabl3ClaimTime = _lendingStabl3ClaimTime;
     }
 
+    function updateLockTimes(uint256[5] memory _lockTimes) external onlyOwner {
+        lockTimes = _lockTimes;
+    }
+
+    function updateReturnPools(uint8[] memory _returnPools) external onlyOwner {
+        returnPools = _returnPools;
+    }
+
+    function updateUnstakeFeePercentage(uint256 _unstakeFeePercentage) external onlyOwner {
+        require(unstakeFeePercentage != _unstakeFeePercentage, "Stabl3Staking: Unstake Fee is already this value");
+        unstakeFeePercentage = _unstakeFeePercentage;
+    }
+
     function updateStabl3RealEstate(address _stabl3RealEstate) external onlyOwner {
-        require(stabl3RealEstate != _stabl3RealEstate, "Stabl3Staking: Stabl3RealEstate is already this address");
+        require(stabl3RealEstate != _stabl3RealEstate, "Stabl3Staking: Stabl3 Real Estate is already this address");
         stabl3RealEstate = _stabl3RealEstate;
     }
 
@@ -671,12 +678,16 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
     function _unstakeSingle(uint256 _index, uint256 _amountToUnstake) internal nonReentrant {
         Staking storage staking = getStakings[msg.sender][_index];
 
+        if (staking.amountTokenStaked > staking.token.balanceOf(address(treasury))) {
+            ROI.returnFunds(staking.token, staking.amountTokenStaked - staking.token.balanceOf(address(treasury)), returnPools);
+        }
+
         uint256 fee = staking.amountTokenStaked.mul(unstakeFeePercentage).div(1000);
-        uint256 amountToWithdrawWithFee = staking.amountTokenStaked - fee;
+        uint256 amountToUnstakeWithFee = staking.amountTokenStaked - fee;
 
         SafeERC20.safeTransferFrom(staking.token, address(treasury), address(ROI), fee);
 
-        SafeERC20.safeTransferFrom(staking.token, address(treasury), msg.sender, amountToWithdrawWithFee);
+        SafeERC20.safeTransferFrom(staking.token, address(treasury), msg.sender, amountToUnstakeWithFee);
 
         staking.status = false;
 
@@ -703,13 +714,13 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         );
     }
 
-    function restakeSingle(uint256 _index, uint256 _amountToWithdraw, uint8 _stakingType) external stakeActive {
+    function restakeSingle(uint256 _index, uint256 _amountToUnstake, uint8 _stakingType) external stakeActive {
         Staking storage staking = getStakings[msg.sender][_index];
 
         require(staking.status, "Stabl3Staking: Invalid Staking");
         require(!staking.isRealEstate, "Stabl3Staking: Not allowed");
         require(block.timestamp > staking.startTime + lockTimes[staking.stakingType], "Stabl3Staking: Cannot unstake before end time");
-        require(_amountToWithdraw < staking.amountTokenStaked, "Stabl3Staking: Incorrect amount for restaking");
+        require(_amountToUnstake < staking.amountTokenStaked, "Stabl3Staking: Incorrect amount for restaking");
 
         uint256 timestampToConsider = block.timestamp;
 
@@ -719,9 +730,9 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
         _withdrawAmountRewardSingle(_index, staking.isLending, timestampToConsider);
 
-        _unstakeSingle(_index, _amountToWithdraw);
+        _unstakeSingle(_index, _amountToUnstake);
 
-        uint256 amountToRestake = staking.amountTokenStaked - _amountToWithdraw;
+        uint256 amountToRestake = staking.amountTokenStaked - _amountToUnstake;
 
         stake(staking.token, amountToRestake, _stakingType, staking.isLending);
     }

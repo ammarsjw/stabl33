@@ -79,7 +79,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
     }
 
     function updateStabl3Staking(address _stabl3Staking) external onlyOwner {
-        require(address(stabl3Staking) != _stabl3Staking, "ROI: Stabl3Staking is already this address");
+        require(address(stabl3Staking) != _stabl3Staking, "ROI: Stabl3 Staking is already this address");
         if (address(stabl3Staking) != address(0)) updatePermission(address(stabl3Staking), false);
         updatePermission(_stabl3Staking, true);
         stabl3Staking = IStabl3Staking(_stabl3Staking);
@@ -290,24 +290,25 @@ contract ROI is Ownable, IStabl3StakingStruct {
      * @notice This functions transfers ROI funds to the Treasury
      * @dev Updates values of both treasury and ROI pools
      */
-    function returnFunds(IERC20 _token, uint256 _amountToken, uint8 _pools) external onlyOwner {
+    function returnFunds(IERC20 _token, uint256 _amountToken, uint8[] memory _pools) external permission {
         uint256 amountToUpdate = _amountToken;
 
-        for (uint8 i = 0 ; i <= _pools ; i++) {
-            uint256 amountPool = treasury.getROIPool(i, _token);
+        for (uint8 i = 0 ; i <= _pools.length ; i++) {
+            uint256 amountPool = treasury.getROIPool(_pools[i], _token);
 
             if (amountPool != 0) {
                 if (amountPool < amountToUpdate) {
-                    treasury.updatePool(i, _token, 0, amountPool, 0, false);
-                    treasury.updatePool(i, _token, amountPool, 0, 0, true);
+                    treasury.updatePool(_pools[i], _token, 0, amountPool, 0, false);
+                    treasury.updatePool(_pools[i], _token, amountPool, 0, 0, true);
 
                     amountToUpdate -= amountPool;
                 }
                 else {
-                    treasury.updatePool(i, _token, 0, amountToUpdate, 0, false);
-                    treasury.updatePool(i, _token, amountToUpdate, 0, 0, true);
+                    treasury.updatePool(_pools[i], _token, 0, amountToUpdate, 0, false);
+                    treasury.updatePool(_pools[i], _token, amountToUpdate, 0, 0, true);
 
                     amountToUpdate = 0;
+                    break;
                 }
             }
         }
@@ -315,16 +316,6 @@ contract ROI is Ownable, IStabl3StakingStruct {
         require(amountToUpdate == 0, "ROI: Not enough funds in the specified pools");
 
         SafeERC20.safeTransfer(_token, address(treasury), _amountToken);
-    }
-
-    function withdrawFunds(IERC20 _token, uint256 _amountToken) external onlyOwner {
-        require(!treasury.isReservedToken(_token), "ROI: Funds Locked");
-        SafeERC20.safeTransfer(_token, owner(), _amountToken);
-    }
-
-    function withdrawAllFunds(IERC20 _token) external onlyOwner {
-        require(!treasury.isReservedToken(_token), "ROI: Funds Locked");
-        SafeERC20.safeTransfer(_token, owner(), _token.balanceOf(address(this)));
     }
 
     // TODO remove

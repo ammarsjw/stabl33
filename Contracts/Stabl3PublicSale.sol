@@ -194,7 +194,7 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
             limit.lastExchangeTime = block.timestamp;
         }
         else {
-            revert("Stabl3PublicSale: Consecutive exchanges not allowed. Please try again after a few minutes");
+            revert("Stabl3PublicSale: For repeat exchanges, please wait a few minutes.");
         }
 
         // TODO confirm
@@ -221,7 +221,7 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
     /**
      * @notice This function has multiple security features incorporated to secure funds
      * @dev Each user has a certain time wait before each consecutive exchange call
-     * @dev Each user is limited to take out a maximum of 30% within 24 hours of the token they want which is currently in the treasury
+     * @dev Each user is limited to take out a maximum of X% within Y hours of the token they want which is currently in the treasury
             minus the amounts that came in through staking and lending
      * @dev Using the current chain's highest liquidity AMM for exchange price
      */

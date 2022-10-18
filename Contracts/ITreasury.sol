@@ -16,18 +16,6 @@ interface ITreasury {
     function getROIPool(uint8, IERC20) external view returns (uint256);
     function getHQPool(uint8, IERC20) external view returns (uint256);
 
-    function updateROI(address _ROI) external;
-
-    function updateHQ(address _HQ) external;
-
-    function initializeUCD(address _ucd) external;
-
-    function updateExchangeFee(uint256 _exchangeFee) external;
-
-    function updatePermission(address _contractAddress, bool _state) external;
-
-    function updateReservedToken(IERC20 _token, bool _state) external;
-
     function allReservedTokensLength() external view returns (uint256);
 
     function allPools(uint8 _type, IERC20 _token) external view returns (uint256, uint256, uint256);
@@ -64,8 +52,4 @@ interface ITreasury {
     function updateRate(IERC20 _token, uint256 _amountToken) external;
 
     function delegateApprove(IERC20 _token, address _spender, bool _isApprove) external;
-
-    function withdrawFunds(IERC20 _token, uint256 _amountToken) external;
-
-    function withdrawAllFunds(IERC20 _token) external;
 }

@@ -102,6 +102,12 @@ contract Treasury is Ownable {
         updateReservedToken(DAI, true);
     }
 
+    function updateDEX(address _router) external onlyOwner {
+        require(address(uniswapRouter) != _router, "Treasury: Router is already this address");
+        uniswapRouter = IUniswapV2Router02(_router);
+        uniswapFactory = IUniswapV2Factory(IUniswapV2Router02(_router).factory());
+    }
+
     function updateROI(address _ROI) external onlyOwner {
         require(ROI != _ROI, "Treasury: ROI is already this address");
         if (address(ROI) != address(0)) updatePermission(address(ROI), false);
@@ -471,16 +477,6 @@ contract Treasury is Ownable {
         else {
             SafeERC20.safeApprove(_token, _spender, 0);
         }
-    }
-
-    function withdrawFunds(IERC20 _token, uint256 _amountToken) external onlyOwner {
-        require(!isReservedToken[_token], "Treasury: Funds Locked");
-        SafeERC20.safeTransfer(_token, owner(), _amountToken);
-    }
-
-    function withdrawAllFunds(IERC20 _token) external onlyOwner {
-        require(!isReservedToken[_token], "Treasury: Funds Locked");
-        SafeERC20.safeTransfer(_token, owner(), _token.balanceOf(address(this)));
     }
 
     function _compoundSingle(uint256 _principal, uint256 _ratio) internal pure returns (uint256) {

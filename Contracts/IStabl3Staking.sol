@@ -17,30 +17,6 @@ interface IStabl3Staking is IStabl3StakingStruct {
 
     function getAmountStakedPerStakingType(uint256) external view returns (uint256);
 
-    function updateTreasury(address _treasury) external;
-
-    function updateROI(address _ROI) external;
-
-    function updateHQ(address _HQ) external;
-
-    function updateDistributionPercentages(
-        uint256 _treasuryPercentage,
-        uint256 _ROIPercentage,
-        uint256 _HQPercentage,
-        uint256 _lendingStabl3Percentage,
-        bool _isLending
-    ) external;
-
-    function updateUnstakeFeePercentage(uint256 _unstakeFeePercentage) external;
-
-    function updateLockTimes(uint256[4] memory _lockTimes) external;
-
-    function updateLendingStabl3ClaimTime(uint256 _lendingStabl3ClaimTime) external;
-
-    function updateStabl3RealEstate(address _stabl3RealEstate) external;
-
-    function updateStakeState(bool _state) external;
-
     function allStakersLength() external view returns (uint256);
 
     function allStakingsLength(address _user) external view returns (uint256);
