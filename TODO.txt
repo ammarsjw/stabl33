@@ -24,3 +24,10 @@ Q. What factor differentiates both the Lending and Staking APR if we are using t
 A. 
 Q. Would it be fine if used the APR calculation from the excel sheet?
 A. 
+
+TODOs:
+
+// TODO find a better way for restake
+// TODO apply APR solution
+// TODO make a formula that can reduce ROI's amount when calculating APR based on the number of stakes unlocked
+// TODO make a mapping/iterable mapping that can efficiently keep track of APR changes with the respective timestamp
