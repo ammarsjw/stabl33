@@ -91,14 +91,14 @@ contract ROI is Ownable, IStabl3StakingStruct {
     }
 
     function updatePermission(address _contractAddress, bool _state) public onlyOwner {
-        require(permitted[_contractAddress] != _state, "ROI: Address is already of the value 'state'");
+        require(permitted[_contractAddress] != _state, "ROI: Contract Address is already of the value 'state'");
 
         permitted[_contractAddress] = _state;
 
         if (_state) {
             delegateApprove(stabl3, _contractAddress, true);
 
-            // delegateApprove(ucd, _contractAddress, true);
+            delegateApprove(ucd, _contractAddress, true);
 
             for (uint256 i = 0 ; i < treasury.allReservedTokensLength() ; i++) {
                 delegateApprove(treasury.allReservedTokens(i), _contractAddress, true);
@@ -107,7 +107,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
         else {
             delegateApprove(stabl3, _contractAddress, false);
 
-            // delegateApprove(ucd, _contractAddress, false);
+            delegateApprove(ucd, _contractAddress, false);
 
             for (uint256 i = 0 ; i < treasury.allReservedTokensLength() ; i++) {
                 delegateApprove(treasury.allReservedTokens(i), _contractAddress, false);

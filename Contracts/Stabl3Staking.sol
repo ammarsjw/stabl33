@@ -44,8 +44,6 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
     uint256 public unstakeFeePercentage;
 
-    address public stabl3RealEstate;
-
     bool public stakeState;
 
     // mappings
@@ -69,6 +67,9 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
      */
     uint256[5] public getAmountStakedPerStakingType;
 
+    // contracts with permission to access Stabl3 Staking functions
+    mapping (address => bool) public permitted;
+
     // events
 
     event UpdatedTreasury(address newTreasury, address oldTreasury);
@@ -76,6 +77,8 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
     event UpdatedROI(address newROI, address oldROI);
 
     event UpdatedHQ(address newHQ, address oldHQ);
+
+    event UpdatedPermission(address contractAddress, bool state);
 
     event Stake(
         address indexed user,
@@ -220,11 +223,6 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         unstakeFeePercentage = _unstakeFeePercentage;
     }
 
-    function updateStabl3RealEstate(address _stabl3RealEstate) external onlyOwner {
-        require(stabl3RealEstate != _stabl3RealEstate, "Stabl3Staking: Stabl3 Real Estate is already this address");
-        stabl3RealEstate = _stabl3RealEstate;
-    }
-
     function updateStakeState(bool _state) external onlyOwner {
         require(stakeState != _state, "Stabl3Staking: Stake State is already of the value 'state'");
         stakeState = _state;
@@ -317,6 +315,14 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
                 }
             }
         }
+    }
+
+    function updatePermission(address _contractAddress, bool _state) public onlyOwner {
+        require(permitted[_contractAddress] != _state, "Stabl3Staking: Contract Address is already of the value 'state'");
+
+        permitted[_contractAddress] = _state;
+
+        emit UpdatedPermission(_contractAddress, _state);
     }
 
     function stake(
@@ -429,12 +435,12 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
     }
 
     /**
-     * @notice This function is called externally by the Stabl3RealEstate contract to provide APR on a certain value
+     * @notice This function is called externally by certain contracts to provide APR on a given value
      * @dev Requires permit
      * @dev Requires external checks, transfers, records, updatePool calls, updateAPR calls and event emissions
      */
     function accessWithPermit(address _user, Staking memory _staking, uint8 _identifier) external {
-        require(msg.sender == stabl3RealEstate, "Stabl3Staking: Not allowed");
+        require(permitted[msg.sender] || msg.sender == owner(), "Stabl3Staking: Not permitted");
 
         if (_identifier == 0) {
             if (!getStakers[msg.sender]) {

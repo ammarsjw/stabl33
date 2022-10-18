@@ -545,7 +545,7 @@ contract ERC20 is Context, IERC20 {
 contract UCD is Ownable, ERC20 {
 
     /**
-     * @dev Addresses with special permissions to access certain UCD functions.
+     * @dev Contract addresses with permissions to access UCD functions.
      */
     mapping (address => bool) private _permitted;
 
@@ -563,7 +563,7 @@ contract UCD is Ownable, ERC20 {
     }
 
     function updatePermission(address contractAddress, bool state) external onlyOwner returns (bool) {
-        require(_permitted[contractAddress] != state, "UCD: Address is already of the value 'state'");
+        require(_permitted[contractAddress] != state, "UCD: Contract Address is already of the value 'state'");
 
         _permitted[contractAddress] = state;
 
