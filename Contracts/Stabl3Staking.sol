@@ -64,7 +64,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
     mapping (address => mapping (bool => Record)) public getRecords;
 
     /**
-     * @notice This mapping stores the current amounts staked per staking type
+     * @notice This array stores the current amounts staked per staking type
      * @dev Deductions when unstaking
      */
     uint256[5] public getAmountStakedPerStakingType;

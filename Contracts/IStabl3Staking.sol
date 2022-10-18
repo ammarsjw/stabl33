@@ -63,7 +63,7 @@ interface IStabl3Staking is IStabl3StakingStruct {
         bool _isRealEstate
     ) external view returns (uint256 totalAmountStakedUnlocked, uint256 totalAmountStakedLocked);
 
-    function restakeSingle(uint256 _index, uint256 _amountToWithdraw, uint8 _stakingType) external;
+    function restakeSingle(uint256 _index, uint256 _amountToUnstake, uint8 _stakingType) external;
 
     function unstakeSingle(uint256 _index) external;
 

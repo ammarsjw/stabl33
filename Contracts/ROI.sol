@@ -60,7 +60,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
         stabl3 = IERC20(0xDf9c4990a8973b6cC069738592F27Ea54b27D569);
 
         maxPoolPercentage = 700;
-        stakingTypePercentage = 200;
+        stakingTypePercentage = 250;
 
         updatePermission(address(_treasury), true);
     }
