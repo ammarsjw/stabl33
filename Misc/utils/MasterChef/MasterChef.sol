@@ -1649,7 +1649,6 @@ contract MasterChef is Ownable {
         }
     }
 
-
     // Update reward variables of the given pool to be up-to-date.
     function updatePool(uint256 _pid) public {
         PoolInfo storage pool = poolInfo[_pid];
