@@ -23,7 +23,5 @@ interface IROI {
 
     function updateAPR() external;
 
-    function delegateApprove(IERC20 _token, address _spender, bool _isApprove) external;
-
     function returnFunds(IERC20 _token, uint256 _amountToken, uint8[] memory _pools) external;
 }

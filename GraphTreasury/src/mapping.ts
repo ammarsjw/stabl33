@@ -53,10 +53,10 @@ export function handleRate(event: RateEvent): void {
   let entity = new Rate(id)
   entity.transaction = transaction.id
   entity.rate = event.params.rate
-  entity.totalValueLocked = event.params.totalValueLocked
   entity.reserves = event.params.reserves
+  entity.totalValueLocked = event.params.totalValueLocked
   entity.stabl3CirculatingSupply = event.params.stabl3CirculatingSupply
-  entity.blockTimestampLast = event.params.blockTimestampLast
+  entity.timestamp = event.params.timestamp
   entity.save()
 }
 

@@ -33,7 +33,7 @@ export function handleAPR(event: APREvent): void {
   entity.APR = event.params.APR
   entity.reserves = event.params.reserves
   entity.totalRewardDistributed = event.params.totalRewardDistributed
-  entity.blockTimestampLast = event.params.blockTimestampLast
+  entity.timestamp = event.params.timestamp
   entity.save()
 }
 

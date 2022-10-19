@@ -48,7 +48,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
         uint256 APR,
         uint256 reserves,
         uint256 totalRewardDistributed,
-        uint256 blockTimestampLast
+        uint256 timestamp
     );
 
     // constructor
@@ -220,7 +220,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
 
         currentPool += _token.decimals() < 18 ? _amountToken * 10 ** (18 - _token.decimals()) : _amountToken;
 
-        // excluding stakes that are currently unlocked in this specific staking type from the current pool
+        /* ========== excluding stakes, that are currently unlocked, from the current pool in the given staking type ========== */
 
         uint256 amountUnlocked;
 
@@ -229,9 +229,10 @@ contract ROI is Ownable, IStabl3StakingStruct {
 
             if (stabl3Staking.getStakers(staker)) {
                 (Staking[] memory unlockedLending, , Staking[] memory unlockedStaking, ) = stabl3Staking.allStakings(staker, false);
-                (, , Staking[] memory unlockedRealEstate, ) = stabl3Staking.allStakings(staker, true);
+                // (, , Staking[] memory unlockedRealEstate, ) = stabl3Staking.allStakings(staker, true);
 
-                uint256 maxLength = unlockedLending.length.max(unlockedStaking.length).max(unlockedRealEstate.length);
+                // uint256 maxLength = unlockedLending.length.max(unlockedStaking.length).max(unlockedRealEstate.length);
+                uint256 maxLength = unlockedLending.length.max(unlockedStaking.length);
 
                 for (uint256 j = 0 ; j < maxLength ; j++) {
                     if (j < unlockedLending.length && unlockedLending[j].stakingType == _stakingType) {
@@ -252,19 +253,21 @@ contract ROI is Ownable, IStabl3StakingStruct {
                             amountToken;
                     }
 
-                    if (j < unlockedRealEstate.length && unlockedRealEstate[j].stakingType == _stakingType) {
-                        uint256 amountToken = unlockedRealEstate[j].amountTokenStaked;
+                    // if (j < unlockedRealEstate.length && unlockedRealEstate[j].stakingType == _stakingType) {
+                    //     uint256 amountToken = unlockedRealEstate[j].amountTokenStaked;
 
-                        amountUnlocked +=
-                            unlockedRealEstate[j].token.decimals() < 18 ?
-                            amountToken * 10 ** (18 - unlockedRealEstate[j].token.decimals()) :
-                            amountToken;
-                    }
+                    //     amountUnlocked +=
+                    //         unlockedRealEstate[j].token.decimals() < 18 ?
+                    //         amountToken * 10 ** (18 - unlockedRealEstate[j].token.decimals()) :
+                    //         amountToken;
+                    // }
                 }
             }
         }
 
         currentPool = currentPool.safeSub(amountUnlocked);
+
+        /* ========== ---------------------------------------------------------------------------------------------- ========== */
     }
 
     function updateAPR() public permission {
@@ -275,15 +278,6 @@ contract ROI is Ownable, IStabl3StakingStruct {
         uint256 totalRewardDistributed = getTotalRewardDistributed();
 
         emit APR(currentAPR, reserves, totalRewardDistributed, block.timestamp);
-    }
-
-    function delegateApprove(IERC20 _token, address _spender, bool _isApprove) public onlyOwner {
-        if (_isApprove) {
-            SafeERC20.safeApprove(_token, _spender, MAX_INT);
-        }
-        else {
-            SafeERC20.safeApprove(_token, _spender, 0);
-        }
     }
 
     /**
@@ -316,6 +310,15 @@ contract ROI is Ownable, IStabl3StakingStruct {
         require(amountToUpdate == 0, "ROI: Not enough funds in the specified pools");
 
         SafeERC20.safeTransfer(_token, address(treasury), _amountToken);
+    }
+
+    function delegateApprove(IERC20 _token, address _spender, bool _isApprove) public onlyOwner {
+        if (_isApprove) {
+            SafeERC20.safeApprove(_token, _spender, MAX_INT);
+        }
+        else {
+            SafeERC20.safeApprove(_token, _spender, 0);
+        }
     }
 
     // TODO remove

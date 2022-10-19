@@ -331,6 +331,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         uint8 _stakingType,
         bool _isLending
     ) public stakeActive reserved(_token) nonReentrant {
+        require(ROI.getAPR() > 0, "Stabl3Staking: No APR to give");
         require(1 <= _stakingType && _stakingType <= 4, "Stabl3Staking: Incorrect staking type");
         require(_amountToken > 1, "Stabl3Staking: Insufficient amount");
         (uint256 maxPool, uint256 currentPool) = ROI.validatePool(_token, _amountToken, _stakingType, _isLending);

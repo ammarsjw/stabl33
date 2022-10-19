@@ -70,10 +70,10 @@ contract Treasury is Ownable {
 
     event Rate(
         uint256 rate,
-        uint256 totalValueLocked,
         uint256 reserves,
+        uint256 totalValueLocked,
         uint256 stabl3CirculatingSupply,
-        uint256 blockTimestampLast
+        uint256 timestamp
     );
 
     // constructor
@@ -467,7 +467,7 @@ contract Treasury is Ownable {
 
         uint256 totalValueLocked = getTotalValueLocked();
 
-        emit Rate(rateInfo.rate, totalValueLocked, reserves, stabl3CirculatingSupply, block.timestamp);
+        emit Rate(rateInfo.rate, reserves, totalValueLocked, stabl3CirculatingSupply, block.timestamp);
     }
 
     function delegateApprove(IERC20 _token, address _spender, bool _isApprove) public onlyOwner {
