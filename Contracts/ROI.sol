@@ -222,50 +222,50 @@ contract ROI is Ownable, IStabl3StakingStruct {
 
         /* ========== excluding stakes, that are currently unlocked, from the current pool in the given staking type ========== */
 
-        uint256 amountUnlocked;
+        // uint256 amountUnlocked;
 
-        for (uint256 i = 0 ; i < stabl3Staking.allStakersLength() ; i++) {
-            address staker = stabl3Staking.allStakers(i);
+        // for (uint256 i = 0 ; i < stabl3Staking.allStakersLength() ; i++) {
+        //     address staker = stabl3Staking.allStakers(i);
 
-            if (stabl3Staking.getStakers(staker)) {
-                (Staking[] memory unlockedLending, , Staking[] memory unlockedStaking, ) = stabl3Staking.allStakings(staker, false);
-                // (, , Staking[] memory unlockedRealEstate, ) = stabl3Staking.allStakings(staker, true);
+        //     if (stabl3Staking.getStakers(staker)) {
+        //         (Staking[] memory unlockedLending, , Staking[] memory unlockedStaking, ) = stabl3Staking.allStakings(staker, false);
+        //         // (, , Staking[] memory unlockedRealEstate, ) = stabl3Staking.allStakings(staker, true);
 
-                // uint256 maxLength = unlockedLending.length.max(unlockedStaking.length).max(unlockedRealEstate.length);
-                uint256 maxLength = unlockedLending.length.max(unlockedStaking.length);
+        //         // uint256 maxLength = unlockedLending.length.max(unlockedStaking.length).max(unlockedRealEstate.length);
+        //         uint256 maxLength = unlockedLending.length.max(unlockedStaking.length);
 
-                for (uint256 j = 0 ; j < maxLength ; j++) {
-                    if (j < unlockedLending.length && unlockedLending[j].stakingType == _stakingType) {
-                        uint256 amountToken = unlockedLending[j].amountTokenStaked;
+        //         for (uint256 j = 0 ; j < maxLength ; j++) {
+        //             if (j < unlockedLending.length && unlockedLending[j].stakingType == _stakingType) {
+        //                 uint256 amountToken = unlockedLending[j].amountTokenStaked;
 
-                        amountUnlocked +=
-                            unlockedLending[j].token.decimals() < 18 ?
-                            amountToken * 10 ** (18 - unlockedLending[j].token.decimals()) :
-                            amountToken;
-                    }
+        //                 amountUnlocked +=
+        //                     unlockedLending[j].token.decimals() < 18 ?
+        //                     amountToken * 10 ** (18 - unlockedLending[j].token.decimals()) :
+        //                     amountToken;
+        //             }
 
-                    if (j < unlockedStaking.length && unlockedStaking[j].stakingType == _stakingType) {
-                        uint256 amountToken = unlockedStaking[j].amountTokenStaked;
+        //             if (j < unlockedStaking.length && unlockedStaking[j].stakingType == _stakingType) {
+        //                 uint256 amountToken = unlockedStaking[j].amountTokenStaked;
 
-                        amountUnlocked +=
-                            unlockedStaking[j].token.decimals() < 18 ?
-                            amountToken * 10 ** (18 - unlockedStaking[j].token.decimals()) :
-                            amountToken;
-                    }
+        //                 amountUnlocked +=
+        //                     unlockedStaking[j].token.decimals() < 18 ?
+        //                     amountToken * 10 ** (18 - unlockedStaking[j].token.decimals()) :
+        //                     amountToken;
+        //             }
 
-                    // if (j < unlockedRealEstate.length && unlockedRealEstate[j].stakingType == _stakingType) {
-                    //     uint256 amountToken = unlockedRealEstate[j].amountTokenStaked;
+        //             // if (j < unlockedRealEstate.length && unlockedRealEstate[j].stakingType == _stakingType) {
+        //             //     uint256 amountToken = unlockedRealEstate[j].amountTokenStaked;
 
-                    //     amountUnlocked +=
-                    //         unlockedRealEstate[j].token.decimals() < 18 ?
-                    //         amountToken * 10 ** (18 - unlockedRealEstate[j].token.decimals()) :
-                    //         amountToken;
-                    // }
-                }
-            }
-        }
+        //             //     amountUnlocked +=
+        //             //         unlockedRealEstate[j].token.decimals() < 18 ?
+        //             //         amountToken * 10 ** (18 - unlockedRealEstate[j].token.decimals()) :
+        //             //         amountToken;
+        //             // }
+        //         }
+        //     }
+        // }
 
-        currentPool = currentPool.safeSub(amountUnlocked);
+        // currentPool = currentPool.safeSub(amountUnlocked);
 
         /* ========== ---------------------------------------------------------------------------------------------- ========== */
     }
