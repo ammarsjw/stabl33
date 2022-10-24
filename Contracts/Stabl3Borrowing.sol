@@ -24,9 +24,8 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
     IERC20 public immutable stabl3;
 
     constructor() {
-        ucd = IERC20(address(0));
-
         // TODO change
         stabl3 = IERC20(0xDf9c4990a8973b6cC069738592F27Ea54b27D569);
+        ucd = IERC20(0x01fa8dEEdDEA8E4e465f158d93e162438d61c9eB);
     }
 }

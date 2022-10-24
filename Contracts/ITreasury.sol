@@ -16,6 +16,8 @@ interface ITreasury {
     function getROIPool(uint8, IERC20) external view returns (uint256);
     function getHQPool(uint8, IERC20) external view returns (uint256);
 
+    function permitted(address) external view returns (bool);
+
     function allReservedTokensLength() external view returns (uint256);
 
     function allPools(uint8 _type, IERC20 _token) external view returns (uint256, uint256, uint256);

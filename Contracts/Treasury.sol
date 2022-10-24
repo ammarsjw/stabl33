@@ -42,9 +42,6 @@ contract Treasury is Ownable {
 
     // mappings
 
-    // contracts with permission to access treasury funds
-    mapping (address => bool) public permitted;
-
     // reserved tokens to buy STABL3
     mapping (IERC20 => bool) public isReservedToken;
 
@@ -55,6 +52,9 @@ contract Treasury is Ownable {
     mapping (uint8 => mapping(IERC20 => uint256)) public getTreasuryPool;
     mapping (uint8 => mapping(IERC20 => uint256)) public getROIPool;
     mapping (uint8 => mapping(IERC20 => uint256)) public getHQPool;
+
+    // contracts with permission to access treasury funds
+    mapping (address => bool) public permitted;
 
     // events
 
@@ -88,6 +88,7 @@ contract Treasury is Ownable {
 
         // TODO change
         stabl3 = IERC20(0xDf9c4990a8973b6cC069738592F27Ea54b27D569);
+        ucd = IERC20(0x01fa8dEEdDEA8E4e465f158d93e162438d61c9eB);
 
         exchangeFee = 3;
 

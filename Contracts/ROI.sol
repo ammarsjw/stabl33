@@ -35,7 +35,11 @@ contract ROI is Ownable, IStabl3StakingStruct {
 
     // mappings
 
-    // iterable mapping for APRs - timestamp => apr => index
+    /**
+     * @notice This mapping and array are used to store APRs during staking
+     * @dev The mapping is from `Timestamp` to `APR` then to a unique `Index`
+     * @dev The array can be then used to iterate over using said `Index`
+     */
     mapping (uint256 => mapping(uint256 => uint256)) public getStakingAPRIndex;
     StakingAPR[] public allStakingAPRs;
 
@@ -62,6 +66,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
 
         // TODO change
         stabl3 = IERC20(0xDf9c4990a8973b6cC069738592F27Ea54b27D569);
+        ucd = IERC20(0x01fa8dEEdDEA8E4e465f158d93e162438d61c9eB);
 
         maxPoolPercentage = 700;
         stakingTypePercentage = 250;
@@ -90,7 +95,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
     }
 
     function updateMaxPoolPercentage(uint256 _maxPoolPercentage) external onlyOwner {
-        require(maxPoolPercentage != _maxPoolPercentage, "Stabl3Staking: Max Pool Percentage is already this value");
+        require(maxPoolPercentage != _maxPoolPercentage, "ROI: Max Pool Percentage is already this value");
         maxPoolPercentage = _maxPoolPercentage;
     }
 
@@ -395,7 +400,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
     }
 
     modifier reserved(IERC20 _token) {
-        require(treasury.isReservedToken(_token), "Stabl3Staking: Not a reserved token");
+        require(treasury.isReservedToken(_token), "ROI: Not a reserved token");
         _;
     }
 }

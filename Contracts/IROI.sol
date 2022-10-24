@@ -11,9 +11,9 @@ interface IROI is IStabl3StakingStruct {
 
     function allStakingAPRs(uint256) external view returns (StakingAPR memory);
 
-    function allStakingAPRsLength() external view returns (uint256);
-
     function permitted(address) external returns (bool);
+
+    function allStakingAPRsLength() external view returns (uint256);
 
     function getTotalRewardDistributed() external view returns (uint256);
 
