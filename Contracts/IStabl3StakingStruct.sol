@@ -6,6 +6,11 @@ import "./IERC20.sol";
 
 interface IStabl3StakingStruct {
 
+    struct StakingAPR {
+        uint256 APR;
+        uint256 timestamp;
+    }
+
     struct Staking {
         uint256 index;
         address user;
@@ -14,11 +19,11 @@ interface IStabl3StakingStruct {
         IERC20 token;
         uint256 amountTokenStaked;
         uint256 startTime;
+        uint256 stakingAPRIndexLast;
         uint256 rewardWithdrawn;
         uint256 rewardWithdrawTimeLast;
         bool isLending;
         bool isClaimedStabl3Lending;
-        uint256 amountTokenLending;
         uint256 amountStabl3Lending;
         bool isRealEstate;
     }

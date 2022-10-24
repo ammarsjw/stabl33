@@ -38,3 +38,9 @@ TODOs:
 
 // ISSUE    System breaks if user doesn't unstake exactly at endTime
 // SOLUTION Gain APR constantly/without endTime
+
+// TODO save APRs
+// TODO save stakingAPRIndex in staking
+// TODO traverse APRs for reward
+// TODO dont exclude unlocked from currentPool
+// TODO dont exclude unlocked from APR pool

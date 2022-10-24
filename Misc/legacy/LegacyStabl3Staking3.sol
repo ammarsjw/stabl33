@@ -2,14 +2,14 @@
 
 pragma solidity 0.8.17;
 
-import "./Ownable.sol";
-import "./SafeMathUpgradeable.sol";
-import "./SafeERC20.sol";
-import "./ReentrancyGuard.sol";
+import "../../Contracts/Ownable.sol";
+import "../../Contracts/SafeMathUpgradeable.sol";
+import "../../Contracts/SafeERC20.sol";
+import "../../Contracts/ReentrancyGuard.sol";
 
-import "./ITreasury.sol";
-import "./IROI.sol";
-import "./IStabl3StakingStruct.sol";
+import "../../Contracts/ITreasury.sol";
+import "../../Contracts/IROI.sol";
+import "../../Contracts/IStabl3StakingStruct.sol";
 
 contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
     using SafeMathUpgradeable for uint256;
@@ -107,6 +107,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         address indexed user,
         uint256 index,
         IERC20 token,
+        uint256 amountTokenLending,
         uint256 amountStabl3Lending,
         uint256 totalAmountStabl3Withdrawn,
         uint256 timestamp
@@ -390,8 +391,6 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
             treasury.updatePool(STAKE_POOL, _token, amountTreasury + amountHQ, amountROI, amountHQ, true);
         }
 
-        ROI.updateAPR();
-
         uint256 timestampToConsider = block.timestamp;
 
         Staking memory staking = Staking({
@@ -402,11 +401,11 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
             token: _token,
             amountTokenStaked: _amountToken,
             startTime: timestampToConsider,
-            stakingAPRIndexLast: ROI.allStakingAPRsLength() - 1,
             rewardWithdrawn: 0,
             rewardWithdrawTimeLast: timestampToConsider,
             isLending: _isLending,
             isClaimedStabl3Lending: false,
+            amountTokenLending: amountTokenLending,
             amountStabl3Lending: amountStabl3Lending,
             isRealEstate: false
         });
@@ -419,6 +418,8 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
         record.totalAmountTokenStaked += amountTokenConverted;
         getAmountStakedPerStakingType[_stakingType] += amountTokenConverted;
+
+        ROI.updateAPR();
 
         emit Stake(
             staking.user,
@@ -480,81 +481,17 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
             staking.isRealEstate == _isRealEstate &&
             staking.rewardWithdrawTimeLast < endTime
         ) {
-            uint256 timestampToConsider = _timestamp > endTime ? endTime : _timestamp;
+            uint256 numberOfMinutes =
+                _timestamp > endTime ?
+                (endTime - staking.rewardWithdrawTimeLast) / oneDayTime :
+                (_timestamp - staking.rewardWithdrawTimeLast) / oneDayTime;
 
-            if (staking.stakingAPRIndexLast == ROI.allStakingAPRsLength() - 1) {
-                uint256 numberOfDays = (timestampToConsider - staking.rewardWithdrawTimeLast) / oneDayTime;
+            if (numberOfMinutes > 0) {
+                uint256 ratio = ROI.getAPR();
 
-                if (numberOfDays > 0) {
-                    uint256 ratio = ROI.allStakingAPRs(staking.stakingAPRIndexLast).APR;
+                uint256 rewardTotal = _compoundSingle(staking.amountTokenStaked, ratio);
 
-                    uint256 rewardTotal = _compoundSingle(staking.amountTokenStaked, ratio);
-
-                    amountReward += (rewardTotal * oneDayTime * numberOfDays) / oneYearTime;
-                }
-            }
-            else {
-                uint256 stakingAPRIndex = staking.stakingAPRIndexLast;
-
-                StakingAPR memory stakingAPR = ROI.allStakingAPRs(stakingAPRIndex);
-                StakingAPR memory stakingAPRNext = ROI.allStakingAPRs(stakingAPRIndex + 1);
-
-                if (stakingAPRNext.timestamp < timestampToConsider) {
-                    uint256 numberOfDays = (stakingAPRNext.timestamp - staking.rewardWithdrawTimeLast) / oneDayTime;
-
-                    if (numberOfDays > 0) {
-                        uint256 ratio = stakingAPR.APR;
-
-                        uint256 rewardTotal = _compoundSingle(staking.amountTokenStaked, ratio);
-
-                        amountReward += (rewardTotal * oneDayTime * numberOfDays) / oneYearTime;
-                    }
-
-                    stakingAPRIndex++;
-
-                    for ( ; stakingAPRIndex < ROI.allStakingAPRsLength() ; stakingAPRIndex++) {
-                        stakingAPR = ROI.allStakingAPRs(stakingAPRIndex);
-                        stakingAPRNext = ROI.allStakingAPRs(stakingAPRIndex + 1);
-
-                        if (stakingAPRNext.timestamp < timestampToConsider) {
-                            numberOfDays = (stakingAPRNext.timestamp - stakingAPR.timestamp) / oneDayTime;
-
-                            if (numberOfDays > 0) {
-                                uint256 ratio = stakingAPR.APR;
-
-                                uint256 rewardTotal = _compoundSingle(staking.amountTokenStaked, ratio);
-
-                                amountReward += (rewardTotal * oneDayTime * numberOfDays) / oneYearTime;
-                            }
-                        }
-                        else {
-                            break;
-                        }
-                    }
-
-                    stakingAPR = ROI.allStakingAPRs(stakingAPRIndex);
-
-                    numberOfDays = (timestampToConsider - stakingAPR.timestamp) / oneDayTime;
-
-                    if (numberOfDays > 0) {
-                        uint256 ratio = stakingAPR.APR;
-
-                        uint256 rewardTotal = _compoundSingle(staking.amountTokenStaked, ratio);
-
-                        amountReward += (rewardTotal * oneDayTime * numberOfDays) / oneYearTime;
-                    }
-                }
-                else {
-                    uint256 numberOfDays = (timestampToConsider - staking.rewardWithdrawTimeLast) / oneDayTime;
-
-                    if (numberOfDays > 0) {
-                        uint256 ratio = stakingAPR.APR;
-
-                        uint256 rewardTotal = _compoundSingle(staking.amountTokenStaked, ratio);
-
-                        amountReward += (rewardTotal * oneDayTime * numberOfDays) / oneYearTime;
-                    }
-                }
+                amountReward = (rewardTotal * oneDayTime * numberOfMinutes) / oneYearTime;
             }
         }
 
@@ -598,19 +535,15 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
             Record storage record = getRecords[msg.sender][staking.isLending];
 
-            uint8 poolType = staking.isLending ? LEND_POOL : STAKE_POOL;
+            _evaluateReward(staking.token, reward, staking.isLending);
 
-            // _evaluateReward(staking.token, reward, staking.isLending);
-            ROI.distributeReward(msg.sender, staking.token, reward, poolType);
-
-            ROI.updateAPR();
-
-            staking.stakingAPRIndexLast = ROI.allStakingAPRsLength() - 1;
             staking.rewardWithdrawn += reward;
             staking.rewardWithdrawTimeLast = _timestamp > endTime ? endTime : _timestamp;
 
             uint256 rewardConverted = staking.token.decimals() < 18 ? reward * 10 ** (18 - staking.token.decimals()) : reward;
             record.totalRewardWithdrawn += rewardConverted;
+
+            ROI.updateAPR();
 
             emit WithdrewReward(
                 staking.user,
@@ -691,6 +624,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
                 staking.user,
                 staking.index,
                 staking.token,
+                staking.amountTokenLending,
                 staking.amountStabl3Lending,
                 record.totalAmountStabl3Withdrawn,
                 _timestamp
@@ -834,6 +768,72 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         }
     }
 
+    function _evaluateReward(IERC20 _rewardToken, uint256 _amountRewardToken, bool _isLending) internal {
+        uint8 rewardPoolType = _isLending ? LEND_REWARD_POOL : STAKE_REWARD_POOL;
+
+        uint256 amountRewardTokenROI = _rewardToken.balanceOf(address(ROI));
+
+        if (_amountRewardToken > amountRewardTokenROI) {
+            if (amountRewardTokenROI != 0) {
+                SafeERC20.safeTransferFrom(_rewardToken, address(ROI), msg.sender, amountRewardTokenROI);
+
+                _amountRewardToken -= amountRewardTokenROI;
+
+                treasury.updatePool(rewardPoolType, _rewardToken, 0, amountRewardTokenROI, 0, true);
+            }
+
+            uint256 decimalsRewardToken = _rewardToken.decimals();
+
+            for (uint256 i = 0 ; i < treasury.allReservedTokensLength() && _amountRewardToken > 0 ; i++) {
+                IERC20 reservedToken = treasury.allReservedTokens(i);
+
+                if (
+                    treasury.isReservedToken(reservedToken) &&
+                    reservedToken != _rewardToken &&
+                    _amountRewardToken != 0
+                ) {
+                    uint256 amountReservedTokenROI = reservedToken.balanceOf(address(ROI));
+
+                    uint256 decimalsReservedToken = reservedToken.decimals();
+
+                    uint256 amountRewardTokenConverted;
+                    if (decimalsRewardToken > decimalsReservedToken) {
+                        amountRewardTokenConverted = _amountRewardToken / (10 ** (decimalsRewardToken - decimalsReservedToken));
+                    }
+                    else if (decimalsRewardToken < decimalsReservedToken) {
+                        amountRewardTokenConverted = _amountRewardToken * (10 ** (decimalsReservedToken - decimalsRewardToken));
+                    }
+
+                    if (amountRewardTokenConverted > amountReservedTokenROI) {
+                        SafeERC20.safeTransferFrom(reservedToken, address(ROI), msg.sender, amountReservedTokenROI);
+
+                        treasury.updatePool(rewardPoolType, reservedToken, 0, amountReservedTokenROI, 0, true);
+
+                        if (decimalsRewardToken > decimalsReservedToken) {
+                            _amountRewardToken -= amountReservedTokenROI * (10 ** (decimalsRewardToken - decimalsReservedToken));
+                        }
+                        else if (decimalsRewardToken < decimalsReservedToken) {
+                            _amountRewardToken -= amountReservedTokenROI / (10 ** (decimalsReservedToken - decimalsRewardToken));
+                        }
+                    }
+                    else {
+                        SafeERC20.safeTransferFrom(reservedToken, address(ROI), msg.sender, amountRewardTokenConverted);
+
+                        treasury.updatePool(rewardPoolType, reservedToken, 0, amountRewardTokenConverted, 0, true);
+
+                        _amountRewardToken = 0;
+                        break;
+                    }
+                }
+            }
+        }
+        else {
+            SafeERC20.safeTransferFrom(_rewardToken, address(ROI), msg.sender, _amountRewardToken);
+
+            treasury.updatePool(rewardPoolType, _rewardToken, 0, _amountRewardToken, 0, true);
+        }
+    }
+
     function _compoundSingle(uint256 _principal, uint256 _ratio) internal pure returns (uint256) {
         uint256 accruedAmount = _principal.mul(_ratio).div(10 ** 18);
 
@@ -843,20 +843,12 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
     // modifiers
 
     modifier stakeActive() {
-        _stakeActive();
-        _;
-    }
-
-    function _stakeActive() internal view {
         require(stakeState, "Stabl3Staking: Stake and Lend not yet started");
+        _;
     }
 
     modifier reserved(IERC20 _token) {
-        _reserved(_token);
-        _;
-    }
-
-    function _reserved(IERC20 _token) internal view {
         require(treasury.isReservedToken(_token), "Stabl3Staking: Not a reserved token");
+        _;
     }
 }

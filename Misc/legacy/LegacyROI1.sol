@@ -2,12 +2,12 @@
 
 pragma solidity 0.8.17;
 
-import "./Ownable.sol";
-import "./SafeMathUpgradeable.sol";
-import "./SafeERC20.sol";
+import "../../Contracts/Ownable.sol";
+import "../../Contracts/SafeMathUpgradeable.sol";
+import "../../Contracts/SafeERC20.sol";
 
-import "./ITreasury.sol";
-import "./IStabl3Staking.sol";
+import "../../Contracts/ITreasury.sol";
+import "../../Contracts/IStabl3Staking.sol";
 
 contract ROI is Ownable, IStabl3StakingStruct {
     using SafeMathUpgradeable for uint256;
@@ -34,10 +34,6 @@ contract ROI is Ownable, IStabl3StakingStruct {
     uint256 public stakingTypePercentage;
 
     // mappings
-
-    // iterable mapping for APRs - timestamp => apr => index
-    mapping (uint256 => mapping(uint256 => uint256)) public getStakingAPRIndex;
-    StakingAPR[] public allStakingAPRs;
 
     // contracts with permission to access ROI pool funds
     mapping (address => bool) public permitted;
@@ -92,10 +88,6 @@ contract ROI is Ownable, IStabl3StakingStruct {
     function updateMaxPoolPercentage(uint256 _maxPoolPercentage) external onlyOwner {
         require(maxPoolPercentage != _maxPoolPercentage, "Stabl3Staking: Max Pool Percentage is already this value");
         maxPoolPercentage = _maxPoolPercentage;
-    }
-
-    function allStakingAPRsLength() external view returns (uint256) {
-        return allStakingAPRs.length;
     }
 
     function updatePermission(address _contractAddress, bool _state) public onlyOwner {
@@ -167,29 +159,30 @@ contract ROI is Ownable, IStabl3StakingStruct {
 
     // APR is in 18 decimals
     function getAPR() public view returns (uint256) {
-        uint256 maxPool;
+        uint256 totalStakedAndLendedAmount;
 
         for (uint256 i = 0 ; i < treasury.allReservedTokensLength() ; i++) {
             IERC20 reservedToken = treasury.allReservedTokens(i);
 
             if (treasury.isReservedToken(reservedToken)) {
-                uint256 boughtAmount = treasury.getTreasuryPool(BUY_POOL, reservedToken);
-                uint256 bondedAmount = treasury.getTreasuryPool(BOND_POOL, reservedToken);
+                // HQ Pool is included in the Treasury Pool since it earns APR, hence no need to it to either staked or lended amounts
+                uint256 stakedAmount = treasury.getTreasuryPool(STAKE_POOL, reservedToken);
+                stakedAmount += treasury.getROIPool(STAKE_POOL, reservedToken);                 // ROI Pool for staking is 0 by default
+                uint256 lendedAmount = treasury.getTreasuryPool(LEND_POOL, reservedToken);
+                lendedAmount += treasury.getROIPool(LEND_POOL, reservedToken);                  // ROI Pool for lending is 0 by default
 
                 uint256 decimals = reservedToken.decimals();
 
-                maxPool +=
+                totalStakedAndLendedAmount +=
                     decimals < 18 ?
-                    (boughtAmount * 10 ** (18 - decimals)) + (bondedAmount * 10 ** (18 - decimals)) :
-                    boughtAmount + bondedAmount;
+                    (stakedAmount * 10 ** (18 - decimals)) + (lendedAmount * 10 ** (18 - decimals)) :
+                    stakedAmount + lendedAmount;
             }
         }
 
-        maxPool = maxPool.mul(maxPoolPercentage).div(1000);
+        uint256 totalROIReserves = getReserves();
 
-        uint256 ROIReserves = getReserves();
-
-        uint256 currentAPR = maxPool != 0 ? (ROIReserves * (10 ** 18)) / (maxPool) : 0;
+        uint256 currentAPR = totalStakedAndLendedAmount != 0 ? (totalROIReserves * (10 ** 18)) / (totalStakedAndLendedAmount) : 0;
 
         return currentAPR;
     }
@@ -199,7 +192,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
         uint256 _amountToken,
         uint8 _stakingType,
         bool _isLending
-    ) public view reserved(_token) returns (uint256 maxPool, uint256 currentPool) {
+    ) public view returns (uint256 maxPool, uint256 currentPool) {
         for (uint256 i = 0 ; i < treasury.allReservedTokensLength() ; i++) {
             IERC20 reservedToken = treasury.allReservedTokens(i);
 
@@ -226,77 +219,55 @@ contract ROI is Ownable, IStabl3StakingStruct {
         }
 
         currentPool += _token.decimals() < 18 ? _amountToken * 10 ** (18 - _token.decimals()) : _amountToken;
-    }
 
-    function distributeReward(
-        address _user,
-        IERC20 _rewardToken,
-        uint256 _amountRewardToken,
-        uint8 _poolType
-    ) external permission reserved(_rewardToken) {
-        uint8 rewardPoolType = _poolType + 1;
+        /* ========== excluding stakes, that are currently unlocked, from the current pool in the given staking type ========== */
 
-        uint256 amountRewardTokenROI = _rewardToken.balanceOf(address(this));
+        uint256 amountUnlocked;
 
-        if (_amountRewardToken > amountRewardTokenROI) {
-            if (amountRewardTokenROI != 0) {
-                SafeERC20.safeTransferFrom(_rewardToken, address(this), _user, amountRewardTokenROI);
+        for (uint256 i = 0 ; i < stabl3Staking.allStakersLength() ; i++) {
+            address staker = stabl3Staking.allStakers(i);
 
-                _amountRewardToken -= amountRewardTokenROI;
+            if (stabl3Staking.getStakers(staker)) {
+                (Staking[] memory unlockedLending, , Staking[] memory unlockedStaking, ) = stabl3Staking.allStakings(staker, false);
+                // (, , Staking[] memory unlockedRealEstate, ) = stabl3Staking.allStakings(staker, true);
 
-                treasury.updatePool(rewardPoolType, _rewardToken, 0, amountRewardTokenROI, 0, true);
-            }
+                // uint256 maxLength = unlockedLending.length.max(unlockedStaking.length).max(unlockedRealEstate.length);
+                uint256 maxLength = unlockedLending.length.max(unlockedStaking.length);
 
-            uint256 decimalsRewardToken = _rewardToken.decimals();
+                for (uint256 j = 0 ; j < maxLength ; j++) {
+                    if (j < unlockedLending.length && unlockedLending[j].stakingType == _stakingType) {
+                        uint256 amountToken = unlockedLending[j].amountTokenStaked;
 
-            for (uint256 i = 0 ; i < treasury.allReservedTokensLength() && _amountRewardToken > 0 ; i++) {
-                IERC20 reservedToken = treasury.allReservedTokens(i);
-
-                if (
-                    treasury.isReservedToken(reservedToken) &&
-                    reservedToken != _rewardToken &&
-                    _amountRewardToken != 0
-                ) {
-                    uint256 amountReservedTokenROI = reservedToken.balanceOf(address(this));
-
-                    uint256 decimalsReservedToken = reservedToken.decimals();
-
-                    uint256 amountRewardTokenConverted;
-                    if (decimalsRewardToken > decimalsReservedToken) {
-                        amountRewardTokenConverted = _amountRewardToken / (10 ** (decimalsRewardToken - decimalsReservedToken));
-                    }
-                    else if (decimalsRewardToken < decimalsReservedToken) {
-                        amountRewardTokenConverted = _amountRewardToken * (10 ** (decimalsReservedToken - decimalsRewardToken));
+                        amountUnlocked +=
+                            unlockedLending[j].token.decimals() < 18 ?
+                            amountToken * 10 ** (18 - unlockedLending[j].token.decimals()) :
+                            amountToken;
                     }
 
-                    if (amountRewardTokenConverted > amountReservedTokenROI) {
-                        SafeERC20.safeTransferFrom(reservedToken, address(this), _user, amountReservedTokenROI);
+                    if (j < unlockedStaking.length && unlockedStaking[j].stakingType == _stakingType) {
+                        uint256 amountToken = unlockedStaking[j].amountTokenStaked;
 
-                        treasury.updatePool(rewardPoolType, reservedToken, 0, amountReservedTokenROI, 0, true);
-
-                        if (decimalsRewardToken > decimalsReservedToken) {
-                            _amountRewardToken -= amountReservedTokenROI * (10 ** (decimalsRewardToken - decimalsReservedToken));
-                        }
-                        else if (decimalsRewardToken < decimalsReservedToken) {
-                            _amountRewardToken -= amountReservedTokenROI / (10 ** (decimalsReservedToken - decimalsRewardToken));
-                        }
+                        amountUnlocked +=
+                            unlockedStaking[j].token.decimals() < 18 ?
+                            amountToken * 10 ** (18 - unlockedStaking[j].token.decimals()) :
+                            amountToken;
                     }
-                    else {
-                        SafeERC20.safeTransferFrom(reservedToken, address(this), _user, amountRewardTokenConverted);
 
-                        treasury.updatePool(rewardPoolType, reservedToken, 0, amountRewardTokenConverted, 0, true);
+                    // if (j < unlockedRealEstate.length && unlockedRealEstate[j].stakingType == _stakingType) {
+                    //     uint256 amountToken = unlockedRealEstate[j].amountTokenStaked;
 
-                        _amountRewardToken = 0;
-                        break;
-                    }
+                    //     amountUnlocked +=
+                    //         unlockedRealEstate[j].token.decimals() < 18 ?
+                    //         amountToken * 10 ** (18 - unlockedRealEstate[j].token.decimals()) :
+                    //         amountToken;
+                    // }
                 }
             }
         }
-        else {
-            SafeERC20.safeTransferFrom(_rewardToken, address(this), _user, _amountRewardToken);
 
-            treasury.updatePool(rewardPoolType, _rewardToken, 0, _amountRewardToken, 0, true);
-        }
+        currentPool = currentPool.safeSub(amountUnlocked);
+
+        /* ========== ---------------------------------------------------------------------------------------------- ========== */
     }
 
     function updateAPR() public permission {
@@ -306,37 +277,6 @@ contract ROI is Ownable, IStabl3StakingStruct {
 
         uint256 totalRewardDistributed = getTotalRewardDistributed();
 
-        uint256 totalStakedAndLendedAmount;
-
-        for (uint256 i = 0 ; i < treasury.allReservedTokensLength() ; i++) {
-            IERC20 reservedToken = treasury.allReservedTokens(i);
-
-            if (treasury.isReservedToken(reservedToken)) {
-                // HQ Pool is included in the Treasury Pool since it earns APR, hence no need to it to either staked or lended amounts
-                uint256 stakedAmount = treasury.getTreasuryPool(STAKE_POOL, reservedToken);
-                stakedAmount += treasury.getROIPool(STAKE_POOL, reservedToken);                 // ROI Pool for staking is 0 by default
-                uint256 lendedAmount = treasury.getTreasuryPool(LEND_POOL, reservedToken);
-                lendedAmount += treasury.getROIPool(LEND_POOL, reservedToken);                  // ROI Pool for lending is 0 by default
-
-                uint256 decimals = reservedToken.decimals();
-
-                totalStakedAndLendedAmount +=
-                    decimals < 18 ?
-                    (stakedAmount * 10 ** (18 - decimals)) + (lendedAmount * 10 ** (18 - decimals)) :
-                    stakedAmount + lendedAmount;
-            }
-        }
-
-        if (totalStakedAndLendedAmount > 0) {
-            StakingAPR memory stakingAPR = StakingAPR({
-                APR: currentAPR,
-                timestamp: block.timestamp
-            });
-
-            getStakingAPRIndex[stakingAPR.timestamp][stakingAPR.APR] = allStakingAPRs.length;
-            allStakingAPRs.push(stakingAPR);
-        }
-
         emit APR(currentAPR, reserves, totalRewardDistributed, block.timestamp);
     }
 
@@ -344,7 +284,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
      * @notice This functions transfers ROI funds to the Treasury
      * @dev Updates values of both treasury and ROI pools
      */
-    function returnFunds(IERC20 _token, uint256 _amountToken, uint8[] memory _pools) external permission reserved(_token) {
+    function returnFunds(IERC20 _token, uint256 _amountToken, uint8[] memory _pools) external permission {
         uint256 amountToUpdate = _amountToken;
 
         for (uint8 i = 0 ; i <= _pools.length ; i++) {
@@ -391,11 +331,6 @@ contract ROI is Ownable, IStabl3StakingStruct {
 
     modifier permission() {
         require(permitted[msg.sender] || msg.sender == owner(), "ROI: Not permitted");
-        _;
-    }
-
-    modifier reserved(IERC20 _token) {
-        require(treasury.isReservedToken(_token), "Stabl3Staking: Not a reserved token");
         _;
     }
 }

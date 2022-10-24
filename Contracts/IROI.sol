@@ -3,8 +3,15 @@
 pragma solidity ^0.8.0;
 
 import "./IERC20.sol";
+import "./IStabl3StakingStruct.sol";
 
-interface IROI {
+interface IROI is IStabl3StakingStruct {
+
+    function getStakingAPRIndex(uint256, uint256) external view returns (uint256);
+
+    function allStakingAPRs(uint256) external view returns (StakingAPR memory);
+
+    function allStakingAPRsLength() external view returns (uint256);
 
     function permitted(address) external returns (bool);
 
@@ -20,6 +27,13 @@ interface IROI {
         uint8 _stakingType,
         bool _isLending
     ) external view returns (uint256 maxPool, uint256 currentPool);
+
+    function distributeReward(
+        address _user,
+        IERC20 _rewardToken,
+        uint256 _amountRewardToken,
+        uint8 _poolType
+    ) external;
 
     function updateAPR() external;
 
