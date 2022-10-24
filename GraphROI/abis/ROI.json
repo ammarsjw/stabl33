@@ -34,7 +34,7 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "blockTimestampLast",
+        "name": "timestamp",
         "type": "uint256"
       }
     ],
@@ -101,6 +101,43 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "allStakingAPRs",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "APR",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "allStakingAPRsLength",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "contract IERC20",
         "name": "_token",
         "type": "address"
@@ -117,6 +154,34 @@
       }
     ],
     "name": "delegateApprove",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "contract IERC20",
+        "name": "_rewardToken",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amountRewardToken",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint8",
+        "name": "_poolType",
+        "type": "uint8"
+      }
+    ],
+    "name": "distributeReward",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -148,8 +213,19 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "getTotalRewardDistributed",
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "getStakingAPRIndex",
     "outputs": [
       {
         "internalType": "uint256",
@@ -161,16 +237,16 @@
     "type": "function"
   },
   {
-    "inputs": [
+    "inputs": [],
+    "name": "getTotalRewardDistributed",
+    "outputs": [
       {
-        "internalType": "address",
-        "name": "_ucd",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
-    "name": "initializeUCD",
-    "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -226,6 +302,29 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "contract IERC20",
+        "name": "_token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amountToken",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint8[]",
+        "name": "_pools",
+        "type": "uint8[]"
+      }
+    ],
+    "name": "returnFunds",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "stabl3",
     "outputs": [
@@ -246,6 +345,19 @@
         "internalType": "contract IStabl3Staking",
         "name": "",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "stakingTypePercentage",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -370,6 +482,19 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "_ucd",
+        "type": "address"
+      }
+    ],
+    "name": "updateUCD",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "contract IERC20",
         "name": "_token",
         "type": "address"
@@ -378,6 +503,16 @@
         "internalType": "uint256",
         "name": "_amountToken",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint8",
+        "name": "_stakingType",
+        "type": "uint8"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isLending",
+        "type": "bool"
       }
     ],
     "name": "validatePool",
@@ -394,37 +529,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "contract IERC20",
-        "name": "_token",
-        "type": "address"
-      }
-    ],
-    "name": "withdrawAllFunds",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "contract IERC20",
-        "name": "_token",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_amountToken",
-        "type": "uint256"
-      }
-    ],
-    "name": "withdrawFunds",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   }
 ]

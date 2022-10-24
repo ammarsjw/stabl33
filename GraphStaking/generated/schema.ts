@@ -832,23 +832,6 @@ export class ClaimedLendingStabl3 extends Entity {
     }
   }
 
-  get amountTokenLending(): BigInt | null {
-    let value = this.get("amountTokenLending");
-    if (!value || value.kind == ValueKind.NULL) {
-      return null;
-    } else {
-      return value.toBigInt();
-    }
-  }
-
-  set amountTokenLending(value: BigInt | null) {
-    if (!value) {
-      this.unset("amountTokenLending");
-    } else {
-      this.set("amountTokenLending", Value.fromBigInt(<BigInt>value));
-    }
-  }
-
   get amountStabl3Lending(): BigInt | null {
     let value = this.get("amountStabl3Lending");
     if (!value || value.kind == ValueKind.NULL) {

@@ -35,7 +35,7 @@ export class APR__Params {
     return this._event.parameters[2].value.toBigInt();
   }
 
-  get blockTimestampLast(): BigInt {
+  get timestamp(): BigInt {
     return this._event.parameters[3].value.toBigInt();
   }
 }
@@ -106,6 +106,31 @@ export class UpdatedTreasury__Params {
   }
 }
 
+export class ROI__allStakingAPRsResult {
+  value0: BigInt;
+  value1: BigInt;
+
+  constructor(value0: BigInt, value1: BigInt) {
+    this.value0 = value0;
+    this.value1 = value1;
+  }
+
+  toMap(): TypedMap<string, ethereum.Value> {
+    let map = new TypedMap<string, ethereum.Value>();
+    map.set("value0", ethereum.Value.fromUnsignedBigInt(this.value0));
+    map.set("value1", ethereum.Value.fromUnsignedBigInt(this.value1));
+    return map;
+  }
+
+  getAPR(): BigInt {
+    return this.value0;
+  }
+
+  getTimestamp(): BigInt {
+    return this.value1;
+  }
+}
+
 export class ROI__validatePoolResult {
   value0: BigInt;
   value1: BigInt;
@@ -136,6 +161,59 @@ export class ROI extends ethereum.SmartContract {
     return new ROI("ROI", address);
   }
 
+  allStakingAPRs(param0: BigInt): ROI__allStakingAPRsResult {
+    let result = super.call(
+      "allStakingAPRs",
+      "allStakingAPRs(uint256):(uint256,uint256)",
+      [ethereum.Value.fromUnsignedBigInt(param0)]
+    );
+
+    return new ROI__allStakingAPRsResult(
+      result[0].toBigInt(),
+      result[1].toBigInt()
+    );
+  }
+
+  try_allStakingAPRs(
+    param0: BigInt
+  ): ethereum.CallResult<ROI__allStakingAPRsResult> {
+    let result = super.tryCall(
+      "allStakingAPRs",
+      "allStakingAPRs(uint256):(uint256,uint256)",
+      [ethereum.Value.fromUnsignedBigInt(param0)]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(
+      new ROI__allStakingAPRsResult(value[0].toBigInt(), value[1].toBigInt())
+    );
+  }
+
+  allStakingAPRsLength(): BigInt {
+    let result = super.call(
+      "allStakingAPRsLength",
+      "allStakingAPRsLength():(uint256)",
+      []
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_allStakingAPRsLength(): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "allStakingAPRsLength",
+      "allStakingAPRsLength():(uint256)",
+      []
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
   getAPR(): BigInt {
     let result = super.call("getAPR", "getAPR():(uint256)", []);
 
@@ -159,6 +237,38 @@ export class ROI extends ethereum.SmartContract {
 
   try_getReserves(): ethereum.CallResult<BigInt> {
     let result = super.tryCall("getReserves", "getReserves():(uint256)", []);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
+  getStakingAPRIndex(param0: BigInt, param1: BigInt): BigInt {
+    let result = super.call(
+      "getStakingAPRIndex",
+      "getStakingAPRIndex(uint256,uint256):(uint256)",
+      [
+        ethereum.Value.fromUnsignedBigInt(param0),
+        ethereum.Value.fromUnsignedBigInt(param1)
+      ]
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_getStakingAPRIndex(
+    param0: BigInt,
+    param1: BigInt
+  ): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "getStakingAPRIndex",
+      "getStakingAPRIndex(uint256,uint256):(uint256)",
+      [
+        ethereum.Value.fromUnsignedBigInt(param0),
+        ethereum.Value.fromUnsignedBigInt(param1)
+      ]
+    );
     if (result.reverted) {
       return new ethereum.CallResult();
     }
@@ -280,6 +390,29 @@ export class ROI extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toAddress());
   }
 
+  stakingTypePercentage(): BigInt {
+    let result = super.call(
+      "stakingTypePercentage",
+      "stakingTypePercentage():(uint256)",
+      []
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_stakingTypePercentage(): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "stakingTypePercentage",
+      "stakingTypePercentage():(uint256)",
+      []
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
   treasury(): Address {
     let result = super.call("treasury", "treasury():(address)", []);
 
@@ -310,13 +443,20 @@ export class ROI extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toAddress());
   }
 
-  validatePool(_token: Address, _amountToken: BigInt): ROI__validatePoolResult {
+  validatePool(
+    _token: Address,
+    _amountToken: BigInt,
+    _stakingType: i32,
+    _isLending: boolean
+  ): ROI__validatePoolResult {
     let result = super.call(
       "validatePool",
-      "validatePool(address,uint256):(uint256,uint256)",
+      "validatePool(address,uint256,uint8,bool):(uint256,uint256)",
       [
         ethereum.Value.fromAddress(_token),
-        ethereum.Value.fromUnsignedBigInt(_amountToken)
+        ethereum.Value.fromUnsignedBigInt(_amountToken),
+        ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(_stakingType)),
+        ethereum.Value.fromBoolean(_isLending)
       ]
     );
 
@@ -328,14 +468,18 @@ export class ROI extends ethereum.SmartContract {
 
   try_validatePool(
     _token: Address,
-    _amountToken: BigInt
+    _amountToken: BigInt,
+    _stakingType: i32,
+    _isLending: boolean
   ): ethereum.CallResult<ROI__validatePoolResult> {
     let result = super.tryCall(
       "validatePool",
-      "validatePool(address,uint256):(uint256,uint256)",
+      "validatePool(address,uint256,uint8,bool):(uint256,uint256)",
       [
         ethereum.Value.fromAddress(_token),
-        ethereum.Value.fromUnsignedBigInt(_amountToken)
+        ethereum.Value.fromUnsignedBigInt(_amountToken),
+        ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(_stakingType)),
+        ethereum.Value.fromBoolean(_isLending)
       ]
     );
     if (result.reverted) {
@@ -416,32 +560,44 @@ export class DelegateApproveCall__Outputs {
   }
 }
 
-export class InitializeUCDCall extends ethereum.Call {
-  get inputs(): InitializeUCDCall__Inputs {
-    return new InitializeUCDCall__Inputs(this);
+export class DistributeRewardCall extends ethereum.Call {
+  get inputs(): DistributeRewardCall__Inputs {
+    return new DistributeRewardCall__Inputs(this);
   }
 
-  get outputs(): InitializeUCDCall__Outputs {
-    return new InitializeUCDCall__Outputs(this);
+  get outputs(): DistributeRewardCall__Outputs {
+    return new DistributeRewardCall__Outputs(this);
   }
 }
 
-export class InitializeUCDCall__Inputs {
-  _call: InitializeUCDCall;
+export class DistributeRewardCall__Inputs {
+  _call: DistributeRewardCall;
 
-  constructor(call: InitializeUCDCall) {
+  constructor(call: DistributeRewardCall) {
     this._call = call;
   }
 
-  get _ucd(): Address {
+  get _user(): Address {
     return this._call.inputValues[0].value.toAddress();
+  }
+
+  get _rewardToken(): Address {
+    return this._call.inputValues[1].value.toAddress();
+  }
+
+  get _amountRewardToken(): BigInt {
+    return this._call.inputValues[2].value.toBigInt();
+  }
+
+  get _poolType(): i32 {
+    return this._call.inputValues[3].value.toI32();
   }
 }
 
-export class InitializeUCDCall__Outputs {
-  _call: InitializeUCDCall;
+export class DistributeRewardCall__Outputs {
+  _call: DistributeRewardCall;
 
-  constructor(call: InitializeUCDCall) {
+  constructor(call: DistributeRewardCall) {
     this._call = call;
   }
 }
@@ -468,6 +624,44 @@ export class RenounceOwnershipCall__Outputs {
   _call: RenounceOwnershipCall;
 
   constructor(call: RenounceOwnershipCall) {
+    this._call = call;
+  }
+}
+
+export class ReturnFundsCall extends ethereum.Call {
+  get inputs(): ReturnFundsCall__Inputs {
+    return new ReturnFundsCall__Inputs(this);
+  }
+
+  get outputs(): ReturnFundsCall__Outputs {
+    return new ReturnFundsCall__Outputs(this);
+  }
+}
+
+export class ReturnFundsCall__Inputs {
+  _call: ReturnFundsCall;
+
+  constructor(call: ReturnFundsCall) {
+    this._call = call;
+  }
+
+  get _token(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+
+  get _amountToken(): BigInt {
+    return this._call.inputValues[1].value.toBigInt();
+  }
+
+  get _pools(): Array<i32> {
+    return this._call.inputValues[2].value.toI32Array();
+  }
+}
+
+export class ReturnFundsCall__Outputs {
+  _call: ReturnFundsCall;
+
+  constructor(call: ReturnFundsCall) {
     this._call = call;
   }
 }
@@ -682,66 +876,32 @@ export class UpdateTreasuryCall__Outputs {
   }
 }
 
-export class WithdrawAllFundsCall extends ethereum.Call {
-  get inputs(): WithdrawAllFundsCall__Inputs {
-    return new WithdrawAllFundsCall__Inputs(this);
+export class UpdateUCDCall extends ethereum.Call {
+  get inputs(): UpdateUCDCall__Inputs {
+    return new UpdateUCDCall__Inputs(this);
   }
 
-  get outputs(): WithdrawAllFundsCall__Outputs {
-    return new WithdrawAllFundsCall__Outputs(this);
+  get outputs(): UpdateUCDCall__Outputs {
+    return new UpdateUCDCall__Outputs(this);
   }
 }
 
-export class WithdrawAllFundsCall__Inputs {
-  _call: WithdrawAllFundsCall;
+export class UpdateUCDCall__Inputs {
+  _call: UpdateUCDCall;
 
-  constructor(call: WithdrawAllFundsCall) {
+  constructor(call: UpdateUCDCall) {
     this._call = call;
   }
 
-  get _token(): Address {
+  get _ucd(): Address {
     return this._call.inputValues[0].value.toAddress();
   }
 }
 
-export class WithdrawAllFundsCall__Outputs {
-  _call: WithdrawAllFundsCall;
+export class UpdateUCDCall__Outputs {
+  _call: UpdateUCDCall;
 
-  constructor(call: WithdrawAllFundsCall) {
-    this._call = call;
-  }
-}
-
-export class WithdrawFundsCall extends ethereum.Call {
-  get inputs(): WithdrawFundsCall__Inputs {
-    return new WithdrawFundsCall__Inputs(this);
-  }
-
-  get outputs(): WithdrawFundsCall__Outputs {
-    return new WithdrawFundsCall__Outputs(this);
-  }
-}
-
-export class WithdrawFundsCall__Inputs {
-  _call: WithdrawFundsCall;
-
-  constructor(call: WithdrawFundsCall) {
-    this._call = call;
-  }
-
-  get _token(): Address {
-    return this._call.inputValues[0].value.toAddress();
-  }
-
-  get _amountToken(): BigInt {
-    return this._call.inputValues[1].value.toBigInt();
-  }
-}
-
-export class WithdrawFundsCall__Outputs {
-  _call: WithdrawFundsCall;
-
-  constructor(call: WithdrawFundsCall) {
+  constructor(call: UpdateUCDCall) {
     this._call = call;
   }
 }

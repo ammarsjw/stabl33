@@ -70,7 +70,6 @@ type ClaimedLendingStabl3 @entity {
   user: Bytes
   index: BigInt
   token: Bytes
-  amountTokenLending: BigInt
   amountStabl3Lending: BigInt
   totalAmountStabl3Withdrawn: BigInt
   timestamp: BigInt

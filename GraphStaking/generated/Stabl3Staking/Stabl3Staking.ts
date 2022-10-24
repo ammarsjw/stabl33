@@ -35,20 +35,16 @@ export class ClaimedLendingStabl3__Params {
     return this._event.parameters[2].value.toAddress();
   }
 
-  get amountTokenLending(): BigInt {
+  get amountStabl3Lending(): BigInt {
     return this._event.parameters[3].value.toBigInt();
   }
 
-  get amountStabl3Lending(): BigInt {
+  get totalAmountStabl3Withdrawn(): BigInt {
     return this._event.parameters[4].value.toBigInt();
   }
 
-  get totalAmountStabl3Withdrawn(): BigInt {
-    return this._event.parameters[5].value.toBigInt();
-  }
-
   get timestamp(): BigInt {
-    return this._event.parameters[6].value.toBigInt();
+    return this._event.parameters[5].value.toBigInt();
   }
 }
 
@@ -111,11 +107,11 @@ export class Stake__Params {
     return this._event.parameters[5].value.toBigInt();
   }
 
-  get endTime(): BigInt {
+  get totalAmountToken(): BigInt {
     return this._event.parameters[6].value.toBigInt();
   }
 
-  get totalAmountToken(): BigInt {
+  get endTime(): BigInt {
     return this._event.parameters[7].value.toBigInt();
   }
 
@@ -189,6 +185,28 @@ export class UpdatedHQ__Params {
 
   get oldHQ(): Address {
     return this._event.parameters[1].value.toAddress();
+  }
+}
+
+export class UpdatedPermission extends ethereum.Event {
+  get params(): UpdatedPermission__Params {
+    return new UpdatedPermission__Params(this);
+  }
+}
+
+export class UpdatedPermission__Params {
+  _event: UpdatedPermission;
+
+  constructor(event: UpdatedPermission) {
+    this._event = event;
+  }
+
+  get contractAddress(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+
+  get state(): boolean {
+    return this._event.parameters[1].value.toBoolean();
   }
 }
 
@@ -307,24 +325,24 @@ export class Stabl3Staking__allStakingsResultUnlockedLendingStruct extends ether
     return this[6].toBigInt();
   }
 
-  get rewardWithdrawn(): BigInt {
+  get stakingAPRIndexLast(): BigInt {
     return this[7].toBigInt();
   }
 
-  get rewardWithdrawTimeLast(): BigInt {
+  get rewardWithdrawn(): BigInt {
     return this[8].toBigInt();
   }
 
-  get isLending(): boolean {
-    return this[9].toBoolean();
+  get rewardWithdrawTimeLast(): BigInt {
+    return this[9].toBigInt();
   }
 
-  get isClaimedStabl3Lending(): boolean {
+  get isLending(): boolean {
     return this[10].toBoolean();
   }
 
-  get amountTokenLending(): BigInt {
-    return this[11].toBigInt();
+  get isClaimedStabl3Lending(): boolean {
+    return this[11].toBoolean();
   }
 
   get amountStabl3Lending(): BigInt {
@@ -365,24 +383,24 @@ export class Stabl3Staking__allStakingsResultLockedLendingStruct extends ethereu
     return this[6].toBigInt();
   }
 
-  get rewardWithdrawn(): BigInt {
+  get stakingAPRIndexLast(): BigInt {
     return this[7].toBigInt();
   }
 
-  get rewardWithdrawTimeLast(): BigInt {
+  get rewardWithdrawn(): BigInt {
     return this[8].toBigInt();
   }
 
-  get isLending(): boolean {
-    return this[9].toBoolean();
+  get rewardWithdrawTimeLast(): BigInt {
+    return this[9].toBigInt();
   }
 
-  get isClaimedStabl3Lending(): boolean {
+  get isLending(): boolean {
     return this[10].toBoolean();
   }
 
-  get amountTokenLending(): BigInt {
-    return this[11].toBigInt();
+  get isClaimedStabl3Lending(): boolean {
+    return this[11].toBoolean();
   }
 
   get amountStabl3Lending(): BigInt {
@@ -423,24 +441,24 @@ export class Stabl3Staking__allStakingsResultUnlockedStakingStruct extends ether
     return this[6].toBigInt();
   }
 
-  get rewardWithdrawn(): BigInt {
+  get stakingAPRIndexLast(): BigInt {
     return this[7].toBigInt();
   }
 
-  get rewardWithdrawTimeLast(): BigInt {
+  get rewardWithdrawn(): BigInt {
     return this[8].toBigInt();
   }
 
-  get isLending(): boolean {
-    return this[9].toBoolean();
+  get rewardWithdrawTimeLast(): BigInt {
+    return this[9].toBigInt();
   }
 
-  get isClaimedStabl3Lending(): boolean {
+  get isLending(): boolean {
     return this[10].toBoolean();
   }
 
-  get amountTokenLending(): BigInt {
-    return this[11].toBigInt();
+  get isClaimedStabl3Lending(): boolean {
+    return this[11].toBoolean();
   }
 
   get amountStabl3Lending(): BigInt {
@@ -481,24 +499,24 @@ export class Stabl3Staking__allStakingsResultLockedStakingStruct extends ethereu
     return this[6].toBigInt();
   }
 
-  get rewardWithdrawn(): BigInt {
+  get stakingAPRIndexLast(): BigInt {
     return this[7].toBigInt();
   }
 
-  get rewardWithdrawTimeLast(): BigInt {
+  get rewardWithdrawn(): BigInt {
     return this[8].toBigInt();
   }
 
-  get isLending(): boolean {
-    return this[9].toBoolean();
+  get rewardWithdrawTimeLast(): BigInt {
+    return this[9].toBigInt();
   }
 
-  get isClaimedStabl3Lending(): boolean {
+  get isLending(): boolean {
     return this[10].toBoolean();
   }
 
-  get amountTokenLending(): BigInt {
-    return this[11].toBigInt();
+  get isClaimedStabl3Lending(): boolean {
+    return this[11].toBoolean();
   }
 
   get amountStabl3Lending(): BigInt {
@@ -629,9 +647,9 @@ export class Stabl3Staking__getStakingsResult {
   value6: BigInt;
   value7: BigInt;
   value8: BigInt;
-  value9: boolean;
+  value9: BigInt;
   value10: boolean;
-  value11: BigInt;
+  value11: boolean;
   value12: BigInt;
   value13: boolean;
 
@@ -645,9 +663,9 @@ export class Stabl3Staking__getStakingsResult {
     value6: BigInt,
     value7: BigInt,
     value8: BigInt,
-    value9: boolean,
+    value9: BigInt,
     value10: boolean,
-    value11: BigInt,
+    value11: boolean,
     value12: BigInt,
     value13: boolean
   ) {
@@ -681,9 +699,9 @@ export class Stabl3Staking__getStakingsResult {
     map.set("value6", ethereum.Value.fromUnsignedBigInt(this.value6));
     map.set("value7", ethereum.Value.fromUnsignedBigInt(this.value7));
     map.set("value8", ethereum.Value.fromUnsignedBigInt(this.value8));
-    map.set("value9", ethereum.Value.fromBoolean(this.value9));
+    map.set("value9", ethereum.Value.fromUnsignedBigInt(this.value9));
     map.set("value10", ethereum.Value.fromBoolean(this.value10));
-    map.set("value11", ethereum.Value.fromUnsignedBigInt(this.value11));
+    map.set("value11", ethereum.Value.fromBoolean(this.value11));
     map.set("value12", ethereum.Value.fromUnsignedBigInt(this.value12));
     map.set("value13", ethereum.Value.fromBoolean(this.value13));
     return map;
@@ -717,23 +735,23 @@ export class Stabl3Staking__getStakingsResult {
     return this.value6;
   }
 
-  getRewardWithdrawn(): BigInt {
+  getStakingAPRIndexLast(): BigInt {
     return this.value7;
   }
 
-  getRewardWithdrawTimeLast(): BigInt {
+  getRewardWithdrawn(): BigInt {
     return this.value8;
   }
 
-  getIsLending(): boolean {
+  getRewardWithdrawTimeLast(): BigInt {
     return this.value9;
   }
 
-  getIsClaimedStabl3Lending(): boolean {
+  getIsLending(): boolean {
     return this.value10;
   }
 
-  getAmountTokenLending(): BigInt {
+  getIsClaimedStabl3Lending(): boolean {
     return this.value11;
   }
 
@@ -875,7 +893,7 @@ export class Stabl3Staking extends ethereum.SmartContract {
   ): Stabl3Staking__allStakingsResult {
     let result = super.call(
       "allStakings",
-      "allStakings(address,bool):((uint256,address,bool,uint8,address,uint256,uint256,uint256,uint256,bool,bool,uint256,uint256,bool)[],(uint256,address,bool,uint8,address,uint256,uint256,uint256,uint256,bool,bool,uint256,uint256,bool)[],(uint256,address,bool,uint8,address,uint256,uint256,uint256,uint256,bool,bool,uint256,uint256,bool)[],(uint256,address,bool,uint8,address,uint256,uint256,uint256,uint256,bool,bool,uint256,uint256,bool)[])",
+      "allStakings(address,bool):((uint256,address,bool,uint8,address,uint256,uint256,uint256,uint256,uint256,bool,bool,uint256,bool)[],(uint256,address,bool,uint8,address,uint256,uint256,uint256,uint256,uint256,bool,bool,uint256,bool)[],(uint256,address,bool,uint8,address,uint256,uint256,uint256,uint256,uint256,bool,bool,uint256,bool)[],(uint256,address,bool,uint8,address,uint256,uint256,uint256,uint256,uint256,bool,bool,uint256,bool)[])",
       [
         ethereum.Value.fromAddress(_user),
         ethereum.Value.fromBoolean(_isRealEstate)
@@ -904,7 +922,7 @@ export class Stabl3Staking extends ethereum.SmartContract {
   ): ethereum.CallResult<Stabl3Staking__allStakingsResult> {
     let result = super.tryCall(
       "allStakings",
-      "allStakings(address,bool):((uint256,address,bool,uint8,address,uint256,uint256,uint256,uint256,bool,bool,uint256,uint256,bool)[],(uint256,address,bool,uint8,address,uint256,uint256,uint256,uint256,bool,bool,uint256,uint256,bool)[],(uint256,address,bool,uint8,address,uint256,uint256,uint256,uint256,bool,bool,uint256,uint256,bool)[],(uint256,address,bool,uint8,address,uint256,uint256,uint256,uint256,bool,bool,uint256,uint256,bool)[])",
+      "allStakings(address,bool):((uint256,address,bool,uint8,address,uint256,uint256,uint256,uint256,uint256,bool,bool,uint256,bool)[],(uint256,address,bool,uint8,address,uint256,uint256,uint256,uint256,uint256,bool,bool,uint256,bool)[],(uint256,address,bool,uint8,address,uint256,uint256,uint256,uint256,uint256,bool,bool,uint256,bool)[],(uint256,address,bool,uint8,address,uint256,uint256,uint256,uint256,uint256,bool,bool,uint256,bool)[])",
       [
         ethereum.Value.fromAddress(_user),
         ethereum.Value.fromBoolean(_isRealEstate)
@@ -1241,7 +1259,7 @@ export class Stabl3Staking extends ethereum.SmartContract {
   ): Stabl3Staking__getStakingsResult {
     let result = super.call(
       "getStakings",
-      "getStakings(address,uint256):(uint256,address,bool,uint8,address,uint256,uint256,uint256,uint256,bool,bool,uint256,uint256,bool)",
+      "getStakings(address,uint256):(uint256,address,bool,uint8,address,uint256,uint256,uint256,uint256,uint256,bool,bool,uint256,bool)",
       [
         ethereum.Value.fromAddress(param0),
         ethereum.Value.fromUnsignedBigInt(param1)
@@ -1258,9 +1276,9 @@ export class Stabl3Staking extends ethereum.SmartContract {
       result[6].toBigInt(),
       result[7].toBigInt(),
       result[8].toBigInt(),
-      result[9].toBoolean(),
+      result[9].toBigInt(),
       result[10].toBoolean(),
-      result[11].toBigInt(),
+      result[11].toBoolean(),
       result[12].toBigInt(),
       result[13].toBoolean()
     );
@@ -1272,7 +1290,7 @@ export class Stabl3Staking extends ethereum.SmartContract {
   ): ethereum.CallResult<Stabl3Staking__getStakingsResult> {
     let result = super.tryCall(
       "getStakings",
-      "getStakings(address,uint256):(uint256,address,bool,uint8,address,uint256,uint256,uint256,uint256,bool,bool,uint256,uint256,bool)",
+      "getStakings(address,uint256):(uint256,address,bool,uint8,address,uint256,uint256,uint256,uint256,uint256,bool,bool,uint256,bool)",
       [
         ethereum.Value.fromAddress(param0),
         ethereum.Value.fromUnsignedBigInt(param1)
@@ -1293,9 +1311,9 @@ export class Stabl3Staking extends ethereum.SmartContract {
         value[6].toBigInt(),
         value[7].toBigInt(),
         value[8].toBigInt(),
-        value[9].toBoolean(),
+        value[9].toBigInt(),
         value[10].toBoolean(),
-        value[11].toBigInt(),
+        value[11].toBoolean(),
         value[12].toBigInt(),
         value[13].toBoolean()
       )
@@ -1382,6 +1400,44 @@ export class Stabl3Staking extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toAddress());
   }
 
+  permitted(param0: Address): boolean {
+    let result = super.call("permitted", "permitted(address):(bool)", [
+      ethereum.Value.fromAddress(param0)
+    ]);
+
+    return result[0].toBoolean();
+  }
+
+  try_permitted(param0: Address): ethereum.CallResult<boolean> {
+    let result = super.tryCall("permitted", "permitted(address):(bool)", [
+      ethereum.Value.fromAddress(param0)
+    ]);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBoolean());
+  }
+
+  returnPools(param0: BigInt): i32 {
+    let result = super.call("returnPools", "returnPools(uint256):(uint8)", [
+      ethereum.Value.fromUnsignedBigInt(param0)
+    ]);
+
+    return result[0].toI32();
+  }
+
+  try_returnPools(param0: BigInt): ethereum.CallResult<i32> {
+    let result = super.tryCall("returnPools", "returnPools(uint256):(uint8)", [
+      ethereum.Value.fromUnsignedBigInt(param0)
+    ]);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toI32());
+  }
+
   stabl3(): Address {
     let result = super.call("stabl3", "stabl3():(address)", []);
 
@@ -1390,29 +1446,6 @@ export class Stabl3Staking extends ethereum.SmartContract {
 
   try_stabl3(): ethereum.CallResult<Address> {
     let result = super.tryCall("stabl3", "stabl3():(address)", []);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toAddress());
-  }
-
-  stabl3RealEstate(): Address {
-    let result = super.call(
-      "stabl3RealEstate",
-      "stabl3RealEstate():(address)",
-      []
-    );
-
-    return result[0].toAddress();
-  }
-
-  try_stabl3RealEstate(): ethereum.CallResult<Address> {
-    let result = super.tryCall(
-      "stabl3RealEstate",
-      "stabl3RealEstate():(address)",
-      []
-    );
     if (result.reverted) {
       return new ethereum.CallResult();
     }
@@ -1600,24 +1633,24 @@ export class AccessWithPermitCall_stakingStruct extends ethereum.Tuple {
     return this[6].toBigInt();
   }
 
-  get rewardWithdrawn(): BigInt {
+  get stakingAPRIndexLast(): BigInt {
     return this[7].toBigInt();
   }
 
-  get rewardWithdrawTimeLast(): BigInt {
+  get rewardWithdrawn(): BigInt {
     return this[8].toBigInt();
   }
 
-  get isLending(): boolean {
-    return this[9].toBoolean();
+  get rewardWithdrawTimeLast(): BigInt {
+    return this[9].toBigInt();
   }
 
-  get isClaimedStabl3Lending(): boolean {
+  get isLending(): boolean {
     return this[10].toBoolean();
   }
 
-  get amountTokenLending(): BigInt {
-    return this[11].toBigInt();
+  get isClaimedStabl3Lending(): boolean {
+    return this[11].toBoolean();
   }
 
   get amountStabl3Lending(): BigInt {
@@ -1702,7 +1735,7 @@ export class RestakeSingleCall__Inputs {
     return this._call.inputValues[0].value.toBigInt();
   }
 
-  get _amountToWithdraw(): BigInt {
+  get _amountToUnstake(): BigInt {
     return this._call.inputValues[1].value.toBigInt();
   }
 
@@ -1987,6 +2020,40 @@ export class UpdateLockTimesCall__Outputs {
   }
 }
 
+export class UpdatePermissionCall extends ethereum.Call {
+  get inputs(): UpdatePermissionCall__Inputs {
+    return new UpdatePermissionCall__Inputs(this);
+  }
+
+  get outputs(): UpdatePermissionCall__Outputs {
+    return new UpdatePermissionCall__Outputs(this);
+  }
+}
+
+export class UpdatePermissionCall__Inputs {
+  _call: UpdatePermissionCall;
+
+  constructor(call: UpdatePermissionCall) {
+    this._call = call;
+  }
+
+  get _contractAddress(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+
+  get _state(): boolean {
+    return this._call.inputValues[1].value.toBoolean();
+  }
+}
+
+export class UpdatePermissionCall__Outputs {
+  _call: UpdatePermissionCall;
+
+  constructor(call: UpdatePermissionCall) {
+    this._call = call;
+  }
+}
+
 export class UpdateROICall extends ethereum.Call {
   get inputs(): UpdateROICall__Inputs {
     return new UpdateROICall__Inputs(this);
@@ -2017,32 +2084,32 @@ export class UpdateROICall__Outputs {
   }
 }
 
-export class UpdateStabl3RealEstateCall extends ethereum.Call {
-  get inputs(): UpdateStabl3RealEstateCall__Inputs {
-    return new UpdateStabl3RealEstateCall__Inputs(this);
+export class UpdateReturnPoolsCall extends ethereum.Call {
+  get inputs(): UpdateReturnPoolsCall__Inputs {
+    return new UpdateReturnPoolsCall__Inputs(this);
   }
 
-  get outputs(): UpdateStabl3RealEstateCall__Outputs {
-    return new UpdateStabl3RealEstateCall__Outputs(this);
+  get outputs(): UpdateReturnPoolsCall__Outputs {
+    return new UpdateReturnPoolsCall__Outputs(this);
   }
 }
 
-export class UpdateStabl3RealEstateCall__Inputs {
-  _call: UpdateStabl3RealEstateCall;
+export class UpdateReturnPoolsCall__Inputs {
+  _call: UpdateReturnPoolsCall;
 
-  constructor(call: UpdateStabl3RealEstateCall) {
+  constructor(call: UpdateReturnPoolsCall) {
     this._call = call;
   }
 
-  get _stabl3RealEstate(): Address {
-    return this._call.inputValues[0].value.toAddress();
+  get _returnPools(): Array<i32> {
+    return this._call.inputValues[0].value.toI32Array();
   }
 }
 
-export class UpdateStabl3RealEstateCall__Outputs {
-  _call: UpdateStabl3RealEstateCall;
+export class UpdateReturnPoolsCall__Outputs {
+  _call: UpdateReturnPoolsCall;
 
-  constructor(call: UpdateStabl3RealEstateCall) {
+  constructor(call: UpdateReturnPoolsCall) {
     this._call = call;
   }
 }

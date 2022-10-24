@@ -6,9 +6,9 @@ dataSources:
     name: Stabl3Staking
     network: goerli
     source:
-      address: "0x76b0f62dD9D456cdd095fAc383A97cAdD6848a00"
+      address: "0xC870a3dc444bF970Da13979E9CFAc1a01c198eac"
       abi: Stabl3Staking
-      startBlock: 7750456
+      startBlock: 7825572
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -26,7 +26,7 @@ dataSources:
         - name: Stabl3Staking
           file: ./abis/Stabl3Staking.json
       eventHandlers:
-        - event: ClaimedLendingStabl3(indexed address,uint256,address,uint256,uint256,uint256,uint256)
+        - event: ClaimedLendingStabl3(indexed address,uint256,address,uint256,uint256,uint256)
           handler: handleClaimedLendingStabl3
         - event: OwnershipTransferred(indexed address,indexed address)
           handler: handleOwnershipTransferred

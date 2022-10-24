@@ -35,13 +35,13 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "totalValueLocked",
+        "name": "reserves",
         "type": "uint256"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "reserves",
+        "name": "totalValueLocked",
         "type": "uint256"
       },
       {
@@ -53,7 +53,7 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "blockTimestampLast",
+        "name": "timestamp",
         "type": "uint256"
       }
     ],
@@ -527,19 +527,6 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_ucd",
-        "type": "address"
-      }
-    ],
-    "name": "initializeUCD",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "contract IERC20",
         "name": "",
         "type": "address"
@@ -746,6 +733,19 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "_router",
+        "type": "address"
+      }
+    ],
+    "name": "updateDEX",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "_exchangeFee",
         "type": "uint256"
@@ -895,30 +895,12 @@
   {
     "inputs": [
       {
-        "internalType": "contract IERC20",
-        "name": "_token",
+        "internalType": "address",
+        "name": "_ucd",
         "type": "address"
       }
     ],
-    "name": "withdrawAllFunds",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "contract IERC20",
-        "name": "_token",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_amountToken",
-        "type": "uint256"
-      }
-    ],
-    "name": "withdrawFunds",
+    "name": "updateUCD",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

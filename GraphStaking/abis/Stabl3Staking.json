@@ -39,12 +39,6 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "amountTokenLending",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
         "name": "amountStabl3Lending",
         "type": "uint256"
       },
@@ -125,13 +119,13 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "endTime",
+        "name": "totalAmountToken",
         "type": "uint256"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "totalAmountToken",
+        "name": "endTime",
         "type": "uint256"
       },
       {
@@ -216,6 +210,25 @@
       }
     ],
     "name": "UpdatedHQ",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "contractAddress",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "state",
+        "type": "bool"
+      }
+    ],
+    "name": "UpdatedPermission",
     "type": "event"
   },
   {
@@ -415,6 +428,11 @@
           },
           {
             "internalType": "uint256",
+            "name": "stakingAPRIndexLast",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
             "name": "rewardWithdrawn",
             "type": "uint256"
           },
@@ -432,11 +450,6 @@
             "internalType": "bool",
             "name": "isClaimedStabl3Lending",
             "type": "bool"
-          },
-          {
-            "internalType": "uint256",
-            "name": "amountTokenLending",
-            "type": "uint256"
           },
           {
             "internalType": "uint256",
@@ -550,6 +563,11 @@
           },
           {
             "internalType": "uint256",
+            "name": "stakingAPRIndexLast",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
             "name": "rewardWithdrawn",
             "type": "uint256"
           },
@@ -567,11 +585,6 @@
             "internalType": "bool",
             "name": "isClaimedStabl3Lending",
             "type": "bool"
-          },
-          {
-            "internalType": "uint256",
-            "name": "amountTokenLending",
-            "type": "uint256"
           },
           {
             "internalType": "uint256",
@@ -627,6 +640,11 @@
           },
           {
             "internalType": "uint256",
+            "name": "stakingAPRIndexLast",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
             "name": "rewardWithdrawn",
             "type": "uint256"
           },
@@ -644,11 +662,6 @@
             "internalType": "bool",
             "name": "isClaimedStabl3Lending",
             "type": "bool"
-          },
-          {
-            "internalType": "uint256",
-            "name": "amountTokenLending",
-            "type": "uint256"
           },
           {
             "internalType": "uint256",
@@ -704,6 +717,11 @@
           },
           {
             "internalType": "uint256",
+            "name": "stakingAPRIndexLast",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
             "name": "rewardWithdrawn",
             "type": "uint256"
           },
@@ -721,11 +739,6 @@
             "internalType": "bool",
             "name": "isClaimedStabl3Lending",
             "type": "bool"
-          },
-          {
-            "internalType": "uint256",
-            "name": "amountTokenLending",
-            "type": "uint256"
           },
           {
             "internalType": "uint256",
@@ -781,6 +794,11 @@
           },
           {
             "internalType": "uint256",
+            "name": "stakingAPRIndexLast",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
             "name": "rewardWithdrawn",
             "type": "uint256"
           },
@@ -798,11 +816,6 @@
             "internalType": "bool",
             "name": "isClaimedStabl3Lending",
             "type": "bool"
-          },
-          {
-            "internalType": "uint256",
-            "name": "amountTokenLending",
-            "type": "uint256"
           },
           {
             "internalType": "uint256",
@@ -1123,6 +1136,11 @@
       },
       {
         "internalType": "uint256",
+        "name": "stakingAPRIndexLast",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
         "name": "rewardWithdrawn",
         "type": "uint256"
       },
@@ -1140,11 +1158,6 @@
         "internalType": "bool",
         "name": "isClaimedStabl3Lending",
         "type": "bool"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amountTokenLending",
-        "type": "uint256"
       },
       {
         "internalType": "uint256",
@@ -1219,6 +1232,25 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "permitted",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "renounceOwnership",
     "outputs": [],
@@ -1234,7 +1266,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "_amountToWithdraw",
+        "name": "_amountToUnstake",
         "type": "uint256"
       },
       {
@@ -1249,13 +1281,19 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "stabl3",
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "returnPools",
     "outputs": [
       {
-        "internalType": "contract IERC20",
+        "internalType": "uint8",
         "name": "",
-        "type": "address"
+        "type": "uint8"
       }
     ],
     "stateMutability": "view",
@@ -1263,10 +1301,10 @@
   },
   {
     "inputs": [],
-    "name": "stabl3RealEstate",
+    "name": "stabl3",
     "outputs": [
       {
-        "internalType": "address",
+        "internalType": "contract IERC20",
         "name": "",
         "type": "address"
       }
@@ -1461,12 +1499,30 @@
   {
     "inputs": [
       {
-        "internalType": "uint256[4]",
+        "internalType": "uint256[5]",
         "name": "_lockTimes",
-        "type": "uint256[4]"
+        "type": "uint256[5]"
       }
     ],
     "name": "updateLockTimes",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_contractAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "_state",
+        "type": "bool"
+      }
+    ],
+    "name": "updatePermission",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1487,12 +1543,12 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_stabl3RealEstate",
-        "type": "address"
+        "internalType": "uint8[]",
+        "name": "_returnPools",
+        "type": "uint8[]"
       }
     ],
-    "name": "updateStabl3RealEstate",
+    "name": "updateReturnPools",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

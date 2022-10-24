@@ -27,7 +27,7 @@ export function handleOwnershipTransferred(event: OwnershipTransferredEvent): vo
 
 export function handleAPR(event: APREvent): void {
   let transaction = loadOrCreateTransaction(event.transaction, event.block);
-  let id = transaction.id.concat("-").concat(event.params.APR.toString()).concat("-").concat(event.params.reserves.toString()).concat("-").concat(event.params.totalRewardDistributed.toString()).concat("-").concat(event.params.blockTimestampLast.toString());
+  let id = transaction.id.concat("-").concat(event.params.APR.toString()).concat("-").concat(event.params.reserves.toString()).concat("-").concat(event.params.totalRewardDistributed.toString()).concat("-").concat(event.params.timestamp.toString());
   let entity = new APR(id)
   entity.transaction = transaction.id
   entity.APR = event.params.APR

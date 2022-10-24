@@ -362,12 +362,12 @@ export class APR extends Entity {
     this.set("totalRewardDistributed", Value.fromBigInt(value));
   }
 
-  get blockTimestampLast(): BigInt {
-    let value = this.get("blockTimestampLast");
+  get timestamp(): BigInt {
+    let value = this.get("timestamp");
     return value!.toBigInt();
   }
 
-  set blockTimestampLast(value: BigInt) {
-    this.set("blockTimestampLast", Value.fromBigInt(value));
+  set timestamp(value: BigInt) {
+    this.set("timestamp", Value.fromBigInt(value));
   }
 }

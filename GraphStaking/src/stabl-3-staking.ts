@@ -40,7 +40,6 @@ export function handleClaimedLendingStabl3(event: ClaimedLendingStabl3Event): vo
   entity.user = event.params.user
   entity.index = event.params.index
   entity.token = event.params.token
-  entity.amountTokenLending = event.params.amountTokenLending
   entity.amountStabl3Lending = event.params.amountStabl3Lending
   entity.totalAmountStabl3Withdrawn = event.params.totalAmountStabl3Withdrawn
   entity.timestamp = event.params.timestamp

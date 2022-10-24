@@ -346,15 +346,6 @@ export class Rate extends Entity {
     this.set("rate", Value.fromBigInt(value));
   }
 
-  get totalValueLocked(): BigInt {
-    let value = this.get("totalValueLocked");
-    return value!.toBigInt();
-  }
-
-  set totalValueLocked(value: BigInt) {
-    this.set("totalValueLocked", Value.fromBigInt(value));
-  }
-
   get reserves(): BigInt {
     let value = this.get("reserves");
     return value!.toBigInt();
@@ -362,6 +353,15 @@ export class Rate extends Entity {
 
   set reserves(value: BigInt) {
     this.set("reserves", Value.fromBigInt(value));
+  }
+
+  get totalValueLocked(): BigInt {
+    let value = this.get("totalValueLocked");
+    return value!.toBigInt();
+  }
+
+  set totalValueLocked(value: BigInt) {
+    this.set("totalValueLocked", Value.fromBigInt(value));
   }
 
   get stabl3CirculatingSupply(): BigInt {
@@ -373,13 +373,13 @@ export class Rate extends Entity {
     this.set("stabl3CirculatingSupply", Value.fromBigInt(value));
   }
 
-  get blockTimestampLast(): BigInt {
-    let value = this.get("blockTimestampLast");
+  get timestamp(): BigInt {
+    let value = this.get("timestamp");
     return value!.toBigInt();
   }
 
-  set blockTimestampLast(value: BigInt) {
-    this.set("blockTimestampLast", Value.fromBigInt(value));
+  set timestamp(value: BigInt) {
+    this.set("timestamp", Value.fromBigInt(value));
   }
 }
 

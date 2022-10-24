@@ -34,10 +34,10 @@ type Rate @entity {
   id: ID!
   transaction: Transaction!
   rate: BigInt!
-  totalValueLocked: BigInt!
   reserves: BigInt!
+  totalValueLocked: BigInt!
   stabl3CirculatingSupply: BigInt!
-  blockTimestampLast: BigInt!
+  timestamp: BigInt!
 }
 
 type UpdatedROI @entity {

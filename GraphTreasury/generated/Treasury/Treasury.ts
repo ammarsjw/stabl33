@@ -49,11 +49,11 @@ export class Rate__Params {
     return this._event.parameters[0].value.toBigInt();
   }
 
-  get totalValueLocked(): BigInt {
+  get reserves(): BigInt {
     return this._event.parameters[1].value.toBigInt();
   }
 
-  get reserves(): BigInt {
+  get totalValueLocked(): BigInt {
     return this._event.parameters[2].value.toBigInt();
   }
 
@@ -61,7 +61,7 @@ export class Rate__Params {
     return this._event.parameters[3].value.toBigInt();
   }
 
-  get blockTimestampLast(): BigInt {
+  get timestamp(): BigInt {
     return this._event.parameters[4].value.toBigInt();
   }
 }
@@ -990,36 +990,6 @@ export class DelegateApproveCall__Outputs {
   }
 }
 
-export class InitializeUCDCall extends ethereum.Call {
-  get inputs(): InitializeUCDCall__Inputs {
-    return new InitializeUCDCall__Inputs(this);
-  }
-
-  get outputs(): InitializeUCDCall__Outputs {
-    return new InitializeUCDCall__Outputs(this);
-  }
-}
-
-export class InitializeUCDCall__Inputs {
-  _call: InitializeUCDCall;
-
-  constructor(call: InitializeUCDCall) {
-    this._call = call;
-  }
-
-  get _ucd(): Address {
-    return this._call.inputValues[0].value.toAddress();
-  }
-}
-
-export class InitializeUCDCall__Outputs {
-  _call: InitializeUCDCall;
-
-  constructor(call: InitializeUCDCall) {
-    this._call = call;
-  }
-}
-
 export class RenounceOwnershipCall extends ethereum.Call {
   get inputs(): RenounceOwnershipCall__Inputs {
     return new RenounceOwnershipCall__Inputs(this);
@@ -1102,6 +1072,36 @@ export class TransferOwnershipCall__Outputs {
   _call: TransferOwnershipCall;
 
   constructor(call: TransferOwnershipCall) {
+    this._call = call;
+  }
+}
+
+export class UpdateDEXCall extends ethereum.Call {
+  get inputs(): UpdateDEXCall__Inputs {
+    return new UpdateDEXCall__Inputs(this);
+  }
+
+  get outputs(): UpdateDEXCall__Outputs {
+    return new UpdateDEXCall__Outputs(this);
+  }
+}
+
+export class UpdateDEXCall__Inputs {
+  _call: UpdateDEXCall;
+
+  constructor(call: UpdateDEXCall) {
+    this._call = call;
+  }
+
+  get _router(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+}
+
+export class UpdateDEXCall__Outputs {
+  _call: UpdateDEXCall;
+
+  constructor(call: UpdateDEXCall) {
     this._call = call;
   }
 }
@@ -1382,66 +1382,32 @@ export class UpdateStabl3CirculatingSupplyCall__Outputs {
   }
 }
 
-export class WithdrawAllFundsCall extends ethereum.Call {
-  get inputs(): WithdrawAllFundsCall__Inputs {
-    return new WithdrawAllFundsCall__Inputs(this);
+export class UpdateUCDCall extends ethereum.Call {
+  get inputs(): UpdateUCDCall__Inputs {
+    return new UpdateUCDCall__Inputs(this);
   }
 
-  get outputs(): WithdrawAllFundsCall__Outputs {
-    return new WithdrawAllFundsCall__Outputs(this);
+  get outputs(): UpdateUCDCall__Outputs {
+    return new UpdateUCDCall__Outputs(this);
   }
 }
 
-export class WithdrawAllFundsCall__Inputs {
-  _call: WithdrawAllFundsCall;
+export class UpdateUCDCall__Inputs {
+  _call: UpdateUCDCall;
 
-  constructor(call: WithdrawAllFundsCall) {
+  constructor(call: UpdateUCDCall) {
     this._call = call;
   }
 
-  get _token(): Address {
+  get _ucd(): Address {
     return this._call.inputValues[0].value.toAddress();
   }
 }
 
-export class WithdrawAllFundsCall__Outputs {
-  _call: WithdrawAllFundsCall;
+export class UpdateUCDCall__Outputs {
+  _call: UpdateUCDCall;
 
-  constructor(call: WithdrawAllFundsCall) {
-    this._call = call;
-  }
-}
-
-export class WithdrawFundsCall extends ethereum.Call {
-  get inputs(): WithdrawFundsCall__Inputs {
-    return new WithdrawFundsCall__Inputs(this);
-  }
-
-  get outputs(): WithdrawFundsCall__Outputs {
-    return new WithdrawFundsCall__Outputs(this);
-  }
-}
-
-export class WithdrawFundsCall__Inputs {
-  _call: WithdrawFundsCall;
-
-  constructor(call: WithdrawFundsCall) {
-    this._call = call;
-  }
-
-  get _token(): Address {
-    return this._call.inputValues[0].value.toAddress();
-  }
-
-  get _amountToken(): BigInt {
-    return this._call.inputValues[1].value.toBigInt();
-  }
-}
-
-export class WithdrawFundsCall__Outputs {
-  _call: WithdrawFundsCall;
-
-  constructor(call: WithdrawFundsCall) {
+  constructor(call: UpdateUCDCall) {
     this._call = call;
   }
 }

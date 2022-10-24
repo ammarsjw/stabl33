@@ -36,5 +36,5 @@ type APR @entity {
   APR: BigInt!
   reserves: BigInt!
   totalRewardDistributed: BigInt!
-  blockTimestampLast: BigInt!
+  timestamp: BigInt!
 }

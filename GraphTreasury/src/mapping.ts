@@ -49,7 +49,7 @@ export function handleUpdatedReservedToken(event: UpdatedReservedTokenEvent): vo
 
 export function handleRate(event: RateEvent): void {
   let transaction = loadOrCreateTransaction(event.transaction, event.block);
-  let id = transaction.id.concat("-").concat(event.params.rate.toString()).concat("-").concat(event.params.totalValueLocked.toString()).concat("-").concat(event.params.reserves.toString()).concat("-").concat(event.params.stabl3CirculatingSupply.toString()).concat("-").concat(event.params.blockTimestampLast.toString());
+  let id = transaction.id.concat("-").concat(event.params.rate.toString()).concat("-").concat(event.params.totalValueLocked.toString()).concat("-").concat(event.params.reserves.toString()).concat("-").concat(event.params.stabl3CirculatingSupply.toString()).concat("-").concat(event.params.timestamp.toString());
   let entity = new Rate(id)
   entity.transaction = transaction.id
   entity.rate = event.params.rate
