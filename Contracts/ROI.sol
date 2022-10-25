@@ -243,7 +243,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
 
         if (_amountRewardToken > amountRewardTokenROI) {
             if (amountRewardTokenROI != 0) {
-                SafeERC20.safeTransferFrom(_rewardToken, address(this), _user, amountRewardTokenROI);
+                SafeERC20.safeTransfer(_rewardToken, _user, amountRewardTokenROI);
 
                 _amountRewardToken -= amountRewardTokenROI;
 
@@ -273,7 +273,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
                     }
 
                     if (amountRewardTokenConverted > amountReservedTokenROI) {
-                        SafeERC20.safeTransferFrom(reservedToken, address(this), _user, amountReservedTokenROI);
+                        SafeERC20.safeTransfer(reservedToken, _user, amountReservedTokenROI);
 
                         treasury.updatePool(rewardPoolType, reservedToken, 0, amountReservedTokenROI, 0, true);
 
@@ -285,7 +285,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
                         }
                     }
                     else {
-                        SafeERC20.safeTransferFrom(reservedToken, address(this), _user, amountRewardTokenConverted);
+                        SafeERC20.safeTransfer(reservedToken, _user, amountRewardTokenConverted);
 
                         treasury.updatePool(rewardPoolType, reservedToken, 0, amountRewardTokenConverted, 0, true);
 
@@ -296,7 +296,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
             }
         }
         else {
-            SafeERC20.safeTransferFrom(_rewardToken, address(this), _user, _amountRewardToken);
+            SafeERC20.safeTransfer(_rewardToken, _user, _amountRewardToken);
 
             treasury.updatePool(rewardPoolType, _rewardToken, 0, _amountRewardToken, 0, true);
         }
