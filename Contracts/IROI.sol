@@ -7,8 +7,6 @@ import "./IStabl3StakingStruct.sol";
 
 interface IROI is IStabl3StakingStruct {
 
-    function getStakingAPRIndex(uint256, uint256) external view returns (uint256);
-
     function allStakingAPRs(uint256) external view returns (StakingAPR memory);
 
     function permitted(address) external returns (bool);

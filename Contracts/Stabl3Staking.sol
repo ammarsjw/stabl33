@@ -139,13 +139,13 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
         lendingStabl3Percentage = 200;
         // TODO remove
-        lendingStabl3ClaimTime = 300; // 0:15 hours time in seconds
+        lendingStabl3ClaimTime = 300; // 15 minutes time in seconds
         // lendingStabl3ClaimTime = 2592000; // 1 month time in seconds
 
         // TODO remove
         oneDayTime = 10; // it is seen as 1 day in testing
         oneYearTime = 3600;
-        lockTimes = [0, 900, 1800, 2700, 3600];   // 0:45, 1:30, 2:15 and 3:00 hours time in seconds
+        lockTimes = [0, 900, 1800, 2700, 3600];   // 15, 30, 45 and 60 minutes time in seconds
         // oneDayTime = 86400;
         // oneYearTime = 31104000;
         // lockTimes = [0, 7776000, 15552000, 23328000, 31104000];   // 3, 6, 9 and 12 months time in seconds
@@ -512,7 +512,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
                     stakingAPRIndex++;
 
-                    for ( ; stakingAPRIndex < ROI.allStakingAPRsLength() ; stakingAPRIndex++) {
+                    for ( ; stakingAPRIndex < ROI.allStakingAPRsLength() - 1 ; stakingAPRIndex++) {
                         stakingAPR = ROI.allStakingAPRs(stakingAPRIndex);
                         stakingAPRNext = ROI.allStakingAPRs(stakingAPRIndex + 1);
 
@@ -600,7 +600,6 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
             uint8 poolType = staking.isLending ? LEND_POOL : STAKE_POOL;
 
-            // _evaluateReward(staking.token, reward, staking.isLending);
             ROI.distributeReward(msg.sender, staking.token, reward, poolType);
 
             ROI.updateAPR();

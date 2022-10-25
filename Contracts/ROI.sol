@@ -36,11 +36,9 @@ contract ROI is Ownable, IStabl3StakingStruct {
     // mappings
 
     /**
-     * @notice This mapping and array are used to store APRs during staking
-     * @dev The mapping is from `Timestamp` to `APR` then to a unique `Index`
-     * @dev The array can be then used to iterate over using said `Index`
+     * @notice This array is used to store APRs during staking
+     * @dev The array is used iterate over every unique `Index` to get `APR` and `Timestamp`
      */
-    mapping (uint256 => mapping(uint256 => uint256)) public getStakingAPRIndex;
     StakingAPR[] public allStakingAPRs;
 
     // contracts with permission to access ROI pool funds
@@ -338,7 +336,6 @@ contract ROI is Ownable, IStabl3StakingStruct {
                 timestamp: block.timestamp
             });
 
-            getStakingAPRIndex[stakingAPR.timestamp][stakingAPR.APR] = allStakingAPRs.length;
             allStakingAPRs.push(stakingAPR);
         }
 
