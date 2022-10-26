@@ -11,9 +11,19 @@
     uint8 private constant LEND_FEE_POOL = 7;
 
     uint8 private constant UCD_BORROW_POOL = 8;
-    uint8 private constant UCD_EXCHANGE_POOL = 9;
+    uint8 private constant UCD_PAYBACK_POOL = 9;
+    uint8 private constant UCD_TO_TOKEN_EXCHANGE_POOL = 10;
+    uint8 private constant COLLATERAL_STABL3_POOL = 11;
+
+    uint8 private constant REAL_ESTATE_POOL = 12;
+    uint8 private constant REAL_ESTATE_STAKE_POOL = 13;
+    uint8 private constant REAL_ESTATE_STAKE_REWARD_POOL = 14;
+
+    // if not all payback UCD are burnt use these
+    uint8 private constant UCD_BORROW_POOL = 8;
+    uint8 private constant UCD_PAYBACK_POOL = 9;
     uint8 private constant UCD_BURN_POOL = 10;
-    uint8 private constant UCD_RETURN_POOL = 11;
+    uint8 private constant UCD_TO_TOKEN_EXCHANGE_POOL = 11;
     uint8 private constant COLLATERAL_STABL3_POOL = 12;
 
     uint8 private constant REAL_ESTATE_POOL = 13;

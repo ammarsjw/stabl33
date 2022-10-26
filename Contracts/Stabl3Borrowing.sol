@@ -9,15 +9,15 @@ import "./ReentrancyGuard.sol";
 
 import "./ITreasury.sol";
 import "./IROI.sol";
+import "./IUCD.sol";
 
 contract Stabl3Borrowing is Ownable, ReentrancyGuard {
     using SafeMathUpgradeable for uint256;
 
     uint8 private constant UCD_BORROW_POOL = 8;
-    uint8 private constant UCD_EXCHANGE_POOL = 9;
-    uint8 private constant UCD_BURN_POOL = 10;
-    uint8 private constant UCD_RETURN_POOL = 11;
-    uint8 private constant COLLATERAL_STABL3_POOL = 12;
+    uint8 private constant UCD_PAYBACK_POOL = 9;
+    uint8 private constant UCD_TO_TOKEN_EXCHANGE_POOL = 10;
+    uint8 private constant COLLATERAL_STABL3_POOL = 11;
 
     ITreasury public treasury;
     IROI public ROI;
@@ -25,13 +25,20 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
 
     IERC20 public immutable stabl3;
 
-    IERC20 public immutable ucd;
+    IUCD public ucd;
 
     bool public borrowState;
 
     // structs
 
+    struct Borrowing {
+        uint256 amountStabl3;
+        uint256 amountUCD;
+    }
+
     // mappings
+
+    mapping (address => Borrowing) public getBorrowings;
 
     // events
 
@@ -40,6 +47,20 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
     event UpdatedROI(address newROI, address oldROI);
 
     event UpdatedHQ(address newHQ, address oldHQ);
+
+    event Borrow(
+        address indexed user,
+        uint256 amountStabl3,
+        uint256 amountUCD,
+        uint256 timestamp
+    );
+
+    event Payback(
+        address indexed user,
+        uint256 amountUCD,
+        uint256 amountStabl3,
+        uint256 timestamp
+    );
 
     // constructor
 
@@ -51,7 +72,7 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
 
         // TODO change
         stabl3 = IERC20(0xDf9c4990a8973b6cC069738592F27Ea54b27D569);
-        ucd = IERC20(0x01fa8dEEdDEA8E4e465f158d93e162438d61c9eB);
+        ucd = IUCD(0x01fa8dEEdDEA8E4e465f158d93e162438d61c9eB);
     }
 
     function updateTreasury(address _treasury) external onlyOwner {
@@ -72,14 +93,95 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
         HQ = _HQ;
     }
 
+    function updateUCD(address _ucd) external onlyOwner {
+        require(address(ucd) != _ucd, "Stabl3Borrowing: UCD is already this address");
+        ucd = IUCD(_ucd);
+    }
+
     function updateBorrowState(bool _state) external onlyOwner {
         require(borrowState != _state, "Stabl3Borrowing: Borrow State is already of the value 'state'");
         borrowState = _state;
     }
 
+    function getEquivalenceToken() public view returns (IERC20) {
+        IERC20 equivalenceToken;
+
+        for (uint256 i = 0 ; i < treasury.allReservedTokensLength() ; i++) {
+            IERC20 reservedToken = treasury.allReservedTokens(i);
+
+            if (treasury.isReservedToken(reservedToken)) {
+                if (ucd.decimals() == reservedToken.decimals()) {
+                    equivalenceToken = reservedToken;
+                    break;
+                }
+            }
+        }
+
+        return equivalenceToken;
+    }
+
+    function borrow(uint256 _amountStabl3) external borrowActive {
+        require(_amountStabl3 > 0, "Stabl3Borrowing: Insufficient amount");
+
+        IERC20 equivalenceToken = getEquivalenceToken();
+        require(address(equivalenceToken) != address(0), "Stabl3Borrowing: No Equivalent Token");
+
+        uint256 amountUCD = treasury.getAmountIn(_amountStabl3, equivalenceToken);
+
+        Borrowing storage borrowing = getBorrowings[msg.sender];
+        borrowing.amountUCD += amountUCD;
+        borrowing.amountStabl3 += _amountStabl3;
+
+        stabl3.transferFrom(msg.sender, address(treasury), _amountStabl3);
+
+        ucd.mintWithPermit(msg.sender, amountUCD);
+
+        treasury.updatePool(UCD_BORROW_POOL, ucd, amountUCD, 0, 0, true);
+        treasury.updatePool(COLLATERAL_STABL3_POOL, stabl3, _amountStabl3, 0, 0, true);
+
+        treasury.updateStabl3CirculatingSupply(_amountStabl3, false);
+
+        emit Borrow(msg.sender, _amountStabl3, amountUCD, block.timestamp);
+    }
+
+    // burn all payback UCD?
+    // if no, change borrow logic so that un burnt UCD is transferred from treasury to msg.sender before minting new UCD
+    // when a user has fully returned his UCD do we uncollateralize the rest of his collateralized Stabl3?
+    // what price to consider when borrowing/paying back
+    // payback or repay
+    function payback(uint256 _amountUCD) external borrowActive {
+        require(_amountUCD > 0, "Stabl3Borrowing: Insufficient amount");
+
+        Borrowing storage borrowing = getBorrowings[msg.sender];
+
+        require(borrowing.amountUCD > 0, "Stabl3Borrowing: No UCD to payback");
+
+        IERC20 equivalenceToken = getEquivalenceToken();
+        require(address(equivalenceToken) != address(0), "Stabl3Borrowing: No Equivalent Token");
+
+        uint256 amountStabl3 = treasury.getAmountOut(equivalenceToken, _amountUCD);
+
+        borrowing.amountUCD -= _amountUCD;
+        borrowing.amountStabl3 -= amountStabl3;
+
+        ucd.burnWithPermit(msg.sender, _amountUCD);
+
+        stabl3.transferFrom(address(treasury), msg.sender, amountStabl3);
+
+        treasury.updatePool(UCD_PAYBACK_POOL, ucd, _amountUCD, 0, 0, true);
+        treasury.updatePool(COLLATERAL_STABL3_POOL, stabl3, amountStabl3, 0, 0, false);
+        if (borrowing.amountUCD == 0) {
+            treasury.updatePool(COLLATERAL_STABL3_POOL, stabl3, borrowing.amountStabl3, 0, 0, false);
+        }
+
+        treasury.updateStabl3CirculatingSupply(amountStabl3, true);
+
+        emit Payback(msg.sender, amountStabl3, _amountUCD, block.timestamp);
+    }
+
     // modifiers
 
-    modifier bondActive() {
+    modifier borrowActive() {
         require(borrowState, "Stabl3Borrowing: Borrow not yet started");
         _;
     }

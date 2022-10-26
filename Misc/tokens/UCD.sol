@@ -562,14 +562,12 @@ contract UCD is Ownable, ERC20 {
         return _permitted[contractAddress];
     }
 
-    function updatePermission(address contractAddress, bool state) external onlyOwner returns (bool) {
+    function updatePermission(address contractAddress, bool state) external onlyOwner {
         require(_permitted[contractAddress] != state, "UCD: Contract Address is already of the value 'state'");
 
         _permitted[contractAddress] = state;
 
         emit UpdatedPermission(contractAddress, state);
-
-        return true;
     }
 
     function mintWithPermit(address account, uint256 amount) external returns (bool) {
