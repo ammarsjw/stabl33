@@ -177,13 +177,13 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
     }
 
     function updateBondingClaimTime(uint256 _bondingClaimTime) external onlyOwner {
-        require(bondingClaimTime != _bondingClaimTime, "Stabl3Staking: Lending Stabl3 Claim Time is already this value");
+        require(bondingClaimTime != _bondingClaimTime, "Stabl3Bonding: Bonding Claim Time is already this value");
         emit UpdatedBondingClaimTime(_bondingClaimTime, bondingClaimTime);
         bondingClaimTime = _bondingClaimTime;
     }
 
     function updateBondState(bool _state) external onlyOwner {
-        require(bondState != _state, "Stabl3Bonding: Bond state is already of the value 'state'");
+        require(bondState != _state, "Stabl3Bonding: Bond State is already of the value 'state'");
         bondState = _state;
     }
 
