@@ -99,16 +99,16 @@ contract Treasury is Ownable, ReentrancyGuard {
 
         HQ = 0x294d0487fdf7acecf342ae70AFc5549A6E90f3e0;
 
-        stabl3 = IERC20(0xDf9c4990a8973b6cC069738592F27Ea54b27D569);
-        ucd = IERC20(0x01fa8dEEdDEA8E4e465f158d93e162438d61c9eB);
+        stabl3 = IERC20(0x09186E7224acDb404A394610e915215DF7FA7ED5);
+        ucd = IERC20(0x21cF2A3a558d713371c4f2086Bf475C940AFD800);
 
         exchangeFee = 3;
 
         rateInfo = RateInfo(1 * (10 ** 15), 0.0007 * (10 ** 18), 10000 * (10 ** 18), 0, 0);
         rateInfo.stabl3Window = (rateInfo.tokenWindow * (10 ** 6)) / rateInfo.rate;
 
-        IERC20 USDC = IERC20(0x1092d50E8E14479bB769b687427B72BeE70c9534);
-        IERC20 DAI = IERC20(0x59f78fB97FB36adbaDCbB43Fa9031797faAad54A);
+        IERC20 USDC = IERC20(0xb99dF1BE026A20807b2dA9e7434EB6f49d6FA370);
+        IERC20 DAI = IERC20(0xAD97CC0EB84302Cd78823cAC2b09c75822c0acb7);
 
         updateReservedToken(USDC, true);
         updateReservedToken(DAI, true);

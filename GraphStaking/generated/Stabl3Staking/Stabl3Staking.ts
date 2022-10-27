@@ -341,12 +341,12 @@ export class Stabl3Staking__allStakingsResultUnlockedLendingStruct extends ether
     return this[10].toBoolean();
   }
 
-  get isClaimedStabl3Lending(): boolean {
-    return this[11].toBoolean();
+  get amountStabl3Lending(): BigInt {
+    return this[11].toBigInt();
   }
 
-  get amountStabl3Lending(): BigInt {
-    return this[12].toBigInt();
+  get isDormant(): boolean {
+    return this[12].toBoolean();
   }
 
   get isRealEstate(): boolean {
@@ -399,12 +399,12 @@ export class Stabl3Staking__allStakingsResultLockedLendingStruct extends ethereu
     return this[10].toBoolean();
   }
 
-  get isClaimedStabl3Lending(): boolean {
-    return this[11].toBoolean();
+  get amountStabl3Lending(): BigInt {
+    return this[11].toBigInt();
   }
 
-  get amountStabl3Lending(): BigInt {
-    return this[12].toBigInt();
+  get isDormant(): boolean {
+    return this[12].toBoolean();
   }
 
   get isRealEstate(): boolean {
@@ -457,12 +457,12 @@ export class Stabl3Staking__allStakingsResultUnlockedStakingStruct extends ether
     return this[10].toBoolean();
   }
 
-  get isClaimedStabl3Lending(): boolean {
-    return this[11].toBoolean();
+  get amountStabl3Lending(): BigInt {
+    return this[11].toBigInt();
   }
 
-  get amountStabl3Lending(): BigInt {
-    return this[12].toBigInt();
+  get isDormant(): boolean {
+    return this[12].toBoolean();
   }
 
   get isRealEstate(): boolean {
@@ -515,12 +515,12 @@ export class Stabl3Staking__allStakingsResultLockedStakingStruct extends ethereu
     return this[10].toBoolean();
   }
 
-  get isClaimedStabl3Lending(): boolean {
-    return this[11].toBoolean();
+  get amountStabl3Lending(): BigInt {
+    return this[11].toBigInt();
   }
 
-  get amountStabl3Lending(): BigInt {
-    return this[12].toBigInt();
+  get isDormant(): boolean {
+    return this[12].toBoolean();
   }
 
   get isRealEstate(): boolean {
@@ -649,8 +649,8 @@ export class Stabl3Staking__getStakingsResult {
   value8: BigInt;
   value9: BigInt;
   value10: boolean;
-  value11: boolean;
-  value12: BigInt;
+  value11: BigInt;
+  value12: boolean;
   value13: boolean;
 
   constructor(
@@ -665,8 +665,8 @@ export class Stabl3Staking__getStakingsResult {
     value8: BigInt,
     value9: BigInt,
     value10: boolean,
-    value11: boolean,
-    value12: BigInt,
+    value11: BigInt,
+    value12: boolean,
     value13: boolean
   ) {
     this.value0 = value0;
@@ -701,8 +701,8 @@ export class Stabl3Staking__getStakingsResult {
     map.set("value8", ethereum.Value.fromUnsignedBigInt(this.value8));
     map.set("value9", ethereum.Value.fromUnsignedBigInt(this.value9));
     map.set("value10", ethereum.Value.fromBoolean(this.value10));
-    map.set("value11", ethereum.Value.fromBoolean(this.value11));
-    map.set("value12", ethereum.Value.fromUnsignedBigInt(this.value12));
+    map.set("value11", ethereum.Value.fromUnsignedBigInt(this.value11));
+    map.set("value12", ethereum.Value.fromBoolean(this.value12));
     map.set("value13", ethereum.Value.fromBoolean(this.value13));
     return map;
   }
@@ -751,11 +751,11 @@ export class Stabl3Staking__getStakingsResult {
     return this.value10;
   }
 
-  getIsClaimedStabl3Lending(): boolean {
+  getAmountStabl3Lending(): BigInt {
     return this.value11;
   }
 
-  getAmountStabl3Lending(): BigInt {
+  getIsDormant(): boolean {
     return this.value12;
   }
 
@@ -893,7 +893,7 @@ export class Stabl3Staking extends ethereum.SmartContract {
   ): Stabl3Staking__allStakingsResult {
     let result = super.call(
       "allStakings",
-      "allStakings(address,bool):((uint256,address,bool,uint8,address,uint256,uint256,uint256,uint256,uint256,bool,bool,uint256,bool)[],(uint256,address,bool,uint8,address,uint256,uint256,uint256,uint256,uint256,bool,bool,uint256,bool)[],(uint256,address,bool,uint8,address,uint256,uint256,uint256,uint256,uint256,bool,bool,uint256,bool)[],(uint256,address,bool,uint8,address,uint256,uint256,uint256,uint256,uint256,bool,bool,uint256,bool)[])",
+      "allStakings(address,bool):((uint256,address,bool,uint8,address,uint256,uint256,uint256,uint256,uint256,bool,uint256,bool,bool)[],(uint256,address,bool,uint8,address,uint256,uint256,uint256,uint256,uint256,bool,uint256,bool,bool)[],(uint256,address,bool,uint8,address,uint256,uint256,uint256,uint256,uint256,bool,uint256,bool,bool)[],(uint256,address,bool,uint8,address,uint256,uint256,uint256,uint256,uint256,bool,uint256,bool,bool)[])",
       [
         ethereum.Value.fromAddress(_user),
         ethereum.Value.fromBoolean(_isRealEstate)
@@ -922,7 +922,7 @@ export class Stabl3Staking extends ethereum.SmartContract {
   ): ethereum.CallResult<Stabl3Staking__allStakingsResult> {
     let result = super.tryCall(
       "allStakings",
-      "allStakings(address,bool):((uint256,address,bool,uint8,address,uint256,uint256,uint256,uint256,uint256,bool,bool,uint256,bool)[],(uint256,address,bool,uint8,address,uint256,uint256,uint256,uint256,uint256,bool,bool,uint256,bool)[],(uint256,address,bool,uint8,address,uint256,uint256,uint256,uint256,uint256,bool,bool,uint256,bool)[],(uint256,address,bool,uint8,address,uint256,uint256,uint256,uint256,uint256,bool,bool,uint256,bool)[])",
+      "allStakings(address,bool):((uint256,address,bool,uint8,address,uint256,uint256,uint256,uint256,uint256,bool,uint256,bool,bool)[],(uint256,address,bool,uint8,address,uint256,uint256,uint256,uint256,uint256,bool,uint256,bool,bool)[],(uint256,address,bool,uint8,address,uint256,uint256,uint256,uint256,uint256,bool,uint256,bool,bool)[],(uint256,address,bool,uint8,address,uint256,uint256,uint256,uint256,uint256,bool,uint256,bool,bool)[])",
       [
         ethereum.Value.fromAddress(_user),
         ethereum.Value.fromBoolean(_isRealEstate)
@@ -965,6 +965,29 @@ export class Stabl3Staking extends ethereum.SmartContract {
       "allStakingsLength",
       "allStakingsLength(address):(uint256)",
       [ethereum.Value.fromAddress(_user)]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
+  excludedFromROIReserves(): BigInt {
+    let result = super.call(
+      "excludedFromROIReserves",
+      "excludedFromROIReserves():(uint256)",
+      []
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_excludedFromROIReserves(): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "excludedFromROIReserves",
+      "excludedFromROIReserves():(uint256)",
+      []
     );
     if (result.reverted) {
       return new ethereum.CallResult();
@@ -1106,31 +1129,6 @@ export class Stabl3Staking extends ethereum.SmartContract {
     );
   }
 
-  getAmountStakedPerStakingType(param0: BigInt): BigInt {
-    let result = super.call(
-      "getAmountStakedPerStakingType",
-      "getAmountStakedPerStakingType(uint256):(uint256)",
-      [ethereum.Value.fromUnsignedBigInt(param0)]
-    );
-
-    return result[0].toBigInt();
-  }
-
-  try_getAmountStakedPerStakingType(
-    param0: BigInt
-  ): ethereum.CallResult<BigInt> {
-    let result = super.tryCall(
-      "getAmountStakedPerStakingType",
-      "getAmountStakedPerStakingType(uint256):(uint256)",
-      [ethereum.Value.fromUnsignedBigInt(param0)]
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
   getClaimableStabl3LendingAll(_user: Address): BigInt {
     let result = super.call(
       "getClaimableStabl3LendingAll",
@@ -1259,7 +1257,7 @@ export class Stabl3Staking extends ethereum.SmartContract {
   ): Stabl3Staking__getStakingsResult {
     let result = super.call(
       "getStakings",
-      "getStakings(address,uint256):(uint256,address,bool,uint8,address,uint256,uint256,uint256,uint256,uint256,bool,bool,uint256,bool)",
+      "getStakings(address,uint256):(uint256,address,bool,uint8,address,uint256,uint256,uint256,uint256,uint256,bool,uint256,bool,bool)",
       [
         ethereum.Value.fromAddress(param0),
         ethereum.Value.fromUnsignedBigInt(param1)
@@ -1278,8 +1276,8 @@ export class Stabl3Staking extends ethereum.SmartContract {
       result[8].toBigInt(),
       result[9].toBigInt(),
       result[10].toBoolean(),
-      result[11].toBoolean(),
-      result[12].toBigInt(),
+      result[11].toBigInt(),
+      result[12].toBoolean(),
       result[13].toBoolean()
     );
   }
@@ -1290,7 +1288,7 @@ export class Stabl3Staking extends ethereum.SmartContract {
   ): ethereum.CallResult<Stabl3Staking__getStakingsResult> {
     let result = super.tryCall(
       "getStakings",
-      "getStakings(address,uint256):(uint256,address,bool,uint8,address,uint256,uint256,uint256,uint256,uint256,bool,bool,uint256,bool)",
+      "getStakings(address,uint256):(uint256,address,bool,uint8,address,uint256,uint256,uint256,uint256,uint256,bool,uint256,bool,bool)",
       [
         ethereum.Value.fromAddress(param0),
         ethereum.Value.fromUnsignedBigInt(param1)
@@ -1313,8 +1311,8 @@ export class Stabl3Staking extends ethereum.SmartContract {
         value[8].toBigInt(),
         value[9].toBigInt(),
         value[10].toBoolean(),
-        value[11].toBoolean(),
-        value[12].toBigInt(),
+        value[11].toBigInt(),
+        value[12].toBoolean(),
         value[13].toBoolean()
       )
     );
@@ -1649,12 +1647,12 @@ export class AccessWithPermitCall_stakingStruct extends ethereum.Tuple {
     return this[10].toBoolean();
   }
 
-  get isClaimedStabl3Lending(): boolean {
-    return this[11].toBoolean();
+  get amountStabl3Lending(): BigInt {
+    return this[11].toBigInt();
   }
 
-  get amountStabl3Lending(): BigInt {
-    return this[12].toBigInt();
+  get isDormant(): boolean {
+    return this[12].toBoolean();
   }
 
   get isRealEstate(): boolean {
@@ -1684,6 +1682,32 @@ export class ClaimStabl3LendingAllCall__Outputs {
   _call: ClaimStabl3LendingAllCall;
 
   constructor(call: ClaimStabl3LendingAllCall) {
+    this._call = call;
+  }
+}
+
+export class ExcludeDormantStakingsCall extends ethereum.Call {
+  get inputs(): ExcludeDormantStakingsCall__Inputs {
+    return new ExcludeDormantStakingsCall__Inputs(this);
+  }
+
+  get outputs(): ExcludeDormantStakingsCall__Outputs {
+    return new ExcludeDormantStakingsCall__Outputs(this);
+  }
+}
+
+export class ExcludeDormantStakingsCall__Inputs {
+  _call: ExcludeDormantStakingsCall;
+
+  constructor(call: ExcludeDormantStakingsCall) {
+    this._call = call;
+  }
+}
+
+export class ExcludeDormantStakingsCall__Outputs {
+  _call: ExcludeDormantStakingsCall;
+
+  constructor(call: ExcludeDormantStakingsCall) {
     this._call = call;
   }
 }
@@ -2110,6 +2134,36 @@ export class UpdateReturnPoolsCall__Outputs {
   _call: UpdateReturnPoolsCall;
 
   constructor(call: UpdateReturnPoolsCall) {
+    this._call = call;
+  }
+}
+
+export class UpdateStabl3StakingHelperCall extends ethereum.Call {
+  get inputs(): UpdateStabl3StakingHelperCall__Inputs {
+    return new UpdateStabl3StakingHelperCall__Inputs(this);
+  }
+
+  get outputs(): UpdateStabl3StakingHelperCall__Outputs {
+    return new UpdateStabl3StakingHelperCall__Outputs(this);
+  }
+}
+
+export class UpdateStabl3StakingHelperCall__Inputs {
+  _call: UpdateStabl3StakingHelperCall;
+
+  constructor(call: UpdateStabl3StakingHelperCall) {
+    this._call = call;
+  }
+
+  get _stabl3StakingHelper(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+}
+
+export class UpdateStabl3StakingHelperCall__Outputs {
+  _call: UpdateStabl3StakingHelperCall;
+
+  constructor(call: UpdateStabl3StakingHelperCall) {
     this._call = call;
   }
 }

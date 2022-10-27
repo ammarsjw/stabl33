@@ -23,7 +23,6 @@ interface IStabl3StakingStruct {
         uint256 rewardWithdrawn;
         uint256 rewardWithdrawTimeLast;
         bool isLending;
-        bool isClaimedStabl3Lending;
         uint256 amountStabl3Lending;
         bool isDormant;
         bool isRealEstate;

@@ -2,13 +2,21 @@
 
 pragma solidity ^0.8.0;
 
+import "./IROI.sol";
 import "./IStabl3StakingStruct.sol";
 
 interface IStabl3Staking is IStabl3StakingStruct {
 
-    function lendingStabl3Percentage() external view returns (uint256);
+    function ROI() external view returns (IROI);
 
-    function getStakings(address) external view returns (Staking[] memory);
+    function lendingStabl3Percentage() external view returns (uint256);
+    function lendingStabl3ClaimTime() external view returns (uint256);
+
+    function lockTimes(uint256) external view returns (uint256);
+
+    function excludedFromROIReserves() external view returns (uint256);
+
+    function getStakings(address, uint256) external view returns (Staking memory);
 
     function getStakers(address) external view returns (bool);
     function allStakers(uint256) external view returns (address);

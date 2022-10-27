@@ -11,6 +11,8 @@ import "./ITreasury.sol";
 import "./IROI.sol";
 import "./IStabl3StakingStruct.sol";
 
+import "./Stabl3StakingHelper.sol";
+
 contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
     using SafeMathUpgradeable for uint256;
 
@@ -29,6 +31,8 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
     IROI public ROI;
     address public HQ;
 
+    Stabl3StakingHelper private stabl3StakingHelper;
+
     IERC20 public immutable stabl3;
 
     uint256[2] public treasuryPercentages;
@@ -42,7 +46,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
     uint256 private immutable oneYearTime;
     uint256[5] public lockTimes;
 
-    uint256 excludedFromROIReserves;
+    uint256 public excludedFromROIReserves;
 
     uint8[] public returnPools;
 
@@ -128,8 +132,10 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         // TODO change
         HQ = 0x294d0487fdf7acecf342ae70AFc5549A6E90f3e0;
 
+        stabl3StakingHelper = new Stabl3StakingHelper();
+
         // TODO change
-        stabl3 = IERC20(0xDf9c4990a8973b6cC069738592F27Ea54b27D569);
+        stabl3 = IERC20(0x09186E7224acDb404A394610e915215DF7FA7ED5);
 
         treasuryPercentages = [975, 761];
         ROIPercentages = [0, 0];
@@ -174,6 +180,11 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         require(HQ != _HQ, "Stabl3Staking: HQ is already this address");
         emit UpdatedHQ(_HQ, HQ);
         HQ = _HQ;
+    }
+
+    function updateStabl3StakingHelper(address _stabl3StakingHelper) external onlyOwner {
+        require(address(stabl3StakingHelper) != _stabl3StakingHelper, "Stabl3Staking: Stabl3 Staking Helper is already this address");
+        stabl3StakingHelper = Stabl3StakingHelper(_stabl3StakingHelper);
     }
 
     function updateDistributionPercentages(
@@ -242,76 +253,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         Staking[] memory unlockedStaking,
         Staking[] memory lockedStaking
     ) {
-        uint256 unlockedLendingLength;
-        uint256 lockedLendingLength;
-        uint256 unlockedStakingLength;
-        uint256 lockedStakingLength;
-
-        for (uint256 i = 0 ; i < getStakings[_user].length ; i++) {
-            Staking memory staking = getStakings[_user][i];
-
-            if (
-                staking.status &&
-                staking.isRealEstate == _isRealEstate
-            ) {
-                if (block.timestamp >= staking.startTime + lockTimes[staking.stakingType]) {
-                    if (staking.isLending) {
-                        unlockedLendingLength++;
-                    }
-                    else {
-                        unlockedStakingLength++;
-                    }
-                }
-                else {
-                    if (staking.isLending) {
-                        lockedLendingLength++;
-                    }
-                    else {
-                        lockedStakingLength++;
-                    }
-                }
-            }
-        }
-
-        unlockedLending = new Staking[](unlockedLendingLength);
-        lockedLending = new Staking[](lockedLendingLength);
-        unlockedStaking = new Staking[](unlockedStakingLength);
-        lockedStaking = new Staking[](lockedStakingLength);
-
-        unlockedLendingLength = 0;
-        lockedLendingLength = 0;
-        unlockedStakingLength = 0;
-        lockedStakingLength = 0;
-
-        for (uint256 i = 0 ; i < getStakings[_user].length ; i++) {
-            Staking memory staking = getStakings[_user][i];
-
-            if (
-                staking.status &&
-                staking.isRealEstate == _isRealEstate
-            ) {
-                if (block.timestamp >= staking.startTime + lockTimes[staking.stakingType]) {
-                    if (staking.isLending) {
-                        unlockedLending[unlockedLendingLength] = staking;
-                        unlockedLendingLength++;
-                    }
-                    else {
-                        unlockedStaking[unlockedStakingLength] = staking;
-                        unlockedStakingLength++;
-                    }
-                }
-                else {
-                    if (staking.isLending) {
-                        lockedLending[lockedLendingLength] = staking;
-                        lockedLendingLength++;
-                    }
-                    else {
-                        lockedStaking[lockedStakingLength] = staking;
-                        lockedStakingLength++;
-                    }
-                }
-            }
-        }
+        (unlockedLending, lockedLending, unlockedStaking, lockedStaking) = stabl3StakingHelper.allStakings(_user, _isRealEstate);
     }
 
     function updatePermission(address _contractAddress, bool _state) public onlyOwner {
@@ -392,23 +334,21 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
         uint256 timestampToConsider = block.timestamp;
 
-        Staking memory staking = Staking({
-            index: getStakings[msg.sender].length,
-            user: msg.sender,
-            status: true,
-            stakingType: _stakingType,
-            token: _token,
-            amountTokenStaked: _amountToken,
-            startTime: timestampToConsider,
-            stakingAPRIndexLast: ROI.allStakingAPRsLength() - 1,
-            rewardWithdrawn: 0,
-            rewardWithdrawTimeLast: timestampToConsider,
-            isLending: _isLending,
-            isClaimedStabl3Lending: false,
-            amountStabl3Lending: amountStabl3Lending,
-            isDormant: false,
-            isRealEstate: false
-        });
+        Staking memory staking;
+        staking.index = getStakings[msg.sender].length;
+        staking.user = msg.sender;
+        staking.status = true;
+        staking.stakingType = _stakingType;
+        staking.token = _token;
+        staking.amountTokenStaked = _amountToken;
+        staking.startTime = timestampToConsider;
+        staking.stakingAPRIndexLast = ROI.allStakingAPRsLength() - 1;
+        // staking.rewardWithdrawn = 0;
+        staking.rewardWithdrawTimeLast = timestampToConsider;
+        staking.isLending = _isLending;
+        staking.amountStabl3Lending = amountStabl3Lending;
+        // staking.isDormant = false;
+        // staking.isRealEstate = false;
 
         getStakings[msg.sender].push(staking);
 
@@ -468,124 +408,11 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         bool _isRealEstate,
         uint256 _timestamp
     ) public view returns (uint256) {
-        uint256 amountReward;
-
-        Staking memory staking = getStakings[_user][_index];
-
-        uint256 endTime = staking.startTime + lockTimes[staking.stakingType];
-
-        if (
-            staking.status &&
-            staking.isLending == _isLending &&
-            staking.isRealEstate == _isRealEstate &&
-            staking.rewardWithdrawTimeLast < endTime
-        ) {
-            uint256 timestampToConsider = _timestamp > endTime ? endTime : _timestamp;
-
-            if (staking.stakingAPRIndexLast == ROI.allStakingAPRsLength() - 1) {
-                uint256 numberOfDays = (timestampToConsider - staking.rewardWithdrawTimeLast) / oneDayTime;
-
-                if (numberOfDays > 0) {
-                    uint256 ratio = ROI.allStakingAPRs(staking.stakingAPRIndexLast).APR;
-
-                    uint256 rewardTotal = _compoundSingle(staking.amountTokenStaked, ratio);
-
-                    amountReward += (rewardTotal * oneDayTime * numberOfDays) / oneYearTime;
-                }
-            }
-            else {
-                uint256 stakingAPRIndex = staking.stakingAPRIndexLast;
-
-                StakingAPR memory stakingAPR = ROI.allStakingAPRs(stakingAPRIndex);
-                StakingAPR memory stakingAPRNext = ROI.allStakingAPRs(stakingAPRIndex + 1);
-
-                if (stakingAPRNext.timestamp < timestampToConsider) {
-                    uint256 numberOfDays = (stakingAPRNext.timestamp - staking.rewardWithdrawTimeLast) / oneDayTime;
-
-                    if (numberOfDays > 0) {
-                        uint256 ratio = stakingAPR.APR;
-
-                        uint256 rewardTotal = _compoundSingle(staking.amountTokenStaked, ratio);
-
-                        amountReward += (rewardTotal * oneDayTime * numberOfDays) / oneYearTime;
-                    }
-
-                    stakingAPRIndex++;
-
-                    for ( ; stakingAPRIndex < ROI.allStakingAPRsLength() - 1 ; stakingAPRIndex++) {
-                        stakingAPR = ROI.allStakingAPRs(stakingAPRIndex);
-                        stakingAPRNext = ROI.allStakingAPRs(stakingAPRIndex + 1);
-
-                        if (stakingAPRNext.timestamp < timestampToConsider) {
-                            numberOfDays = (stakingAPRNext.timestamp - stakingAPR.timestamp) / oneDayTime;
-
-                            if (numberOfDays > 0) {
-                                uint256 ratio = stakingAPR.APR;
-
-                                uint256 rewardTotal = _compoundSingle(staking.amountTokenStaked, ratio);
-
-                                amountReward += (rewardTotal * oneDayTime * numberOfDays) / oneYearTime;
-                            }
-                        }
-                        else {
-                            break;
-                        }
-                    }
-
-                    stakingAPR = ROI.allStakingAPRs(stakingAPRIndex);
-
-                    numberOfDays = (timestampToConsider - stakingAPR.timestamp) / oneDayTime;
-
-                    if (numberOfDays > 0) {
-                        uint256 ratio = stakingAPR.APR;
-
-                        uint256 rewardTotal = _compoundSingle(staking.amountTokenStaked, ratio);
-
-                        amountReward += (rewardTotal * oneDayTime * numberOfDays) / oneYearTime;
-                    }
-                }
-                else {
-                    uint256 numberOfDays = (timestampToConsider - staking.rewardWithdrawTimeLast) / oneDayTime;
-
-                    if (numberOfDays > 0) {
-                        uint256 ratio = stakingAPR.APR;
-
-                        uint256 rewardTotal = _compoundSingle(staking.amountTokenStaked, ratio);
-
-                        amountReward += (rewardTotal * oneDayTime * numberOfDays) / oneYearTime;
-                    }
-                }
-            }
-        }
-
-        return amountReward;
+        return stabl3StakingHelper.getAmountRewardSingle(_user, _index, _isLending, _isRealEstate, _timestamp);
     }
 
     function getAmountRewardAll(address _user, bool _isLending, bool _isRealEstate) public view returns (uint256) {
-        uint256 totalAmountReward;
-
-        uint256 timestampToConsider = block.timestamp;
-
-        for (uint256 i = 0 ; i < getStakings[_user].length ; i++) {
-            Staking memory staking = getStakings[_user][i];
-
-            if (
-                staking.isLending == _isLending &&
-                staking.isRealEstate == _isRealEstate
-            ) {
-                uint256 amountReward = getAmountRewardSingle(_user, i, _isLending,_isRealEstate, timestampToConsider);
-
-                if (amountReward > 0) {
-                    if (staking.token.decimals() < 18) {
-                        amountReward *= 10 ** (18 - staking.token.decimals());
-                    }
-
-                    totalAmountReward += amountReward;
-                }
-            }
-        }
-
-        return totalAmountReward;
+        return stabl3StakingHelper.getAmountRewardAll(_user, _isLending, _isRealEstate);
     }
 
     function _withdrawAmountRewardSingle(uint256 _index, bool _isLending, uint256 _timestamp) internal nonReentrant {
@@ -643,36 +470,11 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         uint256 _index,
         uint256 _timestamp
     ) public view returns (uint256) {
-        uint256 claimableStabl3Lending;
-
-        Staking memory staking = getStakings[_user][_index];
-
-        if (
-            staking.status &&
-            staking.isLending &&
-            !staking.isClaimedStabl3Lending &&
-            _timestamp > staking.startTime + lendingStabl3ClaimTime
-        ) {
-            claimableStabl3Lending = staking.amountStabl3Lending;
-        }
-
-        return claimableStabl3Lending;
+        return stabl3StakingHelper.getClaimableStabl3LendingSingle(_user, _index, _timestamp);
     }
 
     function getClaimableStabl3LendingAll(address _user) public view returns (uint256) {
-        uint256 totalClaimableStabl3Lending;
-
-        uint256 timestampToConsider = block.timestamp;
-
-        for (uint256 i = 0 ; i < getStakings[_user].length ; i++) {
-            uint256 claimableStabl3Lending = getClaimableStabl3LendingSingle(_user, i, timestampToConsider);
-
-            if (claimableStabl3Lending > 0) {
-                totalClaimableStabl3Lending += claimableStabl3Lending;
-            }
-        }
-
-        return totalClaimableStabl3Lending;
+        return stabl3StakingHelper.getClaimableStabl3LendingAll(_user);
     }
 
     function _claimStabl3LendingSingle(uint256 _index, uint256 _timestamp) internal nonReentrant {
@@ -684,8 +486,6 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
         if (amountStabl3Lending > 0) {
             stabl3.transferFrom(address(treasury), msg.sender, amountStabl3Lending);
-
-            staking.isClaimedStabl3Lending = true;
 
             record.totalAmountStabl3Withdrawn += amountStabl3Lending;
 
@@ -699,6 +499,8 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
                 record.totalAmountStabl3Withdrawn,
                 _timestamp
             );
+
+            staking.amountStabl3Lending = 0;
         }
     }
 
@@ -717,39 +519,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         bool _isLending,
         bool _isRealEstate
     ) external view returns (uint256 totalAmountStakedUnlocked, uint256 totalAmountStakedLocked) {
-        Staking[] memory unlocked;
-        Staking[] memory locked;
-
-        if (_isLending) {
-            (unlocked, locked, , ) = allStakings(_user, _isRealEstate);
-        }
-        else {
-            (, , unlocked, locked) = allStakings(_user, _isRealEstate);
-        }
-
-        uint256 maxLength = unlocked.length.max(locked.length);
-
-        for (uint256 i = 0 ; i < maxLength ; i++) {
-            if (i < unlocked.length) {
-                uint256 amountStakedUnlocked = unlocked[i].amountTokenStaked;
-
-                if (unlocked[i].token.decimals() < 18) {
-                    amountStakedUnlocked *= 10 ** (18 - unlocked[i].token.decimals());
-                }
-
-                totalAmountStakedUnlocked += amountStakedUnlocked;
-            }
-
-            if (i < locked.length) {
-                uint256 amountStakedLocked = locked[i].amountTokenStaked;
-
-                if (locked[i].token.decimals() < 18) {
-                    amountStakedLocked *= 10 ** (18 - locked[i].token.decimals());
-                }
-
-                totalAmountStakedLocked += amountStakedLocked;
-            }
-        }
+        (totalAmountStakedUnlocked, totalAmountStakedLocked) = stabl3StakingHelper.getAmountStakedAll(_user, _isLending, _isRealEstate);
     }
 
     function _unstakeSingle(uint256 _index, uint256 _amountToUnstake) internal nonReentrant {

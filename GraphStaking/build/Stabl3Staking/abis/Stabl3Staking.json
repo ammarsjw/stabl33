@@ -447,14 +447,14 @@
             "type": "bool"
           },
           {
-            "internalType": "bool",
-            "name": "isClaimedStabl3Lending",
-            "type": "bool"
-          },
-          {
             "internalType": "uint256",
             "name": "amountStabl3Lending",
             "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isDormant",
+            "type": "bool"
           },
           {
             "internalType": "bool",
@@ -582,14 +582,14 @@
             "type": "bool"
           },
           {
-            "internalType": "bool",
-            "name": "isClaimedStabl3Lending",
-            "type": "bool"
-          },
-          {
             "internalType": "uint256",
             "name": "amountStabl3Lending",
             "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isDormant",
+            "type": "bool"
           },
           {
             "internalType": "bool",
@@ -659,14 +659,14 @@
             "type": "bool"
           },
           {
-            "internalType": "bool",
-            "name": "isClaimedStabl3Lending",
-            "type": "bool"
-          },
-          {
             "internalType": "uint256",
             "name": "amountStabl3Lending",
             "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isDormant",
+            "type": "bool"
           },
           {
             "internalType": "bool",
@@ -736,14 +736,14 @@
             "type": "bool"
           },
           {
-            "internalType": "bool",
-            "name": "isClaimedStabl3Lending",
-            "type": "bool"
-          },
-          {
             "internalType": "uint256",
             "name": "amountStabl3Lending",
             "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isDormant",
+            "type": "bool"
           },
           {
             "internalType": "bool",
@@ -813,14 +813,14 @@
             "type": "bool"
           },
           {
-            "internalType": "bool",
-            "name": "isClaimedStabl3Lending",
-            "type": "bool"
-          },
-          {
             "internalType": "uint256",
             "name": "amountStabl3Lending",
             "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isDormant",
+            "type": "bool"
           },
           {
             "internalType": "bool",
@@ -860,6 +860,26 @@
     "name": "claimStabl3LendingAll",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "excludeDormantStakings",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "excludedFromROIReserves",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -958,25 +978,6 @@
       {
         "internalType": "uint256",
         "name": "totalAmountStakedLocked",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "getAmountStakedPerStakingType",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
         "type": "uint256"
       }
     ],
@@ -1155,14 +1156,14 @@
         "type": "bool"
       },
       {
-        "internalType": "bool",
-        "name": "isClaimedStabl3Lending",
-        "type": "bool"
-      },
-      {
         "internalType": "uint256",
         "name": "amountStabl3Lending",
         "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "isDormant",
+        "type": "bool"
       },
       {
         "internalType": "bool",
@@ -1549,6 +1550,19 @@
       }
     ],
     "name": "updateReturnPools",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_stabl3StakingHelper",
+        "type": "address"
+      }
+    ],
+    "name": "updateStabl3StakingHelper",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

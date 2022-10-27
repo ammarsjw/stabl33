@@ -134,7 +134,7 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
         HQ = 0x294d0487fdf7acecf342ae70AFc5549A6E90f3e0;
 
         // TODO change
-        stabl3 = IERC20(0xDf9c4990a8973b6cC069738592F27Ea54b27D569);
+        stabl3 = IERC20(0x09186E7224acDb404A394610e915215DF7FA7ED5);
 
         treasuryPercentage = 800;
         ROIPercentage = 161;
@@ -203,16 +203,15 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
 
         uint256 timestampToConsider = block.timestamp;
 
-        BondInfo memory bondInfo = BondInfo({
-            bondType: totalBondTypes,
-            status: true,
-            token: _token,
-            bondAmount: _bondAmount,
-            bondAmountConsumed: 0,
-            discount: _discount,
-            startTime: timestampToConsider,
-            expiryTime: timestampToConsider + _expiryTime
-        });
+        BondInfo memory bondInfo;
+        bondInfo.bondType = totalBondTypes;
+        bondInfo.status = true;
+        bondInfo.token = _token;
+        bondInfo.bondAmount = _bondAmount;
+        // bondInfo.bondAmountConsumed = 0;
+        bondInfo.discount = _discount;
+        bondInfo.startTime = timestampToConsider;
+        bondInfo.expiryTime = timestampToConsider + _expiryTime;
 
         getBondInfo.push(bondInfo);
 
@@ -283,17 +282,16 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
 
         amountStabl3 = amountStabl3.mul(1000).div(1000 - bondInfo.discount);
 
-        Bonding memory bonding = Bonding({
-            index: getBondings[msg.sender].length,
-            user: msg.sender,
-            status: true,
-            bondType: bondInfo.bondType,
-            token: _token,
-            amountToken: _amountToken,
-            amountStabl3: amountStabl3,
-            startTime: timestampToConsider,
-            endTime: timestampToConsider + bondingClaimTime
-        });
+        Bonding memory bonding;
+        bonding.index = getBondings[msg.sender].length;
+        bonding.user = msg.sender;
+        bonding.status = true;
+        bonding.bondType = bondInfo.bondType;
+        bonding.token = _token;
+        bonding.amountToken = _amountToken;
+        bonding.amountStabl3 = amountStabl3;
+        bonding.startTime = timestampToConsider;
+        bonding.endTime = timestampToConsider + bondingClaimTime;
 
         getBondings[msg.sender].push(bonding);
 

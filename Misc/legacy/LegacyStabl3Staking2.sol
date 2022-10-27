@@ -106,7 +106,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         ROI = IROI(_ROI);
         HQ = 0x294d0487fdf7acecf342ae70AFc5549A6E90f3e0;
 
-        stabl3 = IERC20(0xDf9c4990a8973b6cC069738592F27Ea54b27D569);
+        stabl3 = IERC20(0x09186E7224acDb404A394610e915215DF7FA7ED5);
 
         treasuryPercentages = [975, 761];
         ROIPercentages = [0, 0];

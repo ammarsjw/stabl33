@@ -1,7 +1,7 @@
 {
-  "goerli": {
+  "fantom-testnet": {
     "ROI": {
-      "address": "0xba3a3bf91caf93f3d8180dc668568cbc90965fc6"
+      "address": "0x6fe3097ad75d35da7f8e717dfb6caf6ca1b07281"
     }
   }
 }

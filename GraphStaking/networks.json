@@ -1,7 +1,7 @@
 {
-  "goerli": {
+  "fantom-testnet": {
     "Stabl3Staking": {
-      "address": "0x794a209a187ecdc53814845116e7006894a0e78a"
+      "address": "0xfeb89e02fcef1acb6e577af3b33874b1558d9721"
     }
   }
 }

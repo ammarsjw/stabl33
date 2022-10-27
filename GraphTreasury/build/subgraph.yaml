@@ -4,11 +4,11 @@ schema:
 dataSources:
   - kind: ethereum
     name: Treasury
-    network: goerli
+    network: fantom-testnet
     source:
-      address: "0xfbdfa30426b912b29a84be07a431ecd0a227a37d"
+      address: "0x11652b97643055cfdc8204e9d3b90a7cc8c04087"
       abi: Treasury
-      startBlock: 7835830
+      startBlock: 11437653
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
