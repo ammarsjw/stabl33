@@ -23,6 +23,8 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
     uint8 private constant LEND_REWARD_POOL = 6;
     uint8 private constant LEND_FEE_POOL = 7;
 
+    uint8 private constant STAKING_TYPE_POOL = 20;
+
     ITreasury public treasury;
     IROI public ROI;
     address public HQ;
@@ -40,6 +42,8 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
     uint256 private immutable oneYearTime;
     uint256[5] public lockTimes;
 
+    uint256 excludedFromROIReserves;
+
     uint8[] public returnPools;
 
     uint256 public unstakeFeePercentage;
@@ -56,16 +60,10 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
     address[] public allStakers;
 
     /**
-     * @notice This mapping stores each user's lifetime staking records
+     * @notice Stores each user's lifetime staking records
      * @dev No deductions when unstaking
      */
     mapping (address => mapping (bool => Record)) public getRecords;
-
-    /**
-     * @notice This array stores the current amounts staked per staking type
-     * @dev Deductions when unstaking
-     */
-    uint256[5] public getAmountStakedPerStakingType;
 
     // contracts with permission to access Stabl3 Staking functions
     mapping (address => bool) public permitted;
@@ -341,7 +339,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
             allStakers.push(msg.sender);
         }
 
-        uint256 amountTokenLending;
+        // uint256 amountTokenLending;
         uint256 amountStabl3Lending;
 
         if (_isLending) {
@@ -351,7 +349,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
             uint256 amountHQ = _amountToken.mul(HQPercentages[1]).div(1000);
 
-            amountTokenLending = _amountToken.mul(lendingStabl3Percentage).div(1000);
+            uint256 amountTokenLending = _amountToken.mul(lendingStabl3Percentage).div(1000);
             amountStabl3Lending = treasury.getAmountOut(_token, amountTokenLending);
 
             uint256 totalAmountDistributed = amountTreasury + amountROI + amountHQ + amountTokenLending;
@@ -408,6 +406,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
             isLending: _isLending,
             isClaimedStabl3Lending: false,
             amountStabl3Lending: amountStabl3Lending,
+            isDormant: false,
             isRealEstate: false
         });
 
@@ -417,8 +416,9 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
         uint256 amountTokenConverted = _token.decimals() < 18 ? _amountToken * 10 ** (18 - _token.decimals()) : _amountToken;
 
+        treasury.updatePool(STAKING_TYPE_POOL + _stakingType, IERC20(address(0)), amountTokenConverted, 0, 0, true);
         record.totalAmountTokenStaked += amountTokenConverted;
-        getAmountStakedPerStakingType[_stakingType] += amountTokenConverted;
+        // getAmountStakedPerStakingType[_stakingType] += amountTokenConverted;
 
         emit Stake(
             staking.user,
@@ -435,7 +435,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
     }
 
     /**
-     * @notice This function is called externally by certain contracts to provide APR on a given value
+     * @notice This function is only called externally by certain contracts to provide APR on a given value
      * @dev Requires permit
      * @dev Requires external checks, transfers, records, updatePool calls, updateAPR calls and event emissions
      */
@@ -602,13 +602,18 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
             ROI.distributeReward(msg.sender, staking.token, reward, poolType);
 
+            uint256 rewardConverted = staking.token.decimals() < 18 ? reward * 10 ** (18 - staking.token.decimals()) : reward;
+
+            if (staking.isDormant) {
+                excludedFromROIReserves = excludedFromROIReserves.safeSub(rewardConverted);
+            }
+
             ROI.updateAPR();
 
             staking.stakingAPRIndexLast = ROI.allStakingAPRsLength() - 1;
             staking.rewardWithdrawn += reward;
             staking.rewardWithdrawTimeLast = _timestamp > endTime ? endTime : _timestamp;
 
-            uint256 rewardConverted = staking.token.decimals() < 18 ? reward * 10 ** (18 - staking.token.decimals()) : reward;
             record.totalRewardWithdrawn += rewardConverted;
 
             emit WithdrewReward(
@@ -754,6 +759,8 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
             ROI.returnFunds(staking.token, staking.amountTokenStaked - staking.token.balanceOf(address(treasury)), returnPools);
         }
 
+        staking.status = false;
+
         uint256 fee = staking.amountTokenStaked.mul(unstakeFeePercentage).div(1000);
         uint256 amountToUnstakeWithFee = staking.amountTokenStaked - fee;
 
@@ -761,17 +768,20 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
         SafeERC20.safeTransferFrom(staking.token, address(treasury), msg.sender, amountToUnstakeWithFee);
 
-        staking.status = false;
+        if (!staking.isDormant) {
+            (uint8 poolType, uint8 feeType) = staking.isLending ? (LEND_POOL, LEND_FEE_POOL) : (STAKE_POOL, STAKE_FEE_POOL);
 
-        (uint8 poolType, uint8 feeType) = staking.isLending ? (LEND_POOL, LEND_FEE_POOL) : (STAKE_POOL, STAKE_FEE_POOL);
+            treasury.updatePool(poolType, staking.token, staking.amountTokenStaked, 0, 0, false);
+            treasury.updatePool(feeType, staking.token, 0, fee, 0, true);
 
-        treasury.updatePool(poolType, staking.token, staking.amountTokenStaked, 0, 0, false);
-        treasury.updatePool(feeType, staking.token, 0, fee, 0, true);
+            uint256 amountTokenConverted =
+                staking.token.decimals() < 18 ?
+                staking.amountTokenStaked * 10 ** (18 - staking.token.decimals()) :
+                staking.amountTokenStaked;
 
-        uint256 amountTokenConverted =
-            staking.token.decimals() < 18 ? staking.amountTokenStaked * 10 ** (18 - staking.token.decimals()) : staking.amountTokenStaked;
-
-        getAmountStakedPerStakingType[staking.stakingType] -= amountTokenConverted;
+            treasury.updatePool(STAKING_TYPE_POOL + staking.stakingType, IERC20(address(0)), amountTokenConverted, 0, 0, false);
+            // getAmountStakedPerStakingType[staking.stakingType] -= amountTokenConverted;
+        }
 
         ROI.updateAPR();
 
@@ -831,6 +841,99 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         for (uint256 i = 0 ; i < _indexes.length ; i++) {
             unstakeSingle(_indexes[i]);
         }
+    }
+
+    function excludeDormantStakings() external stakeActive {
+        uint256 timestampToConsider = block.timestamp;
+
+        for (uint256 i = 0 ; i < allStakers.length ; i++) {
+            address staker = allStakers[i];
+
+            if (getStakers[staker]) {
+                (Staking[] memory unlockedLending, , Staking[] memory unlockedStaking, ) = allStakings(staker, false);
+                // (, , Staking[] memory unlockedRealEstate, ) = allStakings(staker, true);
+
+                // uint256 maxLength = unlockedLending.length.max(unlockedStaking.length).max(unlockedRealEstate.length);
+                uint256 maxLength = unlockedLending.length.max(unlockedStaking.length);
+
+                for (uint256 j = 0 ; j < maxLength ; j++) {
+                    if (j < unlockedLending.length && !unlockedLending[j].isDormant) {
+                        Staking memory staking = getStakings[unlockedLending[j].user][unlockedLending[j].index];
+
+                        uint256 decimals = staking.token.decimals();
+
+                        // ROI Pool reduction
+
+                        uint256 reward = getAmountRewardSingle(staking.user, staking.index, staking.isLending, false, timestampToConsider);
+
+                        (uint256 amountTokenConverted, uint256 rewardConverted) =
+                            decimals < 18 ?
+                            (staking.amountTokenStaked * 10 ** (18 - decimals), reward * 10 ** (18 - decimals)) :
+                            (staking.amountTokenStaked, reward);
+
+                        excludedFromROIReserves += rewardConverted;
+
+                        // Current Pool reduction
+
+                        uint256 fee = staking.amountTokenStaked.mul(unstakeFeePercentage).div(1000);
+
+                        (uint8 poolType, uint8 feeType) = staking.isLending ? (LEND_POOL, LEND_FEE_POOL) : (STAKE_POOL, STAKE_FEE_POOL);
+
+                        treasury.updatePool(poolType, staking.token, staking.amountTokenStaked, 0, 0, false);
+                        treasury.updatePool(feeType, staking.token, 0, fee, 0, true);
+
+                        treasury.updatePool(STAKING_TYPE_POOL + staking.stakingType, IERC20(address(0)), amountTokenConverted, 0, 0, false);
+
+                        // Designating this stake as Dormant
+
+                        getStakings[unlockedLending[j].user][unlockedLending[j].index].isDormant = true;
+                    }
+
+                    if (j < unlockedStaking.length && !unlockedStaking[j].isDormant) {
+                        Staking storage staking = getStakings[unlockedStaking[j].user][unlockedStaking[j].index];
+
+                        uint256 decimals = staking.token.decimals();
+
+                        // ROI Pool reduction
+
+                        uint256 reward = getAmountRewardSingle(staking.user, staking.index, staking.isLending, false, timestampToConsider);
+
+                        (uint256 amountTokenConverted, uint256 rewardConverted) =
+                            decimals < 18 ?
+                            (staking.amountTokenStaked * 10 ** (18 - decimals), reward * 10 ** (18 - decimals)) :
+                            (staking.amountTokenStaked, reward);
+
+                        excludedFromROIReserves += rewardConverted;
+
+                        // Current Pool reduction
+
+                        uint256 fee = staking.amountTokenStaked.mul(unstakeFeePercentage).div(1000);
+
+                        (uint8 poolType, uint8 feeType) = staking.isLending ? (LEND_POOL, LEND_FEE_POOL) : (STAKE_POOL, STAKE_FEE_POOL);
+
+                        treasury.updatePool(poolType, staking.token, staking.amountTokenStaked, 0, 0, false);
+                        treasury.updatePool(feeType, staking.token, 0, fee, 0, true);
+
+                        treasury.updatePool(STAKING_TYPE_POOL + staking.stakingType, IERC20(address(0)), amountTokenConverted, 0, 0, false);
+
+                        // Designating this stake as Dormant
+
+                        getStakings[unlockedLending[j].user][unlockedLending[j].index].isDormant = true;
+                    }
+
+                    // if (j < unlockedRealEstate.length) {
+                    //     uint256 amountToken = unlockedRealEstate[j].amountTokenStaked;
+
+                    //     amountUnlocked +=
+                    //         unlockedRealEstate[j].token.decimals() < 18 ?
+                    //         amountToken * 10 ** (18 - unlockedRealEstate[j].token.decimals()) :
+                    //         amountToken;
+                    // }
+                }
+            }
+        }
+
+        // currentPool = currentPool.safeSub(amountUnlocked);
     }
 
     function _compoundSingle(uint256 _principal, uint256 _ratio) internal pure returns (uint256) {

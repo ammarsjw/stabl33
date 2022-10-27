@@ -25,22 +25,29 @@ A.
 Q. Would it be fine if used the APR calculation from the excel sheet?
 A. 
 
-TODOs:
+METHOD 1(APR):
 
-// TODO APR is Reserves / maxPool
-// TODO transfer rewards to staking contract when updating APR if any amount is staked/lended
-// TODO last update APR Time to be used for rewards
-// TODO accPerShare:
-// TODO add when staking or buying/bonding
-// TODO update when withdrawing rewards or unstaking
-// TODO limit is only (real amount) not (real amount - unlocked)
-// TODO limit is still tier based
+- APR is Reserves / maxPool
+- transfer rewards to staking contract when updating APR if any amount is staked/lended
+- last update APR Time to be used for rewards
+- accPerShare:
+- add when staking or buying/bonding
+- update when withdrawing rewards or unstaking
+- limit is only (real amount) not (real amount - unlocked)
+- limit is still tier based
+- Problems:
+   ~ System breaks if user doesn't unstake exactly at endTime
+   ~ Gain APR constantly/without endTime
 
-// ISSUE    System breaks if user doesn't unstake exactly at endTime
-// SOLUTION Gain APR constantly/without endTime
+METHOD 2(APR):
+- save APRs
+- save stakingAPRIndex in staking
+- traverse APRs for reward
+- dont exclude unlocked from currentPool
+- dont exclude unlocked from APR pool
 
-// TODO save APRs
-// TODO save stakingAPRIndex in staking
-// TODO traverse APRs for reward
-// TODO dont exclude unlocked from currentPool
-// TODO dont exclude unlocked from APR pool
+METHOD 1(DORMANT STAKES):
+- Loop through and remove dormant stakes
+- Remove their staked amount from current pool
+- Remove their reward amount from ROI pool
+- Update APR at the end of the whole loop

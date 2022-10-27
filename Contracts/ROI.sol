@@ -23,6 +23,8 @@ contract ROI is Ownable, IStabl3StakingStruct {
     uint8 private constant LEND_POOL = 5;
     uint8 private constant LEND_REWARD_POOL = 6;
 
+    uint8 private constant STAKING_TYPE_POOL = 20;
+
     ITreasury public treasury;
 
     IERC20 public immutable stabl3;
@@ -222,7 +224,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
         maxPool = maxPool.mul(maxPoolPercentage).div(1000);
         maxPool = maxPool.mul(stakingTypePercentage).div(1000);
 
-        currentPool = stabl3Staking.getAmountStakedPerStakingType(_stakingType);
+        currentPool = treasury.getTreasuryPool(STAKING_TYPE_POOL + _stakingType, IERC20(address(0)));
 
         if (_isLending) {
             _amountToken = _amountToken.mul(1000 - stabl3Staking.lendingStabl3Percentage()).div(1000);
@@ -343,7 +345,8 @@ contract ROI is Ownable, IStabl3StakingStruct {
     }
 
     /**
-     * @notice This functions transfers ROI funds to the Treasury
+     * @dev Called when Treasury does not have enough funds
+     * @dev Transfers funds from ROI to Treasury
      * @dev Updates values of both treasury and ROI pools
      */
     function returnFunds(IERC20 _token, uint256 _amountToken, uint8[] memory _pools) external permission reserved(_token) {

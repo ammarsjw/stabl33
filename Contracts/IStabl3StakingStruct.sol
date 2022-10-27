@@ -25,6 +25,7 @@ interface IStabl3StakingStruct {
         bool isLending;
         bool isClaimedStabl3Lending;
         uint256 amountStabl3Lending;
+        bool isDormant;
         bool isRealEstate;
     }
 

@@ -56,7 +56,7 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
     event UpdatedHQ(address newHQ, address oldHQ);
 
     event Buy(
-        address indexed recipient,
+        address indexed user,
         uint256 amountStabl3,
         IERC20 token,
         uint256 amountToken,
@@ -64,7 +64,7 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
     );
 
     event Exchange(
-        address indexed recipient,
+        address indexed user,
         IERC20 exchangingToken,
         uint256 amountExchangingToken,
         IERC20 token,
@@ -219,7 +219,8 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @notice This function has multiple security features incorporated to secure funds
+     * @notice This function allows users to exchange 1 stable coin with another but only if it is part of the protocol's reserve
+     * @dev Multiple security features incorporated to secure funds
      * @dev Each user has a certain time wait before each consecutive exchange call
      * @dev Each user is limited to take out a maximum of X% within Y hours of the token they want which is currently in the treasury
             minus the amounts that came in through staking and lending

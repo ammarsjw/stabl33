@@ -27,6 +27,8 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
 
     IUCD public ucd;
 
+    uint256 public exchangeFee;
+
     bool public borrowState;
 
     // structs
@@ -48,6 +50,8 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
 
     event UpdatedHQ(address newHQ, address oldHQ);
 
+    event UpdatedExchangeFee(uint256 newExchangeFee, uint256 oldExchangeFee);
+
     event Borrow(
         address indexed user,
         uint256 amountStabl3,
@@ -62,6 +66,14 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
         uint256 timestamp
     );
 
+    event Exchange(
+        address indexed user,
+        IERC20 token,
+        uint256 amountToken,
+        uint256 fee,
+        uint256 timestamp
+    );
+
     // constructor
 
     constructor(address _treasury, address _ROI) {
@@ -73,6 +85,8 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
         // TODO change
         stabl3 = IERC20(0xDf9c4990a8973b6cC069738592F27Ea54b27D569);
         ucd = IUCD(0x01fa8dEEdDEA8E4e465f158d93e162438d61c9eB);
+
+        exchangeFee = 3;
     }
 
     function updateTreasury(address _treasury) external onlyOwner {
@@ -98,6 +112,12 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
         ucd = IUCD(_ucd);
     }
 
+    function updateExchangeFee(uint256 _exchangeFee) external onlyOwner {
+        require(exchangeFee != _exchangeFee, "Stabl3Borrowing: Exchange Fee is already this value");
+        emit UpdatedExchangeFee(_exchangeFee, exchangeFee);
+        exchangeFee = _exchangeFee;
+    }
+
     function updateBorrowState(bool _state) external onlyOwner {
         require(borrowState != _state, "Stabl3Borrowing: Borrow State is already of the value 'state'");
         borrowState = _state;
@@ -120,6 +140,9 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
         return equivalenceToken;
     }
 
+    /**
+     * @notice This function allows users to deposit stabl3 and to receive UCD at current protocol rates
+     */
     function borrow(uint256 _amountStabl3) external borrowActive {
         require(_amountStabl3 > 0, "Stabl3Borrowing: Insufficient amount");
 
@@ -129,6 +152,7 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
         uint256 amountUCD = treasury.getAmountIn(_amountStabl3, equivalenceToken);
 
         Borrowing storage borrowing = getBorrowings[msg.sender];
+
         borrowing.amountUCD += amountUCD;
         borrowing.amountStabl3 += _amountStabl3;
 
@@ -144,11 +168,23 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
         emit Borrow(msg.sender, _amountStabl3, amountUCD, block.timestamp);
     }
 
-    // burn all payback UCD?
-    // if no, change borrow logic so that un burnt UCD is transferred from treasury to msg.sender before minting new UCD
+    function exchange(IERC20 _token, uint256 _amountUCD) external borrowActive {
+        require(_amountUCD > 0, "Stabl3Borrowing: Insufficient amount");
+
+        // limit?
+
+        uint256 amountTokenWithFee = _amountUCD.mul(exchangeFee).div(1000);
+
+        SafeERC20.safeTransferFrom(_token, address(treasury), msg.sender, amountTokenWithFee);
+    }
+
+    // flashloan protection
+    // any security features?
     // when a user has fully returned his UCD do we uncollateralize the rest of his collateralized Stabl3?
     // what price to consider when borrowing/paying back
-    // payback or repay
+    /**
+     * @notice This function allows users to repay their borrowed UCD in return for Stabl3 Token at current protocol rates
+     */
     function payback(uint256 _amountUCD) external borrowActive {
         require(_amountUCD > 0, "Stabl3Borrowing: Insufficient amount");
 

@@ -15,8 +15,6 @@ interface IStabl3Staking is IStabl3StakingStruct {
 
     function getRecords(address, bool) external view returns (Record memory);
 
-    function getAmountStakedPerStakingType(uint256) external view returns (uint256);
-
     function allStakersLength() external view returns (uint256);
 
     function allStakingsLength(address _user) external view returns (uint256);
