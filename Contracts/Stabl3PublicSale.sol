@@ -194,7 +194,7 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
             limit.lastExchangeTime = block.timestamp;
         }
         else {
-            revert("Stabl3PublicSale: For repeat exchanges, please wait a few minutes.");
+            revert("Stabl3PublicSale: For repeat exchanges, please wait a few minutes");
         }
 
         // TODO confirm

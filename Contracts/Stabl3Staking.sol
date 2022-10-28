@@ -42,8 +42,8 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
     uint256 public lendingStabl3Percentage;
     uint256 public lendingStabl3ClaimTime;
 
-    uint256 private immutable oneDayTime;
-    uint256 private immutable oneYearTime;
+    uint256 private oneDayTime;
+    uint256 private oneYearTime;
     uint256[5] public lockTimes;
 
     uint256 public excludedFromROIReserves;
@@ -143,13 +143,17 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
         lendingStabl3Percentage = 200;
         // TODO remove
-        lendingStabl3ClaimTime = 300; // 15 minutes time in seconds
+        // lendingStabl3ClaimTime = 15 minutes;
+        lendingStabl3ClaimTime = 4 hours;
         // lendingStabl3ClaimTime = 2592000; // 1 month time in seconds
 
         // TODO remove
-        oneDayTime = 10; // it is seen as 1 day in testing
-        oneYearTime = 3600;
-        lockTimes = [0, 900, 1800, 2700, 3600];   // 15, 30, 45 and 60 minutes time in seconds
+        // oneDayTime = 10;
+        // oneYearTime = 3600;
+        // lockTimes = [0, 900, 1800, 2700, 3600];
+        oneDayTime = 8 minutes;
+        oneYearTime = 48 hours;
+        lockTimes = [0, 12 hours, 24 hours, 36 hours, 48 hours];
         // oneDayTime = 86400;
         // oneYearTime = 31104000;
         // lockTimes = [0, 7776000, 15552000, 23328000, 31104000];   // 3, 6, 9 and 12 months time in seconds
@@ -220,6 +224,9 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
     function updateLockTimes(uint256[5] memory _lockTimes) external onlyOwner {
         lockTimes = _lockTimes;
+        // TODO remove
+        oneDayTime = _lockTimes[1].div(90);
+        oneYearTime = _lockTimes[4];
     }
 
     function updateReturnPools(uint8[] memory _returnPools) external onlyOwner {
@@ -613,6 +620,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         }
     }
 
+    // TODO gasLeft()
     function excludeDormantStakings() external stakeActive {
         uint256 timestampToConsider = block.timestamp;
 

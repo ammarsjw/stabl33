@@ -13,8 +13,8 @@ contract Stabl3StakingHelper is IStabl3StakingStruct {
 
     IStabl3Staking public stabl3Staking;
 
-    uint256 private immutable oneDayTime;
-    uint256 private immutable oneYearTime;
+    uint256 private oneDayTime;
+    uint256 private oneYearTime;
 
     // constructor
 
@@ -22,10 +22,16 @@ contract Stabl3StakingHelper is IStabl3StakingStruct {
         stabl3Staking = IStabl3Staking(msg.sender);
 
         // TODO remove
-        oneDayTime = 10; // it is seen as 1 day in testing
-        oneYearTime = 3600;
+        oneDayTime = 8 minutes;
+        oneYearTime = 48 hours;
         // oneDayTime = 86400;
         // oneYearTime = 31104000;
+    }
+
+    //TODO remove
+    function updateLockTimes(uint256[5] memory _lockTimes) external {
+        oneDayTime = _lockTimes[1].div(90);
+        oneYearTime = _lockTimes[4];
     }
 
     function allStakings(
