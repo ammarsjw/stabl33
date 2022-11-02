@@ -319,7 +319,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
         uint256 numberOfDays = (block.timestamp - updateTimestampLast) / oneDayTime;
 
         timeWeightedAPR.APR += updateAPRLast.mul(numberOfDays);
-        timeWeightedAPR.TimeWeight += numberOfDays;
+        timeWeightedAPR.timeWeight += numberOfDays;
 
         updateAPRLast = currentAPR;
         updateTimestampLast += oneDayTime * numberOfDays;

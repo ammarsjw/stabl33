@@ -171,17 +171,17 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
     function exchange(IERC20 _token, uint256 _amountUCD) external borrowActive {
         require(_amountUCD > 0, "Stabl3Borrowing: Insufficient amount");
 
-        // limit?
+        // handleLimit?
 
         uint256 amountTokenWithFee = _amountUCD.mul(exchangeFee).div(1000);
 
         SafeERC20.safeTransferFrom(_token, address(treasury), msg.sender, amountTokenWithFee);
     }
 
-    // flashloan protection
+    // flashloan protection?
     // any security features?
     // when a user has fully returned his UCD do we uncollateralize the rest of his collateralized Stabl3?
-    // what price to consider when borrowing/paying back
+    // consider current price when borrowing/paying back
     /**
      * @notice This function allows users to repay their borrowed UCD in return for Stabl3 Token at current protocol rates
      */
