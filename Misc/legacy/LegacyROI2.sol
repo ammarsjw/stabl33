@@ -2,12 +2,12 @@
 
 pragma solidity 0.8.17;
 
-import "./Ownable.sol";
-import "./SafeMathUpgradeable.sol";
-import "./SafeERC20.sol";
+import "../../Contracts/Ownable.sol";
+import "../../Contracts/SafeMathUpgradeable.sol";
+import "../../Contracts/SafeERC20.sol";
 
-import "./ITreasury.sol";
-import "./IStabl3Staking.sol";
+import "../../Contracts/ITreasury.sol";
+import "../../Contracts/IStabl3Staking.sol";
 
 contract ROI is Ownable, IStabl3StakingStruct {
     using SafeMathUpgradeable for uint256;
@@ -35,13 +35,13 @@ contract ROI is Ownable, IStabl3StakingStruct {
     uint256 public maxPoolPercentage;
     uint256 public stakingTypePercentage;
 
-    TimeWeightedAPR public timeWeightedAPR;
-    uint256 public updateAPRLast;
-    uint256 public updateTimestampLast;
-
-    uint256 private oneDayTime;
-
     // mappings
+
+    /**
+     * @notice This array is used to store APRs during staking
+     * @dev The array is used iterate over every unique `Index` to get `APR` and `Timestamp`
+     */
+    // StakingAPR[] public allStakingAPRs;
 
     // contracts with permission to access ROI pool funds
     mapping (address => bool) public permitted;
@@ -71,12 +71,6 @@ contract ROI is Ownable, IStabl3StakingStruct {
         maxPoolPercentage = 700;
         stakingTypePercentage = 250;
 
-        updateTimestampLast = block.timestamp;
-
-        // TODO remove
-        oneDayTime = 8 minutes;
-        // oneDayTime = 86400; // 1 day time in seconds
-
         updatePermission(address(_treasury), true);
     }
 
@@ -103,6 +97,10 @@ contract ROI is Ownable, IStabl3StakingStruct {
     function updateMaxPoolPercentage(uint256 _maxPoolPercentage) external onlyOwner {
         require(maxPoolPercentage != _maxPoolPercentage, "ROI: Max Pool Percentage is already this value");
         maxPoolPercentage = _maxPoolPercentage;
+    }
+
+    function allStakingAPRsLength() external view returns (uint256) {
+        // return allStakingAPRs.length;
     }
 
     function updatePermission(address _contractAddress, bool _state) public onlyOwner {
@@ -315,14 +313,34 @@ contract ROI is Ownable, IStabl3StakingStruct {
 
         uint256 totalRewardDistributed = getTotalRewardDistributed();
 
-        // Time Weighted APR Calculation
-        uint256 numberOfDays = (block.timestamp - updateTimestampLast) / oneDayTime;
+        uint256 totalStakedAndLendedAmount;
 
-        timeWeightedAPR.APR += updateAPRLast.mul(numberOfDays);
-        timeWeightedAPR.TimeWeight += numberOfDays;
+        for (uint256 i = 0 ; i < treasury.allReservedTokensLength() ; i++) {
+            IERC20 reservedToken = treasury.allReservedTokens(i);
 
-        updateAPRLast = currentAPR;
-        updateTimestampLast += oneDayTime * numberOfDays;
+            if (treasury.isReservedToken(reservedToken)) {
+                // HQ Pool is included in the Treasury Pool since it earns APR, hence no need to it to either staked or lended amounts
+                uint256 stakedAmount = treasury.getTreasuryPool(STAKE_POOL, reservedToken);
+                stakedAmount += treasury.getROIPool(STAKE_POOL, reservedToken);                 // ROI Pool for staking is 0 by default
+                uint256 lendedAmount = treasury.getTreasuryPool(LEND_POOL, reservedToken);
+                lendedAmount += treasury.getROIPool(LEND_POOL, reservedToken);                  // ROI Pool for lending is 0 by default
+
+                uint256 decimals = reservedToken.decimals();
+
+                totalStakedAndLendedAmount +=
+                    decimals < 18 ?
+                    (stakedAmount * 10 ** (18 - decimals)) + (lendedAmount * 10 ** (18 - decimals)) :
+                    stakedAmount + lendedAmount;
+            }
+        }
+
+        if (totalStakedAndLendedAmount > 0) {
+            // StakingAPR memory stakingAPR;
+            // stakingAPR.APR = currentAPR;
+            // stakingAPR.timestamp = block.timestamp;
+
+            // allStakingAPRs.push(stakingAPR);
+        }
 
         emit APR(currentAPR, reserves, totalRewardDistributed, block.timestamp);
     }

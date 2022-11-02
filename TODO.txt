@@ -25,7 +25,7 @@ A.
 Q. Would it be fine if used the APR calculation from the excel sheet?
 A. 
 
-METHOD 1(APR):
+METHOD 1 (APR):
 
 - APR is Reserves / maxPool
 - transfer rewards to staking contract when updating APR if any amount is staked/lended
@@ -39,14 +39,19 @@ METHOD 1(APR):
    ~ System breaks if user doesn't unstake exactly at endTime
    ~ Gain APR constantly/without endTime
 
-METHOD 2(APR):
+METHOD 2 (APR):
 - save APRs
 - save stakingAPRIndex in staking
 - traverse APRs for reward
 - dont exclude unlocked from currentPool
 - dont exclude unlocked from APR pool
 
-METHOD 1(DORMANT STAKES):
+METHOD 3 (APR):
+- Time Weighted Average APRs
+- Saving Cumulative APRs whenever APR is updated
+- Saving Cumulative Time Variables between each change
+
+METHOD 1 (DORMANT STAKES):
 - Loop through and remove dormant stakes
 - Remove their staked amount from current pool
 - Remove their reward amount from ROI pool

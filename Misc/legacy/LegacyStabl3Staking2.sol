@@ -306,11 +306,11 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
     ) public stakeActive reserved(_token) nonReentrant {
         require(1 <= _stakingType && _stakingType <= 4, "Stabl3Staking: Incorrect staking type");
         require(_amountToken > 1, "Stabl3Staking: Insufficient amount");
-        (uint256 maxPool, uint256 currentPool) =
-            _isLending ?
-            ROI.validatePool(_token, _amountToken.mul(1000 - lendingStabl3Percentage).div(1000)) :
-            ROI.validatePool(_token, _amountToken);
-        require(currentPool <= maxPool, "Stabl3Staking: Staking pool limit reached. Please try again later or try a different amount");
+        // (uint256 maxPool, uint256 currentPool) =
+        //     _isLending ?
+        //     ROI.validatePool(_token, _amountToken.mul(1000 - lendingStabl3Percentage).div(1000)) :
+        //     ROI.validatePool(_token, _amountToken);
+        // require(currentPool <= maxPool, "Stabl3Staking: Staking pool limit reached. Please try again later or try a different amount");
 
         if (!getStakers[msg.sender]) {
             getStakers[msg.sender] = true;
@@ -408,44 +408,44 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
             treasury.updatePool(poolType, _token, amountTreasury + amountHQ, amountROI, amountHQ, true);
         }
 
-        uint256 timestampToConsider = block.timestamp;
+        // uint256 timestampToConsider = block.timestamp;
 
-        Staking memory staking = Staking({
-            index: getStakings[msg.sender].length,
-            user: msg.sender,
-            status: true,
-            stakingType: _stakingType,
-            token: _token,
-            amountTokenStaked: _amountToken,
-            startTime: timestampToConsider,
-            rewardWithdrawn: 0,
-            rewardWithdrawTimeLast: timestampToConsider,
-            isLending: _isLending,
-            isClaimedStabl3Lending: false,
-            amountTokenLending: amountTokenLending,
-            amountStabl3Lending: amountStabl3Lending,
-            isRealEstate: false
-        });
+        // Staking memory staking = Staking({
+        //     index: getStakings[msg.sender].length,
+        //     user: msg.sender,
+        //     status: true,
+        //     stakingType: _stakingType,
+        //     token: _token,
+        //     amountTokenStaked: _amountToken,
+        //     startTime: timestampToConsider,
+        //     rewardWithdrawn: 0,
+        //     rewardWithdrawTimeLast: timestampToConsider,
+        //     isLending: _isLending,
+        //     isClaimedStabl3Lending: false,
+        //     amountTokenLending: amountTokenLending,
+        //     amountStabl3Lending: amountStabl3Lending,
+        //     isRealEstate: false
+        // });
 
-        getStakings[msg.sender].push(staking);
+        // getStakings[msg.sender].push(staking);
 
-        Record storage record = getRecords[msg.sender][_isLending];
+        // Record storage record = getRecords[msg.sender][_isLending];
 
-        uint256 amountTokenConverted = _token.decimals() < 18 ? _amountToken * 10 ** (18 - _token.decimals()) : _amountToken;
-        record.totalAmountTokenStaked += amountTokenConverted;
+        // uint256 amountTokenConverted = _token.decimals() < 18 ? _amountToken * 10 ** (18 - _token.decimals()) : _amountToken;
+        // record.totalAmountTokenStaked += amountTokenConverted;
 
-        ROI.updateAPR();
+        // ROI.updateAPR();
 
-        emit Stake(
-            staking.user,
-            staking.index,
-            staking.stakingType,
-            staking.token,
-            staking.amountTokenStaked,
-            record.totalAmountTokenStaked,
-            staking.isLending,
-            timestampToConsider
-        );
+        // emit Stake(
+        //     staking.user,
+        //     staking.index,
+        //     staking.stakingType,
+        //     staking.token,
+        //     staking.amountTokenStaked,
+        //     record.totalAmountTokenStaked,
+        //     staking.isLending,
+        //     timestampToConsider
+        // );
     }
 
     /**
@@ -591,7 +591,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         if (
             staking.status &&
             staking.isLending &&
-            !staking.isClaimedStabl3Lending &&
+            // !staking.isClaimedStabl3Lending &&
             _timestamp > staking.startTime + lendingStabl3ClaimTime
         ) {
             claimableStabl3Lending = staking.amountStabl3Lending;
@@ -617,7 +617,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
     }
 
     function _claimStabl3LendingSingle(uint256 _index, uint256 _timestamp) internal nonReentrant {
-        Staking storage staking = getStakings[msg.sender][_index];
+        // Staking storage staking = getStakings[msg.sender][_index];
 
         Record storage record = getRecords[msg.sender][true];
 
@@ -626,21 +626,21 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         if (amountStabl3Lending > 0) {
             stabl3.transferFrom(address(treasury), msg.sender, amountStabl3Lending);
 
-            staking.isClaimedStabl3Lending = true;
+            // staking.isClaimedStabl3Lending = true;
 
             record.totalAmountStabl3Withdrawn += amountStabl3Lending;
 
             treasury.updateStabl3CirculatingSupply(amountStabl3Lending, true);
 
-            emit ClaimedLendingStabl3(
-                staking.user,
-                staking.index,
-                staking.token,
-                staking.amountTokenLending,
-                staking.amountStabl3Lending,
-                record.totalAmountStabl3Withdrawn,
-                _timestamp
-            );
+            // emit ClaimedLendingStabl3(
+            //     staking.user,
+            //     staking.index,
+            //     staking.token,
+            //     staking.amountTokenLending,
+            //     staking.amountStabl3Lending,
+            //     record.totalAmountStabl3Withdrawn,
+            //     _timestamp
+            // );
         }
     }
 

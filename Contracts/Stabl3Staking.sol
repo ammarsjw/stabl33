@@ -41,9 +41,6 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
     uint256 public lendingStabl3Percentage;
     uint256 public lendingStabl3ClaimTime;
-
-    uint256 private oneDayTime;
-    uint256 private oneYearTime;
     uint256[5] public lockTimes;
 
     uint256 public excludedFromROIReserves;
@@ -51,6 +48,9 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
     uint8[] public returnPools;
 
     uint256 public unstakeFeePercentage;
+
+    uint256 private oneDayTime;
+    uint256 private oneYearTime;
 
     bool public stakeState;
 
@@ -143,20 +143,12 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
         lendingStabl3Percentage = 200;
         // TODO remove
-        // lendingStabl3ClaimTime = 15 minutes;
         lendingStabl3ClaimTime = 4 hours;
         // lendingStabl3ClaimTime = 2592000; // 1 month time in seconds
 
         // TODO remove
-        // oneDayTime = 10;
-        // oneYearTime = 3600;
-        // lockTimes = [0, 900, 1800, 2700, 3600];
-        oneDayTime = 8 minutes;
-        oneYearTime = 48 hours;
         lockTimes = [0, 12 hours, 24 hours, 36 hours, 48 hours];
-        // oneDayTime = 86400;
-        // oneYearTime = 31104000;
-        // lockTimes = [0, 7776000, 15552000, 23328000, 31104000];   // 3, 6, 9 and 12 months time in seconds
+        // lockTimes = [0, 7776000, 15552000, 23328000, 31104000]; // 3, 6, 9 and 12 months time in seconds
 
         // TODO use times like this to complete 365 days
         // 31+28+31, 30+31+30, 31+31+30, 31+30+31
@@ -166,6 +158,12 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         returnPools = [0, 1, 14];
 
         unstakeFeePercentage = 50;
+
+        // TODO remove
+        oneDayTime = 8 minutes;
+        oneYearTime = 48 hours;
+        // oneDayTime = 86400; // 1 day time in seconds
+        // oneYearTime = 31104000; // 1 year time in seconds
     }
 
     function updateTreasury(address _treasury) external onlyOwner {
@@ -349,7 +347,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         staking.token = _token;
         staking.amountTokenStaked = _amountToken;
         staking.startTime = timestampToConsider;
-        staking.stakingAPRIndexLast = ROI.allStakingAPRsLength() - 1;
+        staking.timeWeightedAPRLast = ROI.timeWeightedAPR();
         // staking.rewardWithdrawn = 0;
         staking.rewardWithdrawTimeLast = timestampToConsider;
         staking.isLending = _isLending;
@@ -444,7 +442,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
             ROI.updateAPR();
 
-            staking.stakingAPRIndexLast = ROI.allStakingAPRsLength() - 1;
+            staking.timeWeightedAPRLast = ROI.timeWeightedAPR();
             staking.rewardWithdrawn += reward;
             staking.rewardWithdrawTimeLast = _timestamp > endTime ? endTime : _timestamp;
 

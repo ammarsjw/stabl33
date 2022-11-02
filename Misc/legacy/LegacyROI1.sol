@@ -213,7 +213,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
         maxPool = maxPool.mul(maxPoolPercentage).div(1000);
         maxPool = maxPool.mul(stakingTypePercentage).div(1000);
 
-        currentPool = stabl3Staking.getAmountStakedPerStakingType(_stakingType);
+        // currentPool = stabl3Staking.getAmountStakedPerStakingType(_stakingType);
 
         if (_isLending) {
             _amountToken = _amountToken.mul(1000 - stabl3Staking.lendingStabl3Percentage()).div(1000);

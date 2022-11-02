@@ -2,11 +2,11 @@
 
 pragma solidity 0.8.17;
 
-import "./SafeMathUpgradeable.sol";
+import "../../Contracts/SafeMathUpgradeable.sol";
 
-import "./IROI.sol";
-import "./IStabl3Staking.sol";
-import "./IStabl3StakingStruct.sol";
+import "../../Contracts/IROI.sol";
+import "../../Contracts/IStabl3Staking.sol";
+import "../../Contracts/IStabl3StakingStruct.sol";
 
 contract Stabl3StakingHelper is IStabl3StakingStruct {
     using SafeMathUpgradeable for uint256;
@@ -122,37 +122,97 @@ contract Stabl3StakingHelper is IStabl3StakingStruct {
         bool _isRealEstate,
         uint256 _timestamp
     ) public view returns (uint256) {
-        uint256 amountReward;
+        // uint256 amountReward;
 
-        Staking memory staking = stabl3Staking.getStakings(_user, _index);
+        // Staking memory staking = stabl3Staking.getStakings(_user, _index);
 
-        uint256 endTime = staking.startTime + stabl3Staking.lockTimes(staking.stakingType);
+        // uint256 endTime = staking.startTime + stabl3Staking.lockTimes(staking.stakingType);
 
-        if (
-            staking.status &&
-            staking.isLending == _isLending &&
-            staking.isRealEstate == _isRealEstate &&
-            staking.rewardWithdrawTimeLast < endTime
-        ) {
-            uint256 timestampToConsider = _timestamp > endTime ? endTime : _timestamp;
+        // if (
+        //     staking.status &&
+        //     staking.isLending == _isLending &&
+        //     staking.isRealEstate == _isRealEstate &&
+        //     staking.rewardWithdrawTimeLast < endTime
+        // ) {
+        //     uint256 timestampToConsider = _timestamp > endTime ? endTime : _timestamp;
 
-            uint256 numberOfDays = (timestampToConsider - staking.rewardWithdrawTimeLast) / oneDayTime;
+        //     if (staking.stakingAPRIndexLast == stabl3Staking.ROI().allStakingAPRsLength() - 1) {
+        //         uint256 numberOfDays = (timestampToConsider - staking.rewardWithdrawTimeLast) / oneDayTime;
 
-            if (numberOfDays > 0) {
-                TimeWeightedAPR memory timeWeightedAPR = stabl3Staking.ROI().timeWeightedAPR();
+        //         if (numberOfDays > 0) {
+        //             uint256 ratio = stabl3Staking.ROI().allStakingAPRs(staking.stakingAPRIndexLast).APR;
 
-                uint256 dAPR = (timeWeightedAPR.APR - staking.timeWeightedAPRLast.APR);
-                uint256 dTimeWeight = (timeWeightedAPR.TimeWeight - staking.timeWeightedAPRLast.TimeWeight);
+        //             uint256 rewardTotal = _compoundSingle(staking.amountTokenStaked, ratio);
 
-                uint256 ratio = dAPR / dTimeWeight;
+        //             amountReward += (rewardTotal * oneDayTime * numberOfDays) / oneYearTime;
+        //         }
+        //     }
+        //     else {
+        //         uint256 stakingAPRIndex = staking.stakingAPRIndexLast;
 
-                uint256 rewardTotal = _compoundSingle(staking.amountTokenStaked, ratio);
+        //         StakingAPR memory stakingAPR = stabl3Staking.ROI().allStakingAPRs(stakingAPRIndex);
+        //         StakingAPR memory stakingAPRNext = stabl3Staking.ROI().allStakingAPRs(stakingAPRIndex + 1);
 
-                amountReward += (rewardTotal * oneDayTime * numberOfDays) / oneYearTime;
-            }
-        }
+        //         if (stakingAPRNext.timestamp < timestampToConsider) {
+        //             uint256 numberOfDays = (stakingAPRNext.timestamp - staking.rewardWithdrawTimeLast) / oneDayTime;
 
-        return amountReward;
+        //             if (numberOfDays > 0) {
+        //                 uint256 ratio = stakingAPR.APR;
+
+        //                 uint256 rewardTotal = _compoundSingle(staking.amountTokenStaked, ratio);
+
+        //                 amountReward += (rewardTotal * oneDayTime * numberOfDays) / oneYearTime;
+        //             }
+
+        //             stakingAPRIndex++;
+
+        //             for ( ; stakingAPRIndex < stabl3Staking.ROI().allStakingAPRsLength() - 1 ; stakingAPRIndex++) {
+        //                 stakingAPR = stabl3Staking.ROI().allStakingAPRs(stakingAPRIndex);
+        //                 stakingAPRNext = stabl3Staking.ROI().allStakingAPRs(stakingAPRIndex + 1);
+
+        //                 if (stakingAPRNext.timestamp < timestampToConsider) {
+        //                     numberOfDays = (stakingAPRNext.timestamp - stakingAPR.timestamp) / oneDayTime;
+
+        //                     if (numberOfDays > 0) {
+        //                         uint256 ratio = stakingAPR.APR;
+
+        //                         uint256 rewardTotal = _compoundSingle(staking.amountTokenStaked, ratio);
+
+        //                         amountReward += (rewardTotal * oneDayTime * numberOfDays) / oneYearTime;
+        //                     }
+        //                 }
+        //                 else {
+        //                     break;
+        //                 }
+        //             }
+
+        //             stakingAPR = stabl3Staking.ROI().allStakingAPRs(stakingAPRIndex);
+
+        //             numberOfDays = (timestampToConsider - stakingAPR.timestamp) / oneDayTime;
+
+        //             if (numberOfDays > 0) {
+        //                 uint256 ratio = stakingAPR.APR;
+
+        //                 uint256 rewardTotal = _compoundSingle(staking.amountTokenStaked, ratio);
+
+        //                 amountReward += (rewardTotal * oneDayTime * numberOfDays) / oneYearTime;
+        //             }
+        //         }
+        //         else {
+        //             uint256 numberOfDays = (timestampToConsider - staking.rewardWithdrawTimeLast) / oneDayTime;
+
+        //             if (numberOfDays > 0) {
+        //                 uint256 ratio = stakingAPR.APR;
+
+        //                 uint256 rewardTotal = _compoundSingle(staking.amountTokenStaked, ratio);
+
+        //                 amountReward += (rewardTotal * oneDayTime * numberOfDays) / oneYearTime;
+        //             }
+        //         }
+        //     }
+        // }
+
+        // return amountReward;
     }
 
     function getAmountRewardAll(address _user, bool _isLending, bool _isRealEstate) public view returns (uint256) {
