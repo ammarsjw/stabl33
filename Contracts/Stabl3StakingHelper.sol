@@ -142,7 +142,7 @@ contract Stabl3StakingHelper is IStabl3StakingStruct {
                 TimeWeightedAPR memory timeWeightedAPR = stabl3Staking.ROI().timeWeightedAPR();
 
                 uint256 dAPR = (timeWeightedAPR.APR - staking.timeWeightedAPRLast.APR);
-                uint256 dTimeWeight = (timeWeightedAPR.TimeWeight - staking.timeWeightedAPRLast.TimeWeight);
+                uint256 dTimeWeight = (timeWeightedAPR.timeWeight - staking.timeWeightedAPRLast.timeWeight);
 
                 uint256 ratio = dAPR / dTimeWeight;
 

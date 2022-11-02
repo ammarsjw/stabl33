@@ -8,7 +8,7 @@ interface IStabl3StakingStruct {
 
     struct TimeWeightedAPR {
         uint256 APR;
-        uint256 TimeWeight;
+        uint256 timeWeight;
     }
 
     struct Staking {
