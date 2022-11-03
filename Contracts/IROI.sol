@@ -8,8 +8,17 @@ import "./IStabl3StakingStruct.sol";
 interface IROI is IStabl3StakingStruct {
 
     function timeWeightedAPR() external view returns (TimeWeightedAPR memory);
+    function updateAPRLast() external view returns (uint256);
+    function updateTimestampLast() external view returns (uint256);
+
+    function contractCreationTime() external view returns (uint256);
+
+    function getTimeWeightedAPRs(uint256) external view returns (uint256);
+    function getAPRs(uint256) external view returns (uint256);
 
     function permitted(address) external returns (bool);
+
+    function searchTimeWeightedAPR(uint256 _startTimeWeight, uint256 _endTimeWeight) external view returns (TimeWeightedAPR memory);
 
     function getTotalRewardDistributed() external view returns (uint256);
 

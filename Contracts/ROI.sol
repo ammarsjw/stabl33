@@ -25,6 +25,10 @@ contract ROI is Ownable, IStabl3StakingStruct {
 
     uint8 private constant STAKING_TYPE_POOL = 20;
 
+    // TODO remove
+    uint256 private constant oneDayTime = 8 minutes;
+    // uint256 private constant oneDayTime = 86400; // 1 day time in seconds
+
     ITreasury public treasury;
 
     IERC20 public immutable stabl3;
@@ -39,9 +43,13 @@ contract ROI is Ownable, IStabl3StakingStruct {
     uint256 public updateAPRLast;
     uint256 public updateTimestampLast;
 
-    uint256 private oneDayTime;
+    uint256 public contractCreationTime;
 
     // mappings
+
+    // saves all Time Weighted and current APRs corresponsing to their Time Weight
+    mapping (uint256 => uint256) public getTimeWeightedAPRs;
+    mapping (uint256 => uint256) public getAPRs;
 
     // contracts with permission to access ROI pool funds
     mapping (address => bool) public permitted;
@@ -73,9 +81,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
 
         updateTimestampLast = block.timestamp;
 
-        // TODO remove
-        oneDayTime = 8 minutes;
-        // oneDayTime = 86400; // 1 day time in seconds
+        contractCreationTime = block.timestamp;
 
         updatePermission(address(_treasury), true);
     }
@@ -103,6 +109,30 @@ contract ROI is Ownable, IStabl3StakingStruct {
     function updateMaxPoolPercentage(uint256 _maxPoolPercentage) external onlyOwner {
         require(maxPoolPercentage != _maxPoolPercentage, "ROI: Max Pool Percentage is already this value");
         maxPoolPercentage = _maxPoolPercentage;
+    }
+
+    function searchTimeWeightedAPR(uint256 _startTimeWeight, uint256 _endTimeWeight) external view returns (TimeWeightedAPR memory) {
+        TimeWeightedAPR memory endTimeWeightedAPR;
+        uint256 endAPR;
+
+        for (uint256 i = _endTimeWeight ; i >= _startTimeWeight ; i--) {
+            if (getTimeWeightedAPRs[i] != 0) {
+                endTimeWeightedAPR.APR = getTimeWeightedAPRs[i];
+                endTimeWeightedAPR.timeWeight = i;
+
+                endAPR = getAPRs[i];
+                break;
+            }
+        }
+
+        if (endTimeWeightedAPR.timeWeight != _endTimeWeight) {
+            uint256 timeWeight = _endTimeWeight - endTimeWeightedAPR.timeWeight;
+
+            endTimeWeightedAPR.APR += endAPR.mul(timeWeight);
+            endTimeWeightedAPR.timeWeight += timeWeight;
+        }
+
+        return endTimeWeightedAPR;
     }
 
     function updatePermission(address _contractAddress, bool _state) public onlyOwner {
@@ -316,13 +346,16 @@ contract ROI is Ownable, IStabl3StakingStruct {
         uint256 totalRewardDistributed = getTotalRewardDistributed();
 
         // Time Weighted APR Calculation
-        uint256 numberOfDays = (block.timestamp - updateTimestampLast) / oneDayTime;
+        uint256 timeWeight = (block.timestamp - updateTimestampLast) / oneDayTime;
 
-        timeWeightedAPR.APR += updateAPRLast.mul(numberOfDays);
-        timeWeightedAPR.timeWeight += numberOfDays;
+        timeWeightedAPR.APR += updateAPRLast.mul(timeWeight);
+        timeWeightedAPR.timeWeight += timeWeight;
 
         updateAPRLast = currentAPR;
-        updateTimestampLast += oneDayTime * numberOfDays;
+        updateTimestampLast += oneDayTime * timeWeight;
+
+        getTimeWeightedAPRs[timeWeightedAPR.timeWeight] = timeWeightedAPR.APR;
+        getAPRs[timeWeightedAPR.timeWeight] = currentAPR;
 
         emit APR(currentAPR, reserves, totalRewardDistributed, block.timestamp);
     }

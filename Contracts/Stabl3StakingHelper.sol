@@ -11,27 +11,18 @@ import "./IStabl3StakingStruct.sol";
 contract Stabl3StakingHelper is IStabl3StakingStruct {
     using SafeMathUpgradeable for uint256;
 
-    IStabl3Staking public stabl3Staking;
+    // TODO remove
+    uint256 private constant oneDayTime = 8 minutes;
+    uint256 private constant oneYearTime = 48 hours;
+    // uint256 private constant oneDayTime = 86400;
+    // uint256 private constant oneYearTime = 31104000;
 
-    uint256 private oneDayTime;
-    uint256 private oneYearTime;
+    IStabl3Staking public stabl3Staking;
 
     // constructor
 
     constructor() {
         stabl3Staking = IStabl3Staking(msg.sender);
-
-        // TODO remove
-        oneDayTime = 8 minutes;
-        oneYearTime = 48 hours;
-        // oneDayTime = 86400;
-        // oneYearTime = 31104000;
-    }
-
-    //TODO remove
-    function updateLockTimes(uint256[5] memory _lockTimes) external {
-        oneDayTime = _lockTimes[1].div(90);
-        oneYearTime = _lockTimes[4];
     }
 
     function allStakings(
@@ -139,7 +130,10 @@ contract Stabl3StakingHelper is IStabl3StakingStruct {
             uint256 numberOfDays = (timestampToConsider - staking.rewardWithdrawTimeLast) / oneDayTime;
 
             if (numberOfDays > 0) {
-                TimeWeightedAPR memory timeWeightedAPR = stabl3Staking.ROI().timeWeightedAPR();
+                uint256 timeWeightToConsider = (timestampToConsider - stabl3Staking.ROI().contractCreationTime()) / oneDayTime;
+
+                TimeWeightedAPR memory timeWeightedAPR =
+                    stabl3Staking.ROI().searchTimeWeightedAPR(staking.timeWeightedAPRLast.timeWeight, timeWeightToConsider);
 
                 uint256 dAPR = (timeWeightedAPR.APR - staking.timeWeightedAPRLast.APR);
                 uint256 dTimeWeight = (timeWeightedAPR.timeWeight - staking.timeWeightedAPRLast.timeWeight);

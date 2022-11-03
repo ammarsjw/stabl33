@@ -18,8 +18,7 @@ interface IStabl3Staking is IStabl3StakingStruct {
 
     function getStakings(address, uint256) external view returns (Staking memory);
 
-    function getStakers(address) external view returns (bool);
-    function allStakers(uint256) external view returns (address);
+    function getStakers(uint256) external view returns (address);
 
     function getRecords(address, bool) external view returns (Record memory);
 
