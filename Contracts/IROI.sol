@@ -13,7 +13,7 @@ interface IROI is IStabl3StakingStruct {
 
     function contractCreationTime() external view returns (uint256);
 
-    function getTimeWeightedAPRs(uint256) external view returns (uint256);
+    function getTimeWeightedAPRs(uint256) external view returns (TimeWeightedAPR memory);
     function getAPRs(uint256) external view returns (uint256);
 
     function permitted(address) external returns (bool);

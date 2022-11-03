@@ -48,7 +48,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
     // mappings
 
     // saves all Time Weighted and current APRs corresponsing to their Time Weight
-    mapping (uint256 => uint256) public getTimeWeightedAPRs;
+    mapping (uint256 => TimeWeightedAPR) public getTimeWeightedAPRs;
     mapping (uint256 => uint256) public getAPRs;
 
     // contracts with permission to access ROI pool funds
@@ -115,9 +115,9 @@ contract ROI is Ownable, IStabl3StakingStruct {
         TimeWeightedAPR memory endTimeWeightedAPR;
         uint256 endAPR;
 
-        for (uint256 i = _endTimeWeight ; i >= _startTimeWeight ; i--) {
-            if (getTimeWeightedAPRs[i] != 0) {
-                endTimeWeightedAPR.APR = getTimeWeightedAPRs[i];
+        for (uint256 i = _endTimeWeight ; i >= _startTimeWeight && i > 0 ; i--) {
+            if (getTimeWeightedAPRs[i].timeWeight != 0) {
+                endTimeWeightedAPR.APR = getTimeWeightedAPRs[i].APR;
                 endTimeWeightedAPR.timeWeight = i;
 
                 endAPR = getAPRs[i];
@@ -354,7 +354,8 @@ contract ROI is Ownable, IStabl3StakingStruct {
         updateAPRLast = currentAPR;
         updateTimestampLast += oneDayTime * timeWeight;
 
-        getTimeWeightedAPRs[timeWeightedAPR.timeWeight] = timeWeightedAPR.APR;
+        getTimeWeightedAPRs[timeWeightedAPR.timeWeight].APR = timeWeightedAPR.APR;
+        getTimeWeightedAPRs[timeWeightedAPR.timeWeight].timeWeight = timeWeightedAPR.timeWeight;
         getAPRs[timeWeightedAPR.timeWeight] = currentAPR;
 
         emit APR(currentAPR, reserves, totalRewardDistributed, block.timestamp);
