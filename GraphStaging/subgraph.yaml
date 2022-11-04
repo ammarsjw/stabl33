@@ -1,0 +1,80 @@
+specVersion: 0.0.4
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: Treasury
+    network: fantom-testnet
+    source:
+      address: "0x314b6Ed817555EB4F3f5F7f550c519f2B66f3947"
+      abi: Treasury
+      startBlock: 11777145
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - Rate
+        - UpdatedExchangeFee
+        - UpdatedReservedToken
+      abis:
+        - name: Treasury
+          file: ./abis/Treasury.json
+      eventHandlers:
+        - event: Rate(uint256,uint256,uint256,uint256,uint256)
+          handler: handleRate
+        - event: UpdatedExchangeFee(uint256,uint256)
+          handler: handleUpdatedExchangeFee
+        - event: UpdatedReservedToken(address,bool)
+          handler: handleUpdatedReservedToken
+      file: ./src/treasury.ts
+  - kind: ethereum
+    name: ROI
+    network: fantom-testnet
+    source:
+      address: "0x2B9A46639D48C627d85025717E411307317dC1d8"
+      abi: ROI
+      startBlock: 11777167
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - APR
+      abis:
+        - name: ROI
+          file: ./abis/ROI.json
+      eventHandlers:
+        - event: APR(uint256,uint256,uint256,uint256)
+          handler: handleAPR
+      file: ./src/roi.ts
+  - kind: ethereum
+    name: Stabl3Staking
+    network: fantom-testnet
+    source:
+      address: "0x0Db4d15d103DB3C3059dA28744CF04728DBe8FC6"
+      abi: Stabl3Staking
+      startBlock: 11777186
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - ClaimedLendingStabl3
+        - Stake
+        - Unstake
+        - WithdrewReward
+      abis:
+        - name: Stabl3Staking
+          file: ./abis/Stabl3Staking.json
+      eventHandlers:
+        - event: ClaimedLendingStabl3(indexed address,uint256,address,uint256,uint256,uint256)
+          handler: handleClaimedLendingStabl3
+        - event: Stake(indexed
+            address,uint256,bool,uint8,address,uint256,uint256,uint256,bool,uint256)
+          handler: handleStake
+        - event: Unstake(indexed address,uint256,address,uint256,uint256,uint8,bool)
+          handler: handleUnstake
+        - event: WithdrewReward(indexed address,uint256,address,uint256,uint256,bool,uint256)
+          handler: handleWithdrewReward
+      file: ./src/stabl-3-staking.ts
