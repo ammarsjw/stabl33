@@ -71,7 +71,7 @@ contract Treasury is Ownable {
     constructor() {
         HQ = 0x294d0487fdf7acecf342ae70AFc5549A6E90f3e0;
 
-        stabl3 = IERC20(0x09186E7224acDb404A394610e915215DF7FA7ED5);
+        stabl3 = IERC20(0x75761e4F941BAD06e6d14CBbC35be220Cae0F8eb);
 
         rateInfo = RateInfo(1 * (10 ** 15), 0.0007 * (10 ** 18), 10000 * (10 ** 18), 0, 0);
         rateInfo.stabl3Window = (rateInfo.tokenWindow * (10 ** 18)) / rateInfo.rate;
