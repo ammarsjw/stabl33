@@ -27,12 +27,6 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
     uint8 private constant STAKING_TYPE_POOL = 20;
 
-    // TODO remove
-    uint256 private constant oneDayTime = 8 minutes;
-    uint256 private constant oneYearTime = 48 hours;
-    // uint256 private constant oneDayTime = 86400; // 1 day time in seconds
-    // uint256 private constant oneYearTime = 31104000; // 1 year time in seconds
-
     ITreasury public treasury;
     IROI public ROI;
     address public HQ;
@@ -47,6 +41,9 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
     uint256 public lendingStabl3Percentage;
     uint256 public lendingStabl3ClaimTime;
+
+    uint256 public oneDayTime;
+    uint256 public oneYearTime;
     uint256[5] public lockTimes;
 
     uint256 public excludedFromROIReserves;
@@ -152,7 +149,11 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         // lendingStabl3ClaimTime = 2592000; // 1 month time in seconds
 
         // TODO remove
+        oneDayTime = 8 minutes;
+        oneYearTime = 48 hours;
         lockTimes = [0, 12 hours, 24 hours, 36 hours, 48 hours];
+        // oneDayTime = 86400; // 1 day time in seconds
+        // oneYearTime = 31104000; // 1 year time in seconds
         // lockTimes = [0, 7776000, 15552000, 23328000, 31104000]; // 3, 6, 9 and 12 months time in seconds
 
         // TODO use times like this to complete 365 days
@@ -219,8 +220,10 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         lendingStabl3ClaimTime = _lendingStabl3ClaimTime;
     }
 
-    function updateLockTimes(uint256[5] memory _lockTimes) external onlyOwner {
+    function updateLockTimes(uint256[5] memory _lockTimes, uint256 _oneDayTime, uint256 _oneYearTime) external onlyOwner {
         lockTimes = _lockTimes;
+        oneDayTime = _oneDayTime;
+        oneYearTime = _oneYearTime;
     }
 
     function updateReturnPools(uint8[] memory _returnPools) external onlyOwner {

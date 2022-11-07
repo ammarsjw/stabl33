@@ -11,12 +11,6 @@ import "./IStabl3StakingStruct.sol";
 contract Stabl3StakingHelper is IStabl3StakingStruct {
     using SafeMathUpgradeable for uint256;
 
-    // TODO remove
-    uint256 private constant oneDayTime = 8 minutes;
-    uint256 private constant oneYearTime = 48 hours;
-    // uint256 private constant oneDayTime = 86400;
-    // uint256 private constant oneYearTime = 31104000;
-
     IStabl3Staking public stabl3Staking;
 
     // constructor
@@ -127,10 +121,10 @@ contract Stabl3StakingHelper is IStabl3StakingStruct {
         ) {
             uint256 timestampToConsider = _timestamp > endTime ? endTime : _timestamp;
 
-            uint256 numberOfDays = (timestampToConsider - staking.rewardWithdrawTimeLast) / oneDayTime;
+            uint256 numberOfDays = (timestampToConsider - staking.rewardWithdrawTimeLast) / stabl3Staking.oneDayTime();
 
             if (numberOfDays > 0) {
-                uint256 timeWeightToConsider = (timestampToConsider - stabl3Staking.ROI().contractCreationTime()) / oneDayTime;
+                uint256 timeWeightToConsider = (timestampToConsider - stabl3Staking.ROI().contractCreationTime()) / stabl3Staking.oneDayTime();
 
                 TimeWeightedAPR memory timeWeightedAPR =
                     stabl3Staking.ROI().searchTimeWeightedAPR(staking.timeWeightedAPRLast.timeWeight, timeWeightToConsider);
@@ -142,7 +136,7 @@ contract Stabl3StakingHelper is IStabl3StakingStruct {
 
                 uint256 rewardTotal = _compoundSingle(staking.amountTokenStaked, ratio);
 
-                amountReward += (rewardTotal * oneDayTime * numberOfDays) / oneYearTime;
+                amountReward += (rewardTotal * stabl3Staking.oneDayTime() * numberOfDays) / stabl3Staking.oneYearTime();
             }
         }
 
