@@ -83,7 +83,7 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
         HQ = 0x294d0487fdf7acecf342ae70AFc5549A6E90f3e0;
 
         // TODO change
-        stabl3 = IERC20(0x75761e4F941BAD06e6d14CBbC35be220Cae0F8eb);
+        stabl3 = IERC20(0x6d4eaE732C9f34C6EAE0CFFD9c267b2d25583782);
         ucd = IUCD(0x01fa8dEEdDEA8E4e465f158d93e162438d61c9eB);
 
         exchangeFee = 3;
