@@ -57,7 +57,7 @@
         "type": "address"
       }
     ],
-    "name": "ROIOwnershipTransferred",
+    "name": "OwnershipTransferred",
     "type": "event"
   },
   {
@@ -76,7 +76,7 @@
         "type": "bool"
       }
     ],
-    "name": "ROIUpdatedPermission",
+    "name": "UpdatedPermission",
     "type": "event"
   },
   {

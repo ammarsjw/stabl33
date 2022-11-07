@@ -40,16 +40,16 @@ export class APR__Params {
   }
 }
 
-export class ROIOwnershipTransferred extends ethereum.Event {
-  get params(): ROIOwnershipTransferred__Params {
-    return new ROIOwnershipTransferred__Params(this);
+export class OwnershipTransferred extends ethereum.Event {
+  get params(): OwnershipTransferred__Params {
+    return new OwnershipTransferred__Params(this);
   }
 }
 
-export class ROIOwnershipTransferred__Params {
-  _event: ROIOwnershipTransferred;
+export class OwnershipTransferred__Params {
+  _event: OwnershipTransferred;
 
-  constructor(event: ROIOwnershipTransferred) {
+  constructor(event: OwnershipTransferred) {
     this._event = event;
   }
 
@@ -62,16 +62,16 @@ export class ROIOwnershipTransferred__Params {
   }
 }
 
-export class ROIUpdatedPermission extends ethereum.Event {
-  get params(): ROIUpdatedPermission__Params {
-    return new ROIUpdatedPermission__Params(this);
+export class UpdatedPermission extends ethereum.Event {
+  get params(): UpdatedPermission__Params {
+    return new UpdatedPermission__Params(this);
   }
 }
 
-export class ROIUpdatedPermission__Params {
-  _event: ROIUpdatedPermission;
+export class UpdatedPermission__Params {
+  _event: UpdatedPermission;
 
-  constructor(event: ROIUpdatedPermission) {
+  constructor(event: UpdatedPermission) {
     this._event = event;
   }
 

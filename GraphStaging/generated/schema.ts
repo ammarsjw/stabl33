@@ -806,6 +806,23 @@ export class Stake extends Entity {
     this.set("isLend", Value.fromBoolean(value));
   }
 
+  get amountStabl3Lending(): BigInt | null {
+    let value = this.get("amountStabl3Lending");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set amountStabl3Lending(value: BigInt | null) {
+    if (!value) {
+      this.unset("amountStabl3Lending");
+    } else {
+      this.set("amountStabl3Lending", Value.fromBigInt(<BigInt>value));
+    }
+  }
+
   get timestamp(): BigInt | null {
     let value = this.get("timestamp");
     if (!value || value.kind == ValueKind.NULL) {

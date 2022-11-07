@@ -74,7 +74,7 @@
         "type": "address"
       }
     ],
-    "name": "Stabl3StakingOwnershipTransferred",
+    "name": "OwnershipTransferred",
     "type": "event"
   },
   {
@@ -133,6 +133,12 @@
         "internalType": "bool",
         "name": "isLend",
         "type": "bool"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amountStabl3Lending",
+        "type": "uint256"
       },
       {
         "indexed": false,
@@ -209,7 +215,7 @@
         "type": "address"
       }
     ],
-    "name": "Stabl3StakingUpdatedHQ",
+    "name": "UpdatedHQ",
     "type": "event"
   },
   {
@@ -228,7 +234,7 @@
         "type": "bool"
       }
     ],
-    "name": "Stabl3StakingUpdatedPermission",
+    "name": "UpdatedPermission",
     "type": "event"
   },
   {
@@ -247,7 +253,7 @@
         "type": "address"
       }
     ],
-    "name": "Stabl3StakingUpdatedROI",
+    "name": "UpdatedROI",
     "type": "event"
   },
   {
@@ -266,7 +272,7 @@
         "type": "address"
       }
     ],
-    "name": "Stabl3StakingUpdatedTreasury",
+    "name": "UpdatedTreasury",
     "type": "event"
   },
   {
@@ -1306,6 +1312,32 @@
   },
   {
     "inputs": [],
+    "name": "oneDayTime",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "oneYearTime",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "owner",
     "outputs": [
       {
@@ -1588,6 +1620,16 @@
         "internalType": "uint256[5]",
         "name": "_lockTimes",
         "type": "uint256[5]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_oneDayTime",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_oneYearTime",
+        "type": "uint256"
       }
     ],
     "name": "updateLockTimes",

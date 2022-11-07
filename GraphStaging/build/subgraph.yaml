@@ -6,9 +6,9 @@ dataSources:
     name: Treasury
     network: fantom-testnet
     source:
-      address: "0x314b6Ed817555EB4F3f5F7f550c519f2B66f3947"
+      address: "0xB21e104a82e8388592950484B3d71A5460fa997E"
       abi: Treasury
-      startBlock: 11777145
+      startBlock: 11865549
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -32,9 +32,9 @@ dataSources:
     name: ROI
     network: fantom-testnet
     source:
-      address: "0x2B9A46639D48C627d85025717E411307317dC1d8"
+      address: "0x6c8efCA30C429F57ED7836481219C8aeda86DE3C"
       abi: ROI
-      startBlock: 11777167
+      startBlock: 11865850
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -52,9 +52,9 @@ dataSources:
     name: Stabl3Staking
     network: fantom-testnet
     source:
-      address: "0x0Db4d15d103DB3C3059dA28744CF04728DBe8FC6"
+      address: "0x4bd9bcd002Da063Dfb62e88477598381Fa8907Db"
       abi: Stabl3Staking
-      startBlock: 11777186
+      startBlock: 11865880
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -71,7 +71,7 @@ dataSources:
         - event: ClaimedLendingStabl3(indexed address,uint256,address,uint256,uint256,uint256)
           handler: handleClaimedLendingStabl3
         - event: Stake(indexed
-            address,uint256,bool,uint8,address,uint256,uint256,uint256,bool,uint256)
+            address,uint256,bool,uint8,address,uint256,uint256,uint256,bool,uint256,uint256)
           handler: handleStake
         - event: Unstake(indexed address,uint256,address,uint256,uint256,uint8,bool)
           handler: handleUnstake

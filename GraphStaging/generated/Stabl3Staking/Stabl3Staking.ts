@@ -48,16 +48,16 @@ export class ClaimedLendingStabl3__Params {
   }
 }
 
-export class Stabl3StakingOwnershipTransferred extends ethereum.Event {
-  get params(): Stabl3StakingOwnershipTransferred__Params {
-    return new Stabl3StakingOwnershipTransferred__Params(this);
+export class OwnershipTransferred extends ethereum.Event {
+  get params(): OwnershipTransferred__Params {
+    return new OwnershipTransferred__Params(this);
   }
 }
 
-export class Stabl3StakingOwnershipTransferred__Params {
-  _event: Stabl3StakingOwnershipTransferred;
+export class OwnershipTransferred__Params {
+  _event: OwnershipTransferred;
 
-  constructor(event: Stabl3StakingOwnershipTransferred) {
+  constructor(event: OwnershipTransferred) {
     this._event = event;
   }
 
@@ -119,8 +119,12 @@ export class Stake__Params {
     return this._event.parameters[8].value.toBoolean();
   }
 
-  get timestamp(): BigInt {
+  get amountStabl3Lending(): BigInt {
     return this._event.parameters[9].value.toBigInt();
+  }
+
+  get timestamp(): BigInt {
+    return this._event.parameters[10].value.toBigInt();
   }
 }
 
@@ -166,16 +170,16 @@ export class Unstake__Params {
   }
 }
 
-export class Stabl3StakingUpdatedHQ extends ethereum.Event {
-  get params(): Stabl3StakingUpdatedHQ__Params {
-    return new Stabl3StakingUpdatedHQ__Params(this);
+export class UpdatedHQ extends ethereum.Event {
+  get params(): UpdatedHQ__Params {
+    return new UpdatedHQ__Params(this);
   }
 }
 
-export class Stabl3StakingUpdatedHQ__Params {
-  _event: Stabl3StakingUpdatedHQ;
+export class UpdatedHQ__Params {
+  _event: UpdatedHQ;
 
-  constructor(event: Stabl3StakingUpdatedHQ) {
+  constructor(event: UpdatedHQ) {
     this._event = event;
   }
 
@@ -188,16 +192,16 @@ export class Stabl3StakingUpdatedHQ__Params {
   }
 }
 
-export class Stabl3StakingUpdatedPermission extends ethereum.Event {
-  get params(): Stabl3StakingUpdatedPermission__Params {
-    return new Stabl3StakingUpdatedPermission__Params(this);
+export class UpdatedPermission extends ethereum.Event {
+  get params(): UpdatedPermission__Params {
+    return new UpdatedPermission__Params(this);
   }
 }
 
-export class Stabl3StakingUpdatedPermission__Params {
-  _event: Stabl3StakingUpdatedPermission;
+export class UpdatedPermission__Params {
+  _event: UpdatedPermission;
 
-  constructor(event: Stabl3StakingUpdatedPermission) {
+  constructor(event: UpdatedPermission) {
     this._event = event;
   }
 
@@ -210,16 +214,16 @@ export class Stabl3StakingUpdatedPermission__Params {
   }
 }
 
-export class Stabl3StakingUpdatedROI extends ethereum.Event {
-  get params(): Stabl3StakingUpdatedROI__Params {
-    return new Stabl3StakingUpdatedROI__Params(this);
+export class UpdatedROI extends ethereum.Event {
+  get params(): UpdatedROI__Params {
+    return new UpdatedROI__Params(this);
   }
 }
 
-export class Stabl3StakingUpdatedROI__Params {
-  _event: Stabl3StakingUpdatedROI;
+export class UpdatedROI__Params {
+  _event: UpdatedROI;
 
-  constructor(event: Stabl3StakingUpdatedROI) {
+  constructor(event: UpdatedROI) {
     this._event = event;
   }
 
@@ -232,16 +236,16 @@ export class Stabl3StakingUpdatedROI__Params {
   }
 }
 
-export class Stabl3StakingUpdatedTreasury extends ethereum.Event {
-  get params(): Stabl3StakingUpdatedTreasury__Params {
-    return new Stabl3StakingUpdatedTreasury__Params(this);
+export class UpdatedTreasury extends ethereum.Event {
+  get params(): UpdatedTreasury__Params {
+    return new UpdatedTreasury__Params(this);
   }
 }
 
-export class Stabl3StakingUpdatedTreasury__Params {
-  _event: Stabl3StakingUpdatedTreasury;
+export class UpdatedTreasury__Params {
+  _event: UpdatedTreasury;
 
-  constructor(event: Stabl3StakingUpdatedTreasury) {
+  constructor(event: UpdatedTreasury) {
     this._event = event;
   }
 
@@ -1472,6 +1476,36 @@ export class Stabl3Staking extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
+  oneDayTime(): BigInt {
+    let result = super.call("oneDayTime", "oneDayTime():(uint256)", []);
+
+    return result[0].toBigInt();
+  }
+
+  try_oneDayTime(): ethereum.CallResult<BigInt> {
+    let result = super.tryCall("oneDayTime", "oneDayTime():(uint256)", []);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
+  oneYearTime(): BigInt {
+    let result = super.call("oneYearTime", "oneYearTime():(uint256)", []);
+
+    return result[0].toBigInt();
+  }
+
+  try_oneYearTime(): ethereum.CallResult<BigInt> {
+    let result = super.tryCall("oneYearTime", "oneYearTime():(uint256)", []);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
   owner(): Address {
     let result = super.call("owner", "owner():(address)", []);
 
@@ -2138,6 +2172,14 @@ export class UpdateLockTimesCall__Inputs {
 
   get _lockTimes(): Array<BigInt> {
     return this._call.inputValues[0].value.toBigIntArray();
+  }
+
+  get _oneDayTime(): BigInt {
+    return this._call.inputValues[1].value.toBigInt();
+  }
+
+  get _oneYearTime(): BigInt {
+    return this._call.inputValues[2].value.toBigInt();
   }
 }
 

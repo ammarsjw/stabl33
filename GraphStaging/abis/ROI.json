@@ -57,7 +57,7 @@
         "type": "address"
       }
     ],
-    "name": "ROIOwnershipTransferred",
+    "name": "OwnershipTransferred",
     "type": "event"
   },
   {
@@ -76,7 +76,7 @@
         "type": "bool"
       }
     ],
-    "name": "ROIUpdatedPermission",
+    "name": "UpdatedPermission",
     "type": "event"
   },
   {
@@ -101,7 +101,13 @@
   {
     "inputs": [],
     "name": "contractCreationTime",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
@@ -112,8 +118,16 @@
         "name": "_token",
         "type": "address"
       },
-      { "internalType": "address", "name": "_spender", "type": "address" },
-      { "internalType": "bool", "name": "_isApprove", "type": "bool" }
+      {
+        "internalType": "address",
+        "name": "_spender",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isApprove",
+        "type": "bool"
+      }
     ],
     "name": "delegateApprove",
     "outputs": [],
@@ -122,7 +136,11 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_user", "type": "address" },
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
       {
         "internalType": "contract IERC20",
         "name": "_rewardToken",
@@ -133,7 +151,11 @@
         "name": "_amountRewardToken",
         "type": "uint256"
       },
-      { "internalType": "uint8", "name": "_poolType", "type": "uint8" }
+      {
+        "internalType": "uint8",
+        "name": "_poolType",
+        "type": "uint8"
+      }
     ],
     "name": "distributeReward",
     "outputs": [],
@@ -143,30 +165,68 @@
   {
     "inputs": [],
     "name": "getAPR",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "name": "getAPRs",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "getReserves",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "name": "getTimeWeightedAPRs",
     "outputs": [
-      { "internalType": "uint256", "name": "APR", "type": "uint256" },
-      { "internalType": "uint256", "name": "timeWeight", "type": "uint256" }
+      {
+        "internalType": "uint256",
+        "name": "APR",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "timeWeight",
+        "type": "uint256"
+      }
     ],
     "stateMutability": "view",
     "type": "function"
@@ -174,28 +234,58 @@
   {
     "inputs": [],
     "name": "getTotalRewardDistributed",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "maxPoolPercentage",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "owner",
-    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
     "name": "permitted",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
@@ -213,8 +303,16 @@
         "name": "_token",
         "type": "address"
       },
-      { "internalType": "uint256", "name": "_amountToken", "type": "uint256" },
-      { "internalType": "uint8[]", "name": "_pools", "type": "uint8[]" }
+      {
+        "internalType": "uint256",
+        "name": "_amountToken",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint8[]",
+        "name": "_pools",
+        "type": "uint8[]"
+      }
     ],
     "name": "returnFunds",
     "outputs": [],
@@ -228,14 +326,26 @@
         "name": "_startTimeWeight",
         "type": "uint256"
       },
-      { "internalType": "uint256", "name": "_endTimeWeight", "type": "uint256" }
+      {
+        "internalType": "uint256",
+        "name": "_endTimeWeight",
+        "type": "uint256"
+      }
     ],
     "name": "searchTimeWeightedAPR",
     "outputs": [
       {
         "components": [
-          { "internalType": "uint256", "name": "APR", "type": "uint256" },
-          { "internalType": "uint256", "name": "timeWeight", "type": "uint256" }
+          {
+            "internalType": "uint256",
+            "name": "APR",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "timeWeight",
+            "type": "uint256"
+          }
         ],
         "internalType": "struct IStabl3StakingStruct.TimeWeightedAPR",
         "name": "",
@@ -249,7 +359,11 @@
     "inputs": [],
     "name": "stabl3",
     "outputs": [
-      { "internalType": "contract IERC20", "name": "", "type": "address" }
+      {
+        "internalType": "contract IERC20",
+        "name": "",
+        "type": "address"
+      }
     ],
     "stateMutability": "view",
     "type": "function"
@@ -270,13 +384,23 @@
   {
     "inputs": [],
     "name": "stakingTypePercentage",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "contract IERC20", "name": "_token", "type": "address" }
+      {
+        "internalType": "contract IERC20",
+        "name": "_token",
+        "type": "address"
+      }
     ],
     "name": "testWithdrawAllFunds",
     "outputs": [],
@@ -287,15 +411,27 @@
     "inputs": [],
     "name": "timeWeightedAPR",
     "outputs": [
-      { "internalType": "uint256", "name": "APR", "type": "uint256" },
-      { "internalType": "uint256", "name": "timeWeight", "type": "uint256" }
+      {
+        "internalType": "uint256",
+        "name": "APR",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "timeWeight",
+        "type": "uint256"
+      }
     ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "newOwner", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
     ],
     "name": "transferOwnership",
     "outputs": [],
@@ -306,7 +442,11 @@
     "inputs": [],
     "name": "treasury",
     "outputs": [
-      { "internalType": "contract ITreasury", "name": "", "type": "address" }
+      {
+        "internalType": "contract ITreasury",
+        "name": "",
+        "type": "address"
+      }
     ],
     "stateMutability": "view",
     "type": "function"
@@ -315,7 +455,11 @@
     "inputs": [],
     "name": "ucd",
     "outputs": [
-      { "internalType": "contract IERC20", "name": "", "type": "address" }
+      {
+        "internalType": "contract IERC20",
+        "name": "",
+        "type": "address"
+      }
     ],
     "stateMutability": "view",
     "type": "function"
@@ -330,7 +474,13 @@
   {
     "inputs": [],
     "name": "updateAPRLast",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
@@ -354,7 +504,11 @@
         "name": "_contractAddress",
         "type": "address"
       },
-      { "internalType": "bool", "name": "_state", "type": "bool" }
+      {
+        "internalType": "bool",
+        "name": "_state",
+        "type": "bool"
+      }
     ],
     "name": "updatePermission",
     "outputs": [],
@@ -363,7 +517,11 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_stabl3Staking", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "_stabl3Staking",
+        "type": "address"
+      }
     ],
     "name": "updateStabl3Staking",
     "outputs": [],
@@ -373,13 +531,23 @@
   {
     "inputs": [],
     "name": "updateTimestampLast",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_treasury", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "_treasury",
+        "type": "address"
+      }
     ],
     "name": "updateTreasury",
     "outputs": [],
@@ -388,7 +556,11 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_ucd", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "_ucd",
+        "type": "address"
+      }
     ],
     "name": "updateUCD",
     "outputs": [],
@@ -402,14 +574,34 @@
         "name": "_token",
         "type": "address"
       },
-      { "internalType": "uint256", "name": "_amountToken", "type": "uint256" },
-      { "internalType": "uint8", "name": "_stakingType", "type": "uint8" },
-      { "internalType": "bool", "name": "_isLending", "type": "bool" }
+      {
+        "internalType": "uint256",
+        "name": "_amountToken",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint8",
+        "name": "_stakingType",
+        "type": "uint8"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isLending",
+        "type": "bool"
+      }
     ],
     "name": "validatePool",
     "outputs": [
-      { "internalType": "uint256", "name": "maxPool", "type": "uint256" },
-      { "internalType": "uint256", "name": "currentPool", "type": "uint256" }
+      {
+        "internalType": "uint256",
+        "name": "maxPool",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "currentPool",
+        "type": "uint256"
+      }
     ],
     "stateMutability": "view",
     "type": "function"

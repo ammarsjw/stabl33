@@ -82,6 +82,7 @@ type Stake @entity {
   totalAmountToken: BigInt
   endTime: BigInt
   isLend: Boolean
+  amountStabl3Lending: BigInt
   timestamp: BigInt
 }
 

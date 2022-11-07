@@ -94,6 +94,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         uint256 totalAmountToken,
         uint256 endTime,
         bool isLend,
+        uint256 amountStabl3Lending,
         uint256 timestamp
     );
 
@@ -373,6 +374,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
             record.totalAmountTokenStaked,
             timestampToConsider + lockTimes[staking.stakingType],
             staking.isLending,
+            staking.amountStabl3Lending,
             timestampToConsider
         );
     }

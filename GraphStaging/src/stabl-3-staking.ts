@@ -18,7 +18,8 @@ import { loadOrCreateTransaction } from "./utils/Transactions"
 
 export function handleClaimedLendingStabl3(event: ClaimedLendingStabl3Event): void {
   let transaction = loadOrCreateTransaction(event.transaction, event.block)
-  let entity = new ClaimedLendingStabl3(transaction.id)
+  let id = event.params.user.toHexString().concat("-").concat(event.params.index.toString())
+  let entity = new ClaimedLendingStabl3(id)
   entity.transaction = transaction.id
   entity.user = event.params.user
   entity.index = event.params.index
@@ -27,11 +28,17 @@ export function handleClaimedLendingStabl3(event: ClaimedLendingStabl3Event): vo
   entity.totalAmountStabl3Withdrawn = event.params.totalAmountStabl3Withdrawn
   entity.timestamp = event.params.timestamp
   entity.save()
+
+  let entityToUpdate = Stake.load(id)
+  if (entityToUpdate) {
+    entityToUpdate.amountStabl3Lending = BigInt.fromI32(0)
+    entityToUpdate.save()
+  }
 }
 
 export function handleStake(event: StakeEvent): void {
   let transaction = loadOrCreateTransaction(event.transaction, event.block)
-  let id = event.params.user.toHexString().concat("-").concat(event.params.index.toString());
+  let id = event.params.user.toHexString().concat("-").concat(event.params.index.toString())
   let entity = new Stake(id)
   entity.transaction = transaction.id
   entity.user = event.params.user
@@ -43,13 +50,15 @@ export function handleStake(event: StakeEvent): void {
   entity.totalAmountToken = event.params.totalAmountToken
   entity.endTime = event.params.endTime
   entity.isLend = event.params.isLend
+  entity.amountStabl3Lending = event.params.amountStabl3Lending
   entity.timestamp = event.params.timestamp
   entity.save()
 }
 
 export function handleUnstake(event: UnstakeEvent): void {
   let transaction = loadOrCreateTransaction(event.transaction, event.block)
-  let entity = new Unstake(transaction.id)
+  let id = event.params.user.toHexString().concat("-").concat(event.params.index.toString())
+  let entity = new Unstake(id)
   entity.transaction = transaction.id
   entity.user = event.params.user
   entity.index = event.params.index
@@ -60,8 +69,7 @@ export function handleUnstake(event: UnstakeEvent): void {
   entity.isLend = event.params.isLend
   entity.save()
 
-  let id = event.params.user.toHexString().concat("-").concat(event.params.index.toString());
-  let entityToUpdate = Stake.load(id);
+  let entityToUpdate = Stake.load(id)
   if (entityToUpdate) {
     entityToUpdate.status = false
     entityToUpdate.save()
