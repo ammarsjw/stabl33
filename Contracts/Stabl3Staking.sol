@@ -55,6 +55,8 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
     uint256 public lastProcessedUser;
     uint256 public lastProcessedStaking;
 
+    bool public emergencyState;
+
     bool public stakeState;
 
     // mappings
@@ -234,6 +236,11 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
     function updateUnstakeFeePercentage(uint256 _unstakeFeePercentage) external onlyOwner {
         require(unstakeFeePercentage != _unstakeFeePercentage, "Stabl3Staking: Unstake Fee is already this value");
         unstakeFeePercentage = _unstakeFeePercentage;
+    }
+
+    function updateEmergencyState(bool _state) external onlyOwner {
+        require (emergencyState != _state, "Stabl3Staking: Emergency State is already of the value 'state'");
+        emergencyState = _state;
     }
 
     function updateStakeState(bool _state) external onlyOwner {
@@ -575,8 +582,10 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
         require(staking.status, "Stabl3Staking: Invalid Staking");
         require(!staking.isRealEstate, "Stabl3Staking: Not allowed");
-        require(block.timestamp > staking.startTime + lockTimes[staking.stakingType], "Stabl3Staking: Cannot unstake before end time");
         require(_amountToUnstake < staking.amountTokenStaked, "Stabl3Staking: Incorrect amount for restaking");
+        if (!emergencyState) {
+            require(block.timestamp > staking.startTime + lockTimes[staking.stakingType], "Stabl3Staking: Cannot unstake before end time");
+        }
 
         uint256 timestampToConsider = block.timestamp;
 
@@ -598,7 +607,9 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
         require(staking.status, "Stabl3Staking: Invalid Staking");
         require(!staking.isRealEstate, "Stabl3Staking: Not allowed");
-        require(block.timestamp > staking.startTime + lockTimes[staking.stakingType], "Stabl3Staking: Cannot unstake before end time");
+        if (!emergencyState) {
+            require(block.timestamp > staking.startTime + lockTimes[staking.stakingType], "Stabl3Staking: Cannot unstake before end time");
+        }
 
         uint256 timestampToConsider = block.timestamp;
 
