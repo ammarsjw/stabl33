@@ -31,6 +31,8 @@ contract ROI is Ownable, IStabl3StakingStruct {
 
     IERC20 public ucd;
 
+    uint8[] public returnPools;
+
     IStabl3Staking public stabl3Staking;
     uint256 public maxPoolPercentage;
     uint256 public stakingTypePercentage;
@@ -72,6 +74,8 @@ contract ROI is Ownable, IStabl3StakingStruct {
         stabl3 = IERC20(0x6d4eaE732C9f34C6EAE0CFFD9c267b2d25583782);
         ucd = IERC20(0x21cF2A3a558d713371c4f2086Bf475C940AFD800);
 
+        returnPools = [0, 1, 12];
+
         maxPoolPercentage = 700;
         stakingTypePercentage = 250;
 
@@ -93,6 +97,10 @@ contract ROI is Ownable, IStabl3StakingStruct {
     function updateUCD(address _ucd) external onlyOwner {
         require(address(ucd) != _ucd, "ROI: UCD is already this address");
         ucd = IERC20(_ucd);
+    }
+
+    function updateReturnPools(uint8[] memory _returnPools) external onlyOwner {
+        returnPools = _returnPools;
     }
 
     function updateStabl3Staking(address _stabl3Staking) external onlyOwner {
@@ -267,10 +275,8 @@ contract ROI is Ownable, IStabl3StakingStruct {
         address _user,
         IERC20 _rewardToken,
         uint256 _amountRewardToken,
-        uint8 _poolType
+        uint8 _rewardPoolType
     ) external permission reserved(_rewardToken) {
-        uint8 rewardPoolType = _poolType + 1;
-
         uint256 amountRewardTokenROI = _rewardToken.balanceOf(address(this));
 
         if (_amountRewardToken > amountRewardTokenROI) {
@@ -279,7 +285,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
 
                 _amountRewardToken -= amountRewardTokenROI;
 
-                treasury.updatePool(rewardPoolType, _rewardToken, 0, amountRewardTokenROI, 0, true);
+                treasury.updatePool(_rewardPoolType, _rewardToken, 0, amountRewardTokenROI, 0, true);
             }
 
             uint256 decimalsRewardToken = _rewardToken.decimals();
@@ -307,7 +313,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
                     if (amountRewardTokenConverted > amountReservedTokenROI) {
                         SafeERC20.safeTransfer(reservedToken, _user, amountReservedTokenROI);
 
-                        treasury.updatePool(rewardPoolType, reservedToken, 0, amountReservedTokenROI, 0, true);
+                        treasury.updatePool(_rewardPoolType, reservedToken, 0, amountReservedTokenROI, 0, true);
 
                         if (decimalsRewardToken > decimalsReservedToken) {
                             _amountRewardToken -= amountReservedTokenROI * (10 ** (decimalsRewardToken - decimalsReservedToken));
@@ -319,7 +325,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
                     else {
                         SafeERC20.safeTransfer(reservedToken, _user, amountRewardTokenConverted);
 
-                        treasury.updatePool(rewardPoolType, reservedToken, 0, amountRewardTokenConverted, 0, true);
+                        treasury.updatePool(_rewardPoolType, reservedToken, 0, amountRewardTokenConverted, 0, true);
 
                         _amountRewardToken = 0;
                         break;
@@ -330,7 +336,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
         else {
             SafeERC20.safeTransfer(_rewardToken, _user, _amountRewardToken);
 
-            treasury.updatePool(rewardPoolType, _rewardToken, 0, _amountRewardToken, 0, true);
+            treasury.updatePool(_rewardPoolType, _rewardToken, 0, _amountRewardToken, 0, true);
         }
     }
 
@@ -362,22 +368,22 @@ contract ROI is Ownable, IStabl3StakingStruct {
      * @dev Transfers funds from ROI to Treasury
      * @dev Updates values of both treasury and ROI pools
      */
-    function returnFunds(IERC20 _token, uint256 _amountToken, uint8[] memory _pools) external permission reserved(_token) {
+    function returnFunds(IERC20 _token, uint256 _amountToken) external permission reserved(_token) {
         uint256 amountToUpdate = _amountToken;
 
-        for (uint8 i = 0 ; i <= _pools.length ; i++) {
-            uint256 amountPool = treasury.getROIPool(_pools[i], _token);
+        for (uint8 i = 0 ; i <= returnPools.length ; i++) {
+            uint256 amountPool = treasury.getROIPool(returnPools[i], _token);
 
             if (amountPool != 0) {
                 if (amountPool < amountToUpdate) {
-                    treasury.updatePool(_pools[i], _token, 0, amountPool, 0, false);
-                    treasury.updatePool(_pools[i], _token, amountPool, 0, 0, true);
+                    treasury.updatePool(returnPools[i], _token, 0, amountPool, 0, false);
+                    treasury.updatePool(returnPools[i], _token, amountPool, 0, 0, true);
 
                     amountToUpdate -= amountPool;
                 }
                 else {
-                    treasury.updatePool(_pools[i], _token, 0, amountToUpdate, 0, false);
-                    treasury.updatePool(_pools[i], _token, amountToUpdate, 0, 0, true);
+                    treasury.updatePool(returnPools[i], _token, 0, amountToUpdate, 0, false);
+                    treasury.updatePool(returnPools[i], _token, amountToUpdate, 0, 0, true);
 
                     amountToUpdate = 0;
                     break;

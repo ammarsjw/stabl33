@@ -37,10 +37,10 @@ interface IROI is IStabl3StakingStruct {
         address _user,
         IERC20 _rewardToken,
         uint256 _amountRewardToken,
-        uint8 _poolType
+        uint8 _rewardPoolType
     ) external;
 
     function updateAPR() external;
 
-    function returnFunds(IERC20 _token, uint256 _amountToken, uint8[] memory _pools) external;
+    function returnFunds(IERC20 _token, uint256 _amountToken) external;
 }

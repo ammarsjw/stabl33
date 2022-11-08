@@ -197,12 +197,11 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
             revert("Stabl3PublicSale: For repeat exchanges, please wait a few minutes");
         }
 
-        // TODO confirm
         uint256 amountExchangingTokenToConsider =
-            // treasury.getReserves()
-            _exchangingToken.balanceOf(address(treasury))
-            .safeSub(treasury.getTreasuryPool(STAKE_POOL, _exchangingToken))
-            .safeSub(treasury.getTreasuryPool(LEND_POOL, _exchangingToken));
+            _exchangingToken.balanceOf(address(treasury)) + _exchangingToken.balanceOf(address(ROI));
+            // _exchangingToken.balanceOf(address(treasury))
+            // .safeSub(treasury.getTreasuryPool(STAKE_POOL, _exchangingToken))
+            // .safeSub(treasury.getTreasuryPool(LEND_POOL, _exchangingToken));
 
         if (limit.amount + _amountExchangingToken > amountExchangingTokenToConsider.mul(exchangeLimitPercentage).div(1000)) {
             require(block.timestamp > limit.startTime.add(exchangeLimitTime),
@@ -240,6 +239,10 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
         uint256 amountExchangingToken = treasury.getExchangeAmountOut(_exchangingToken, _token, _amountToken);
 
         _handleLimit(_exchangingToken, amountExchangingToken);
+
+        if (amountExchangingToken > _exchangingToken.balanceOf(address(treasury))) {
+            ROI.returnFunds(_exchangingToken, amountExchangingToken - _exchangingToken.balanceOf(address(treasury)));
+        }
 
         SafeERC20.safeTransferFrom(_token, msg.sender, address(ROI), fee);
 
