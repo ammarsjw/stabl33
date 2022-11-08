@@ -48,8 +48,6 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
     uint256 public excludedFromROIReserves;
 
-    uint8[] public returnPools;
-
     uint256 public unstakeFeePercentage;
 
     uint256 public lastProcessedUser;
@@ -163,9 +161,6 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         // 31+28+31, 30+31+30, 31+31+30, 31+30+31
         // 90, 91, 92, 92
 
-        // TODO adjust
-        returnPools = [0, 1, 14];
-
         unstakeFeePercentage = 50;
     }
 
@@ -227,10 +222,6 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         lockTimes = _lockTimes;
         oneDayTime = _oneDayTime;
         oneYearTime = _oneYearTime;
-    }
-
-    function updateReturnPools(uint8[] memory _returnPools) external onlyOwner {
-        returnPools = _returnPools;
     }
 
     function updateUnstakeFeePercentage(uint256 _unstakeFeePercentage) external onlyOwner {
@@ -436,9 +427,9 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
             Record storage record = getRecords[msg.sender][staking.isLending];
 
-            uint8 poolType = staking.isLending ? LEND_POOL : STAKE_POOL;
+            uint8 rewardPoolType = staking.isLending ? LEND_REWARD_POOL : STAKE_REWARD_POOL;
 
-            ROI.distributeReward(msg.sender, staking.token, reward, poolType);
+            ROI.distributeReward(msg.sender, staking.token, reward, rewardPoolType);
 
             uint256 rewardConverted = staking.token.decimals() < 18 ? reward * 10 ** (18 - staking.token.decimals()) : reward;
 
@@ -537,7 +528,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         Staking storage staking = getStakings[msg.sender][_index];
 
         if (staking.amountTokenStaked > staking.token.balanceOf(address(treasury))) {
-            ROI.returnFunds(staking.token, staking.amountTokenStaked - staking.token.balanceOf(address(treasury)), returnPools);
+            ROI.returnFunds(staking.token, staking.amountTokenStaked - staking.token.balanceOf(address(treasury)));
         }
 
         staking.status = false;
