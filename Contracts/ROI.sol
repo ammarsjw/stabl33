@@ -31,8 +31,6 @@ contract ROI is Ownable, IStabl3StakingStruct {
 
     IERC20 public ucd;
 
-    uint8[] public returnPools;
-
     IStabl3Staking public stabl3Staking;
     uint256 public maxPoolPercentage;
     uint256 public stakingTypePercentage;
@@ -42,6 +40,8 @@ contract ROI is Ownable, IStabl3StakingStruct {
     uint256 public updateTimestampLast;
 
     uint256 public contractCreationTime;
+
+    uint8[] public returnPools;
 
     // mappings
 
@@ -74,14 +74,14 @@ contract ROI is Ownable, IStabl3StakingStruct {
         stabl3 = IERC20(0x6d4eaE732C9f34C6EAE0CFFD9c267b2d25583782);
         ucd = IERC20(0x21cF2A3a558d713371c4f2086Bf475C940AFD800);
 
-        returnPools = [0, 1, 12];
-
         maxPoolPercentage = 700;
         stakingTypePercentage = 250;
 
         updateTimestampLast = block.timestamp;
 
         contractCreationTime = block.timestamp;
+
+        returnPools = [0, 1];
 
         updatePermission(address(_treasury), true);
     }
@@ -99,10 +99,6 @@ contract ROI is Ownable, IStabl3StakingStruct {
         ucd = IERC20(_ucd);
     }
 
-    function updateReturnPools(uint8[] memory _returnPools) external onlyOwner {
-        returnPools = _returnPools;
-    }
-
     function updateStabl3Staking(address _stabl3Staking) external onlyOwner {
         require(address(stabl3Staking) != _stabl3Staking, "ROI: Stabl3 Staking is already this address");
         if (address(stabl3Staking) != address(0)) updatePermission(address(stabl3Staking), false);
@@ -113,6 +109,10 @@ contract ROI is Ownable, IStabl3StakingStruct {
     function updateMaxPoolPercentage(uint256 _maxPoolPercentage) external onlyOwner {
         require(maxPoolPercentage != _maxPoolPercentage, "ROI: Max Pool Percentage is already this value");
         maxPoolPercentage = _maxPoolPercentage;
+    }
+
+    function updateReturnPools(uint8[] memory _returnPools) external onlyOwner {
+        returnPools = _returnPools;
     }
 
     function searchTimeWeightedAPR(uint256 _startTimeWeight, uint256 _endTimeWeight) external view returns (TimeWeightedAPR memory) {
@@ -371,7 +371,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
     function returnFunds(IERC20 _token, uint256 _amountToken) external permission reserved(_token) {
         uint256 amountToUpdate = _amountToken;
 
-        for (uint8 i = 0 ; i <= returnPools.length ; i++) {
+        for (uint8 i = 0 ; i < returnPools.length ; i++) {
             uint256 amountPool = treasury.getROIPool(returnPools[i], _token);
 
             if (amountPool != 0) {

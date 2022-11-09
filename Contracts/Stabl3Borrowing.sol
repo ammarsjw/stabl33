@@ -17,7 +17,7 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
     uint8 private constant UCD_BORROW_POOL = 8;
     uint8 private constant UCD_PAYBACK_POOL = 9;
     uint8 private constant UCD_TO_TOKEN_EXCHANGE_POOL = 10;
-    uint8 private constant COLLATERAL_STABL3_POOL = 11;
+    uint8 private constant STABL3_COLLATERAL_POOL = 11;
 
     ITreasury public treasury;
     IROI public ROI;
@@ -161,7 +161,7 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
         ucd.mintWithPermit(msg.sender, amountUCD);
 
         treasury.updatePool(UCD_BORROW_POOL, ucd, amountUCD, 0, 0, true);
-        treasury.updatePool(COLLATERAL_STABL3_POOL, stabl3, _amountStabl3, 0, 0, true);
+        treasury.updatePool(STABL3_COLLATERAL_POOL, stabl3, _amountStabl3, 0, 0, true);
 
         treasury.updateStabl3CirculatingSupply(_amountStabl3, false);
 
@@ -206,9 +206,9 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
         stabl3.transferFrom(address(treasury), msg.sender, amountStabl3);
 
         treasury.updatePool(UCD_PAYBACK_POOL, ucd, _amountUCD, 0, 0, true);
-        treasury.updatePool(COLLATERAL_STABL3_POOL, stabl3, amountStabl3, 0, 0, false);
+        treasury.updatePool(STABL3_COLLATERAL_POOL, stabl3, amountStabl3, 0, 0, false);
         if (borrowing.amountUCD == 0) {
-            treasury.updatePool(COLLATERAL_STABL3_POOL, stabl3, borrowing.amountStabl3, 0, 0, false);
+            treasury.updatePool(STABL3_COLLATERAL_POOL, stabl3, borrowing.amountStabl3, 0, 0, false);
         }
 
         treasury.updateStabl3CirculatingSupply(amountStabl3, true);

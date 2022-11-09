@@ -12,8 +12,8 @@
 
     uint8 private constant UCD_BORROW_POOL = 8;
     uint8 private constant UCD_PAYBACK_POOL = 9;
-    uint8 private constant UCD_TO_TOKEN_EXCHANGE_POOL = 10;
-    uint8 private constant COLLATERAL_STABL3_POOL = 11;
+    uint8 private constant UCD_EXCHANGE_POOL = 10;
+    uint8 private constant STABL3_COLLATERAL_POOL = 11;
 
     uint8 private constant REAL_ESTATE_POOL = 12;
     uint8 private constant REAL_ESTATE_STAKE_POOL = 13;

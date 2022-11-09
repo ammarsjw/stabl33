@@ -32,6 +32,8 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
     uint256 public exchangeLimitTime;
     uint256 public exchangeLimitPercentage;
 
+    uint8[] public exchangePools;
+
     bool public saleState;
 
     // structs
@@ -91,6 +93,8 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
         exchangePauseTime = 180;        // 3 minutes
         exchangeLimitTime = 86400;      // 1 day
         exchangeLimitPercentage = 300;
+
+        exchangePools = [0, 1, 2, 5];
     }
 
     function updateTreasury(address _treasury) external onlyOwner {
@@ -137,6 +141,10 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
     function updateExchangeLimitPercentage(uint256 _exchangeLimitPercentage) external onlyOwner {
         require(exchangeLimitPercentage != _exchangeLimitPercentage, "Stabl3PublicSale: Exchange Limit Percentage is already this value");
         exchangeLimitPercentage = _exchangeLimitPercentage;
+    }
+
+    function updateExchangePools(uint8[] memory _exchangePools) external onlyOwner {
+        exchangePools = _exchangePools;
     }
 
     function updateSaleState(bool _state) external onlyOwner {
@@ -233,9 +241,6 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
         require(_exchangingToken != _token, "Stabl3PublicSale: Invalid exchange");
         require(_amountToken > 0, "Stabl3PublicSale: Insufficient amount");
 
-        uint256 fee = (_amountToken * treasury.exchangeFee()) / 1000;
-        uint256 amountTokenWithFee = _amountToken - fee;
-
         uint256 amountExchangingToken = treasury.getExchangeAmountOut(_exchangingToken, _token, _amountToken);
 
         _handleLimit(_exchangingToken, amountExchangingToken);
@@ -243,6 +248,9 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
         if (amountExchangingToken > _exchangingToken.balanceOf(address(treasury))) {
             ROI.returnFunds(_exchangingToken, amountExchangingToken - _exchangingToken.balanceOf(address(treasury)));
         }
+
+        uint256 fee = (_amountToken * treasury.exchangeFee()) / 1000;
+        uint256 amountTokenWithFee = _amountToken - fee;
 
         SafeERC20.safeTransferFrom(_token, msg.sender, address(ROI), fee);
 
@@ -258,13 +266,54 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
 
         emit Buy(msg.sender, amountStabl3, _token, fee, block.timestamp);
 
-        SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), amountTokenWithFee);
-        SafeERC20.safeTransferFrom(_exchangingToken, address(treasury), msg.sender, amountExchangingToken);
+        _exchangeFunds(_exchangingToken, amountExchangingToken, _token, amountTokenWithFee);
 
-        treasury.updatePool(BUY_POOL, _token, amountTokenWithFee, 0, 0, true);
-        treasury.updatePool(BUY_POOL, _exchangingToken, amountExchangingToken, 0, 0, false);
+        // SafeERC20.safeTransferFrom(_exchangingToken, address(treasury), msg.sender, amountExchangingToken);
+        // SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), amountTokenWithFee);
+
+        // treasury.updatePool(BUY_POOL, _exchangingToken, amountExchangingToken, 0, 0, false);
+        // treasury.updatePool(BUY_POOL, _token, amountTokenWithFee, 0, 0, true);
 
         emit Exchange(msg.sender, _exchangingToken, amountExchangingToken, _token, amountTokenWithFee, fee, block.timestamp);
+    }
+
+    function _exchangeFunds(
+        IERC20 _exchangingToken,
+        uint256 _amountExchangingToken,
+        IERC20 _token,
+        uint256 _amountToken
+    ) internal {
+        uint256 amountExchangingToUpdate = _amountExchangingToken;
+        uint256 amountToUpdate = _amountToken;
+
+        for (uint8 i = 0 ; i < exchangePools.length ; i++) {
+            uint256 amountPool = treasury.getTreasuryPool(exchangePools[i], _token);
+
+            if (amountPool != 0) {
+                uint256 amountUpdateToConsider = _amountExchangingToken > _amountToken ? _amountExchangingToken : _amountToken;
+
+                if (amountPool < amountUpdateToConsider) {
+                    treasury.updatePool(exchangePools[i], _exchangingToken, amountPool, 0, 0, false);
+                    treasury.updatePool(exchangePools[i], _token, amountPool, 0, 0, true);
+
+                    amountExchangingToUpdate -= amountPool;
+                    amountToUpdate -= amountPool;
+                }
+                else {
+                    treasury.updatePool(exchangePools[i], _exchangingToken, amountExchangingToUpdate, 0, 0, false);
+                    treasury.updatePool(exchangePools[i], _token, amountToUpdate, 0, 0, true);
+
+                    amountExchangingToUpdate = 0;
+                    amountToUpdate = 0;
+                    break;
+                }
+            }
+        }
+
+        require(amountExchangingToUpdate == 0 && amountToUpdate == 0, "ROI: Not enough funds in the specified pools");
+
+        SafeERC20.safeTransferFrom(_exchangingToken, address(treasury), msg.sender, _amountExchangingToken);
+        SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), _amountToken);
     }
 
     // modifiers
