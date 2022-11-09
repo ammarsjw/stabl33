@@ -90,8 +90,8 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
         ROIPercentage = 161;
         HQPercentage = 39;
 
-        exchangePauseTime = 180;        // 3 minutes
-        exchangeLimitTime = 86400;      // 1 day
+        exchangePauseTime = 180; // 3 minutes time in seconds
+        exchangeLimitTime = 86400; // 1 day time in seconds
         exchangeLimitPercentage = 300;
 
         exchangePools = [0, 1, 2, 5];
@@ -186,12 +186,6 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
     function _handleLimit(IERC20 _exchangingToken, uint256 _amountExchangingToken) internal {
         Limit storage limit = getLimit[msg.sender];
 
-        // TODO confirm
-        // uint256 amountExchangingTokenConverted = _amountExchangingToken;
-        // if (_exchangingToken.decimals() < 18) {
-        //     amountExchangingTokenConverted *= 10 ** (18 - _exchangingToken.decimals());
-        // }
-
         if (limit.user != msg.sender) {
             limit.user = msg.sender;
             limit.amount = 0;
@@ -226,7 +220,7 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @notice This function allows users to exchange 1 stable coin with another but only if it is part of the protocol's reserve
+     * @dev This function allows users to exchange 1 stable coin with another but only if it is part of the protocol's reserve
      * @dev Multiple security features incorporated to secure funds
      * @dev Each user has a certain time wait before each consecutive exchange call
      * @dev Each user is limited to take out a maximum of X% within Y hours of the token they want which is currently in the treasury
@@ -310,7 +304,7 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
             }
         }
 
-        require(amountExchangingToUpdate == 0 && amountToUpdate == 0, "ROI: Not enough funds in the specified pools");
+        require(amountExchangingToUpdate == 0 && amountToUpdate == 0, "Stabl3PublicSale: Not enough funds in the specified pools");
 
         SafeERC20.safeTransferFrom(_exchangingToken, address(treasury), msg.sender, _amountExchangingToken);
         SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), _amountToken);

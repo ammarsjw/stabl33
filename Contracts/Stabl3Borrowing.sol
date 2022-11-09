@@ -141,7 +141,7 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @notice This function allows users to deposit stabl3 and to receive UCD at current protocol rates
+     * @dev This function allows users to deposit stabl3 and to receive UCD at current protocol rates
      */
     function borrow(uint256 _amountStabl3) external borrowActive {
         require(_amountStabl3 > 0, "Stabl3Borrowing: Insufficient amount");
@@ -184,7 +184,7 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
     // when a user has fully returned his UCD do we uncollateralize the rest of his collateralized Stabl3?
     // consider current price when borrowing/paying back
     /**
-     * @notice This function allows users to repay their borrowed UCD in return for Stabl3 Token at current protocol rates
+     * @dev This function allows users to repay their borrowed UCD in return for Stabl3 Token at current protocol rates
      */
     function payback(uint256 _amountUCD) external borrowActive {
         require(_amountUCD > 0, "Stabl3Borrowing: Insufficient amount");

@@ -279,7 +279,6 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         (uint256 maxPool, uint256 currentPool) = ROI.validatePool(_token, _amountToken, _stakingType, _isLending);
         require(currentPool <= maxPool, "Stabl3Staking: Staking pool limit reached. Please try again later or try a different amount");
 
-        // uint256 amountTokenLending;
         uint256 amountStabl3Lending;
 
         if (_isLending) {
@@ -360,7 +359,6 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
         treasury.updatePool(STAKING_TYPE_POOL + _stakingType, IERC20(address(0)), amountTokenConverted, 0, 0, true);
         record.totalAmountTokenStaked += amountTokenConverted;
-        // getAmountStakedPerStakingType[_stakingType] += amountTokenConverted;
 
         emit Stake(
             staking.user,
@@ -378,7 +376,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
     }
 
     /**
-     * @notice This function is only called externally by certain contracts to provide APR on a given value
+     * @dev This function is only called externally by certain contracts to provide APR on a given value
      * @dev Requires permit
      * @dev Requires external checks, transfers, records, updatePool calls, updateAPR calls and event emissions
      */
@@ -552,7 +550,6 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
                 staking.amountTokenStaked;
 
             treasury.updatePool(STAKING_TYPE_POOL + staking.stakingType, IERC20(address(0)), amountTokenConverted, 0, 0, false);
-            // getAmountStakedPerStakingType[staking.stakingType] -= amountTokenConverted;
         }
 
         ROI.updateAPR();
