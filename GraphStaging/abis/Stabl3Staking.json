@@ -910,6 +910,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "emergencyState",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -1399,25 +1412,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "returnPools",
-    "outputs": [
-      {
-        "internalType": "uint8",
-        "name": "",
-        "type": "uint8"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "stabl3",
     "outputs": [
@@ -1591,6 +1585,19 @@
   {
     "inputs": [
       {
+        "internalType": "bool",
+        "name": "_state",
+        "type": "bool"
+      }
+    ],
+    "name": "updateEmergencyState",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_HQ",
         "type": "address"
@@ -1664,19 +1671,6 @@
       }
     ],
     "name": "updateROI",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint8[]",
-        "name": "_returnPools",
-        "type": "uint8[]"
-      }
-    ],
-    "name": "updateReturnPools",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

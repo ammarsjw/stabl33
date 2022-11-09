@@ -381,6 +381,25 @@ export class ROI extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBoolean());
   }
 
+  returnPools(param0: BigInt): i32 {
+    let result = super.call("returnPools", "returnPools(uint256):(uint8)", [
+      ethereum.Value.fromUnsignedBigInt(param0)
+    ]);
+
+    return result[0].toI32();
+  }
+
+  try_returnPools(param0: BigInt): ethereum.CallResult<i32> {
+    let result = super.tryCall("returnPools", "returnPools(uint256):(uint8)", [
+      ethereum.Value.fromUnsignedBigInt(param0)
+    ]);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toI32());
+  }
+
   searchTimeWeightedAPR(
     _startTimeWeight: BigInt,
     _endTimeWeight: BigInt
@@ -725,7 +744,7 @@ export class DistributeRewardCall__Inputs {
     return this._call.inputValues[2].value.toBigInt();
   }
 
-  get _poolType(): i32 {
+  get _rewardPoolType(): i32 {
     return this._call.inputValues[3].value.toI32();
   }
 }
@@ -787,10 +806,6 @@ export class ReturnFundsCall__Inputs {
 
   get _amountToken(): BigInt {
     return this._call.inputValues[1].value.toBigInt();
-  }
-
-  get _pools(): Array<i32> {
-    return this._call.inputValues[2].value.toI32Array();
   }
 }
 
@@ -948,6 +963,36 @@ export class UpdatePermissionCall__Outputs {
   _call: UpdatePermissionCall;
 
   constructor(call: UpdatePermissionCall) {
+    this._call = call;
+  }
+}
+
+export class UpdateReturnPoolsCall extends ethereum.Call {
+  get inputs(): UpdateReturnPoolsCall__Inputs {
+    return new UpdateReturnPoolsCall__Inputs(this);
+  }
+
+  get outputs(): UpdateReturnPoolsCall__Outputs {
+    return new UpdateReturnPoolsCall__Outputs(this);
+  }
+}
+
+export class UpdateReturnPoolsCall__Inputs {
+  _call: UpdateReturnPoolsCall;
+
+  constructor(call: UpdateReturnPoolsCall) {
+    this._call = call;
+  }
+
+  get _returnPools(): Array<i32> {
+    return this._call.inputValues[0].value.toI32Array();
+  }
+}
+
+export class UpdateReturnPoolsCall__Outputs {
+  _call: UpdateReturnPoolsCall;
+
+  constructor(call: UpdateReturnPoolsCall) {
     this._call = call;
   }
 }

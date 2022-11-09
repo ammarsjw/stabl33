@@ -153,7 +153,7 @@
       },
       {
         "internalType": "uint8",
-        "name": "_poolType",
+        "name": "_rewardPoolType",
         "type": "uint8"
       }
     ],
@@ -307,16 +307,30 @@
         "internalType": "uint256",
         "name": "_amountToken",
         "type": "uint256"
-      },
-      {
-        "internalType": "uint8[]",
-        "name": "_pools",
-        "type": "uint8[]"
       }
     ],
     "name": "returnFunds",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "returnPools",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -511,6 +525,19 @@
       }
     ],
     "name": "updatePermission",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint8[]",
+        "name": "_returnPools",
+        "type": "uint8[]"
+      }
+    ],
+    "name": "updateReturnPools",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

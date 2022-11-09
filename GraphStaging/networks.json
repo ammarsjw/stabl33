@@ -1,13 +1,13 @@
 {
   "fantom-testnet": {
     "Treasury": {
-      "address": "0xB21e104a82e8388592950484B3d71A5460fa997E"
+      "address": "0xb6c1fc6e9c7df0f180ea07a980a79c3224229c35"
     },
     "ROI": {
-      "address": "0x6c8efCA30C429F57ED7836481219C8aeda86DE3C"
+      "address": "0x850801062862de5acc27927d83feb3ebc8cd771f"
     },
     "Stabl3Staking": {
-      "address": "0x4bd9bcd002Da063Dfb62e88477598381Fa8907Db"
+      "address": "0x9beab973ff06c40fb7461b92ccdb1ea8334748ba"
     }
   }
 }
