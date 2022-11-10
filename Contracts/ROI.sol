@@ -25,6 +25,8 @@ contract ROI is Ownable, IStabl3StakingStruct {
 
     uint8 private constant STAKING_TYPE_POOL = 20;
 
+    uint256 private immutable oneDayTime;
+
     ITreasury public treasury;
 
     IERC20 public immutable stabl3;
@@ -68,6 +70,11 @@ contract ROI is Ownable, IStabl3StakingStruct {
     // constructor
 
     constructor(ITreasury _treasury) {
+        // TODO remove
+        // oneDayTime = 8 minutes;
+        oneDayTime = 10;
+        // oneDayTime = 86400; // 1 day time in seconds
+
         treasury = _treasury;
 
         // TODO change
@@ -348,13 +355,13 @@ contract ROI is Ownable, IStabl3StakingStruct {
         uint256 totalRewardDistributed = getTotalRewardDistributed();
 
         // Time Weighted APR Calculation
-        uint256 timeWeight = (block.timestamp - updateTimestampLast) / stabl3Staking.oneDayTime();
+        uint256 timeWeight = (block.timestamp - updateTimestampLast) / oneDayTime;
 
         timeWeightedAPR.APR += updateAPRLast.mul(timeWeight);
         timeWeightedAPR.timeWeight += timeWeight;
 
         updateAPRLast = currentAPR;
-        updateTimestampLast += stabl3Staking.oneDayTime() * timeWeight;
+        updateTimestampLast += oneDayTime * timeWeight;
 
         getTimeWeightedAPRs[timeWeightedAPR.timeWeight].APR = timeWeightedAPR.APR;
         getTimeWeightedAPRs[timeWeightedAPR.timeWeight].timeWeight = timeWeightedAPR.timeWeight;

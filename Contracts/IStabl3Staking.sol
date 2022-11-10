@@ -7,9 +7,6 @@ import "./IStabl3StakingStruct.sol";
 
 interface IStabl3Staking is IStabl3StakingStruct {
 
-    function oneDayTime() external view returns (uint256);
-    function oneYearTime() external view returns (uint256);
-
     function ROI() external view returns (IROI);
 
     function lendingStabl3Percentage() external view returns (uint256);

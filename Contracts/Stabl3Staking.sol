@@ -27,6 +27,9 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
     uint8 private constant STAKING_TYPE_POOL = 20;
 
+    uint256 private immutable oneDayTime;
+    uint256 private immutable oneYearTime;
+
     ITreasury public treasury;
     IROI public ROI;
     address public HQ;
@@ -41,9 +44,6 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
     uint256 public lendingStabl3Percentage;
     uint256 public lendingStabl3ClaimTime;
-
-    uint256 public oneDayTime;
-    uint256 public oneYearTime;
     uint256[5] public lockTimes;
 
     uint256 public excludedFromROIReserves;
@@ -130,6 +130,14 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
     // constructor
 
     constructor(address _treasury, address _ROI) {
+        // TODO remove
+        // oneDayTime = 8 minutes;
+        // oneYearTime = 48 hours;
+        oneDayTime = 10;
+        oneYearTime = 3600;
+        // oneDayTime = 86400; // 1 day time in seconds
+        // oneYearTime = 31104000; // 1 year time in seconds
+
         treasury = ITreasury(_treasury);
         ROI = IROI(_ROI);
         // TODO change
@@ -146,15 +154,12 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
         lendingStabl3Percentage = 200;
         // TODO remove
-        lendingStabl3ClaimTime = 4 hours;
+        lendingStabl3ClaimTime = 300;
         // lendingStabl3ClaimTime = 2592000; // 1 month time in seconds
 
         // TODO remove
-        oneDayTime = 8 minutes;
-        oneYearTime = 48 hours;
-        lockTimes = [0, 12 hours, 24 hours, 36 hours, 48 hours];
-        // oneDayTime = 86400; // 1 day time in seconds
-        // oneYearTime = 31104000; // 1 year time in seconds
+        // lockTimes = [0, 12 hours, 24 hours, 36 hours, 48 hours];
+        lockTimes = [0, 900, 1800, 2700, 3600];
         // lockTimes = [0, 7776000, 15552000, 23328000, 31104000]; // 3, 6, 9 and 12 months time in seconds
 
         // TODO use times like this to complete 365 days
@@ -218,10 +223,8 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         lendingStabl3ClaimTime = _lendingStabl3ClaimTime;
     }
 
-    function updateLockTimes(uint256[5] memory _lockTimes, uint256 _oneDayTime, uint256 _oneYearTime) external onlyOwner {
+    function updateLockTimes(uint256[5] memory _lockTimes) external onlyOwner {
         lockTimes = _lockTimes;
-        oneDayTime = _oneDayTime;
-        oneYearTime = _oneYearTime;
     }
 
     function updateUnstakeFeePercentage(uint256 _unstakeFeePercentage) external onlyOwner {
