@@ -1325,32 +1325,6 @@
   },
   {
     "inputs": [],
-    "name": "oneDayTime",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "oneYearTime",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "owner",
     "outputs": [
       {
@@ -1627,16 +1601,6 @@
         "internalType": "uint256[5]",
         "name": "_lockTimes",
         "type": "uint256[5]"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_oneDayTime",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_oneYearTime",
-        "type": "uint256"
       }
     ],
     "name": "updateLockTimes",
