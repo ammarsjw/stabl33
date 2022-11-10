@@ -1491,36 +1491,6 @@ export class Stabl3Staking extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
-  oneDayTime(): BigInt {
-    let result = super.call("oneDayTime", "oneDayTime():(uint256)", []);
-
-    return result[0].toBigInt();
-  }
-
-  try_oneDayTime(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall("oneDayTime", "oneDayTime():(uint256)", []);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
-  oneYearTime(): BigInt {
-    let result = super.call("oneYearTime", "oneYearTime():(uint256)", []);
-
-    return result[0].toBigInt();
-  }
-
-  try_oneYearTime(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall("oneYearTime", "oneYearTime():(uint256)", []);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
   owner(): Address {
     let result = super.call("owner", "owner():(address)", []);
 
@@ -2198,14 +2168,6 @@ export class UpdateLockTimesCall__Inputs {
 
   get _lockTimes(): Array<BigInt> {
     return this._call.inputValues[0].value.toBigIntArray();
-  }
-
-  get _oneDayTime(): BigInt {
-    return this._call.inputValues[1].value.toBigInt();
-  }
-
-  get _oneYearTime(): BigInt {
-    return this._call.inputValues[2].value.toBigInt();
   }
 }
 
