@@ -250,6 +250,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         return getStakings[_user].length;
     }
 
+    // TODO add locked to unlocked for emergency
     function allStakings(
         address _user,
         bool _isRealEstate

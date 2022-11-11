@@ -205,6 +205,13 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
             // .safeSub(treasury.getTreasuryPool(STAKE_POOL, _exchangingToken))
             // .safeSub(treasury.getTreasuryPool(LEND_POOL, _exchangingToken));
 
+        uint256 decimals = _exchangingToken.decimals();
+
+        (_amountExchangingToken, amountExchangingTokenToConsider) =
+            decimals < 18 ?
+            (_amountExchangingToken * 10 ** (18 - decimals), amountExchangingTokenToConsider * 10 ** (18 - decimals)) :
+            (_amountExchangingToken, amountExchangingTokenToConsider);
+
         if (limit.amount + _amountExchangingToken > amountExchangingTokenToConsider.mul(exchangeLimitPercentage).div(1000)) {
             require(block.timestamp > limit.startTime.add(exchangeLimitTime),
                 "Stabl3PublicSale: Daily exchange limit reached. Please try again after limit expires or try a different amount");
@@ -280,17 +287,23 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
         uint256 amountExchangingToUpdate = _amountExchangingToken;
         uint256 amountToUpdate = _amountToken;
 
+        uint256 decimalsExchaningToken = _exchangingToken.decimals();
+        uint256 decimals = _token.decimals();
+
         for (uint8 i = 0 ; i < exchangePools.length ; i++) {
-            uint256 amountPool = treasury.getTreasuryPool(exchangePools[i], _token);
+            uint256 amountExchangingPool = treasury.getTreasuryPool(exchangePools[i], _exchangingToken);
 
-            if (amountPool != 0) {
-                uint256 amountUpdateToConsider = _amountExchangingToken > _amountToken ? _amountExchangingToken : _amountToken;
+            if (amountExchangingPool != 0) {
+                if (amountExchangingPool < amountExchangingToUpdate) {
+                    uint256 amountPool =
+                        decimalsExchaningToken > decimals ?
+                        amountExchangingPool * 10 ** (decimalsExchaningToken - decimals) :
+                        amountExchangingPool * 10 ** (decimals - decimalsExchaningToken);
 
-                if (amountPool < amountUpdateToConsider) {
-                    treasury.updatePool(exchangePools[i], _exchangingToken, amountPool, 0, 0, false);
+                    treasury.updatePool(exchangePools[i], _exchangingToken, amountExchangingPool, 0, 0, false);
                     treasury.updatePool(exchangePools[i], _token, amountPool, 0, 0, true);
 
-                    amountExchangingToUpdate -= amountPool;
+                    amountExchangingToUpdate -= amountExchangingPool;
                     amountToUpdate -= amountPool;
                 }
                 else {
