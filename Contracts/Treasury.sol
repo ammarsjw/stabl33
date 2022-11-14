@@ -352,9 +352,6 @@ contract Treasury is Ownable {
         uint256 _amountToken
     ) external view reserved(_token) returns (uint256) {
         require(_amountToken > 0, "Treasury: Insufficient amount");
-        if (_exchangingToken.balanceOf(address(this)) == 0) {
-            return 0;
-        }
 
         uint256 fee = (_amountToken * exchangeFee) / 1000;
         uint256 amountTokenWithFee = _amountToken - fee;
@@ -377,9 +374,6 @@ contract Treasury is Ownable {
         IERC20 _token
     ) external view reserved(_token) returns (uint256) {
         require(_amountExchangingToken > 0, "Treasury: Insufficient amount");
-        if (_exchangingToken.balanceOf(address(this)) == 0) {
-            return 0;
-        }
 
         address pair = uniswapFactory.getPair(address(_token), address(_exchangingToken));
 
