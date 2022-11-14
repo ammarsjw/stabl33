@@ -16,6 +16,8 @@ interface IStabl3Staking is IStabl3StakingStruct {
 
     function excludedFromROIReserves() external view returns (uint256);
 
+    function emergencyState() external view returns (bool);
+
     function getStakings(address, uint256) external view returns (Staking memory);
 
     function getStakers(uint256) external view returns (address);

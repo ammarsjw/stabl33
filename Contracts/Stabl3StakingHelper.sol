@@ -70,10 +70,23 @@ contract Stabl3StakingHelper is IStabl3StakingStruct {
             }
         }
 
-        unlockedLending = new Staking[](unlockedLendingLength);
-        lockedLending = new Staking[](lockedLendingLength);
-        unlockedStaking = new Staking[](unlockedStakingLength);
-        lockedStaking = new Staking[](lockedStakingLength);
+        if (stabl3Staking.emergencyState()) {
+            unlockedLending = new Staking[](unlockedLendingLength + lockedLendingLength);
+            lockedLending = new Staking[](0);
+            unlockedStaking = new Staking[](unlockedStakingLength + lockedStakingLength);
+            lockedStaking = new Staking[](0);
+        }
+        else {
+            unlockedLending = new Staking[](unlockedLendingLength);
+            lockedLending = new Staking[](lockedLendingLength);
+            unlockedStaking = new Staking[](unlockedStakingLength);
+            lockedStaking = new Staking[](lockedStakingLength);
+        }
+
+        // unlockedLending = new Staking[](unlockedLendingLength);
+        // lockedLending = new Staking[](lockedLendingLength);
+        // unlockedStaking = new Staking[](unlockedStakingLength);
+        // lockedStaking = new Staking[](lockedStakingLength);
 
         unlockedLendingLength = 0;
         lockedLendingLength = 0;
@@ -99,12 +112,28 @@ contract Stabl3StakingHelper is IStabl3StakingStruct {
                 }
                 else {
                     if (staking.isLending) {
-                        lockedLending[lockedLendingLength] = staking;
-                        lockedLendingLength++;
+                        if (stabl3Staking.emergencyState()) {
+                            unlockedLending[unlockedLendingLength] = staking;
+                            unlockedLendingLength++;
+                        }
+                        else {
+                            lockedLending[lockedLendingLength] = staking;
+                            lockedLendingLength++;
+                        }
+                        // lockedLending[lockedLendingLength] = staking;
+                        // lockedLendingLength++;
                     }
                     else {
-                        lockedStaking[lockedStakingLength] = staking;
-                        lockedStakingLength++;
+                        if (stabl3Staking.emergencyState()) {
+                            unlockedStaking[unlockedStakingLength] = staking;
+                            unlockedStakingLength++;
+                        }
+                        else {
+                            lockedStaking[lockedStakingLength] = staking;
+                            lockedStakingLength++;
+                        }
+                        // lockedStaking[lockedStakingLength] = staking;
+                        // lockedStakingLength++;
                     }
                 }
             }
