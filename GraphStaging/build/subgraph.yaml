@@ -52,9 +52,9 @@ dataSources:
     name: Stabl3Staking
     network: fantom-testnet
     source:
-      address: "0x1afccb1580bf43b166fff5fe9b62eab57d065c36"
+      address: "0x7E33a32C683A051FC19fA7722c42d4621e896B55"
       abi: Stabl3Staking
-      startBlock: 11967618
+      startBlock: 12055014
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
