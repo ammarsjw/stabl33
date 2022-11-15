@@ -6,9 +6,9 @@ dataSources:
     name: Treasury
     network: fantom-testnet
     source:
-      address: "0x868934bc5b59fd8315e331386efcd656a535fc01"
+      address: "0xCE4f5275Af3280AefD5aCF244cF9453336FF7e01"
       abi: Treasury
-      startBlock: 11967586
+      startBlock: 12068513
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -32,9 +32,9 @@ dataSources:
     name: ROI
     network: fantom-testnet
     source:
-      address: "0xC3b323c341AcDa07EFFa3F6602bd04f03aB5D31F"
+      address: "0x5008d6e33ea5134f5feb3823a4ff7e8f86311bb0"
       abi: ROI
-      startBlock: 11967596
+      startBlock: 12068521
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -52,9 +52,9 @@ dataSources:
     name: Stabl3Staking
     network: fantom-testnet
     source:
-      address: "0x7E33a32C683A051FC19fA7722c42d4621e896B55"
+      address: "0xed3c83b4cea3a03b9f6b4cf1d18adddfa808a05e"
       abi: Stabl3Staking
-      startBlock: 12055014
+      startBlock: 12068547
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
