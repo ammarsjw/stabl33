@@ -287,7 +287,7 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
         uint256 amountExchangingToUpdate = _amountExchangingToken;
         uint256 amountToUpdate = _amountToken;
 
-        uint256 decimalsExchaningToken = _exchangingToken.decimals();
+        uint256 decimalsExchangingToken = _exchangingToken.decimals();
         uint256 decimals = _token.decimals();
 
         for (uint8 i = 0 ; i < exchangePools.length ; i++) {
@@ -295,10 +295,13 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
 
             if (amountExchangingPool != 0) {
                 if (amountExchangingPool < amountExchangingToUpdate) {
-                    uint256 amountPool =
-                        decimalsExchaningToken > decimals ?
-                        amountExchangingPool * 10 ** (decimalsExchaningToken - decimals) :
-                        amountExchangingPool * 10 ** (decimals - decimalsExchaningToken);
+                    uint256 amountPool;
+                    if (decimalsExchangingToken > decimals) {
+                        amountPool = amountExchangingPool / 10 ** (decimalsExchangingToken - decimals);
+                    }
+                    else if (decimalsExchangingToken < decimals) {
+                        amountPool = amountExchangingPool * 10 ** (decimals - decimalsExchangingToken);
+                    }
 
                     treasury.updatePool(exchangePools[i], _exchangingToken, amountExchangingPool, 0, 0, false);
                     treasury.updatePool(exchangePools[i], _token, amountPool, 0, 0, true);
