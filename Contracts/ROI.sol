@@ -217,8 +217,6 @@ contract ROI is Ownable, IStabl3StakingStruct {
 
     // APR is in 18 decimals
     function getAPR() public view returns (uint256) {
-        uint256 ROIReserves = getReserves();
-
         uint256 maxPool;
 
         for (uint256 i = 0 ; i < treasury.allReservedTokensLength() ; i++) {
@@ -238,6 +236,8 @@ contract ROI is Ownable, IStabl3StakingStruct {
         }
 
         maxPool = maxPool.mul(maxPoolPercentage).div(1000);
+
+        uint256 ROIReserves = getReserves();
 
         uint256 currentAPR = maxPool > 0 ? (ROIReserves * (10 ** 18)) / (maxPool) : 0;
 
