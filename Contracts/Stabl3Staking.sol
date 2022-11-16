@@ -46,7 +46,8 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
     uint256 public lendingStabl3ClaimTime;
     uint256[5] public lockTimes;
 
-    uint256 public excludedFromROIReserves;
+    uint256 public dormantROIReserves;
+    uint256 public withdrawnROIReserves;
 
     uint256 public unstakeFeePercentage;
 
@@ -433,10 +434,24 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
             ROI.distributeReward(msg.sender, staking.token, reward, rewardPoolType);
 
-            uint256 rewardConverted = staking.token.decimals() < 18 ? reward * 10 ** (18 - staking.token.decimals()) : reward;
+            uint256 decimals = staking.token.decimals();
+
+            uint256 rewardConverted = decimals < 18 ? reward * 10 ** (18 - decimals) : reward;
 
             if (staking.isDormant) {
-                excludedFromROIReserves = excludedFromROIReserves.safeSub(rewardConverted);
+                dormantROIReserves = dormantROIReserves.safeSub(rewardConverted);
+            }
+
+            if (_timestamp > endTime) {
+                uint256 rewardWithdrawnConverted =
+                    decimals < 18 ?
+                    staking.rewardWithdrawn * 10 ** (18 - decimals) :
+                    staking.rewardWithdrawn;
+
+                withdrawnROIReserves = withdrawnROIReserves.safeSub(rewardWithdrawnConverted);
+            }
+            else {
+                withdrawnROIReserves += rewardConverted;
             }
 
             ROI.updateAPR();
@@ -664,7 +679,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
                     (staking.amountTokenStaked * 10 ** (18 - decimals), reward * 10 ** (18 - decimals)) :
                     (staking.amountTokenStaked, reward);
 
-                excludedFromROIReserves += rewardConverted;
+                dormantROIReserves += rewardConverted;
 
                 // Current Pool reduction
 

@@ -14,7 +14,8 @@ interface IStabl3Staking is IStabl3StakingStruct {
 
     function lockTimes(uint256) external view returns (uint256);
 
-    function excludedFromROIReserves() external view returns (uint256);
+    function dormantROIReserves() external view returns (uint256);
+    function withdrawnROIReserves() external view returns (uint256);
 
     function emergencyState() external view returns (bool);
 
