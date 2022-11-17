@@ -84,7 +84,7 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
         HQ = 0x294d0487fdf7acecf342ae70AFc5549A6E90f3e0;
 
         // TODO change
-        stabl3 = IERC20(0x6d4eaE732C9f34C6EAE0CFFD9c267b2d25583782);
+        stabl3 = IERC20(0x59f78fB97FB36adbaDCbB43Fa9031797faAad54A);
 
         treasuryPercentage = 800;
         ROIPercentage = 161;
