@@ -147,7 +147,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         stabl3StakingHelper = new Stabl3StakingHelper();
 
         // TODO change
-        stabl3 = IERC20(0x59f78fB97FB36adbaDCbB43Fa9031797faAad54A);
+        stabl3 = IERC20(0xc3Bf0c0172E3638d383361801e9BF63B4FfE0d6e);
 
         treasuryPercentages = [975, 761];
         ROIPercentages = [0, 0];

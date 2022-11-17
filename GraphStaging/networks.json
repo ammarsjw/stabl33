@@ -1,13 +1,13 @@
 {
-  "sepolia": {
+  "mumbai": {
     "Treasury": {
-      "address": "0xaD05DAc2B3E137086Bd025B31208c8aeC949d406"
+      "address": "0x18d04735d18495B5336e00CD092c5d17c9e5a0B4"
     },
     "ROI": {
-      "address": "0xB08E12256B18705aB7801046322CeD28028A2E73"
+      "address": "0x76a565e2B94a4ac3F65f6982f77b898c35962429"
     },
     "Stabl3Staking": {
-      "address": "0x5f62AC59374829C6162913cdFd878CbC153Fcd22"
+      "address": "0x024CE3e12Cb6e5eD0c942D9D3f4F7aeA07239A05"
     }
   }
 }

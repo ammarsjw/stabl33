@@ -71,17 +71,17 @@ contract Treasury is Ownable {
     constructor() {
         HQ = 0x294d0487fdf7acecf342ae70AFc5549A6E90f3e0;
 
-        stabl3 = IERC20(0x59f78fB97FB36adbaDCbB43Fa9031797faAad54A);
-        // ucd = IERC20(0x6e36ed03dF3318b183c50c0D0fB30ba530f6F183);
+        stabl3 = IERC20(0xc3Bf0c0172E3638d383361801e9BF63B4FfE0d6e);
+        // ucd = IERC20(0xB0124F5d0e906d3652d0b58F03E315eC42A57E9a);
 
         rateInfo = RateInfo(1 * (10 ** 15), 0.0007 * (10 ** 18), 10000 * (10 ** 18), 0, 0);
         rateInfo.stabl3Window = (rateInfo.tokenWindow * (10 ** 18)) / rateInfo.rate;
 
-        IERC20 USDC = IERC20(0x1092d50E8E14479bB769b687427B72BeE70c9534);
-        IERC20 DAI = IERC20(0xDf9c4990a8973b6cC069738592F27Ea54b27D569);
+        IERC20 usdc = IERC20(0x16c1038a989E7c52c7B0FBDE889249C02d7e205D);
+        IERC20 dai = IERC20(0x63720e1a9E780865B9FbDb148c25AEa0B59170F1);
 
-        updateReservedToken(USDC, true);
-        updateReservedToken(DAI, true);
+        updateReservedToken(usdc, true);
+        updateReservedToken(dai, true);
     }
 
     function updateROI(address _ROI) external onlyOwner {

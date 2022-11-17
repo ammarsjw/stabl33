@@ -134,7 +134,7 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
         HQ = 0x294d0487fdf7acecf342ae70AFc5549A6E90f3e0;
 
         // TODO change
-        stabl3 = IERC20(0x59f78fB97FB36adbaDCbB43Fa9031797faAad54A);
+        stabl3 = IERC20(0xc3Bf0c0172E3638d383361801e9BF63B4FfE0d6e);
 
         treasuryPercentage = 800;
         ROIPercentage = 161;

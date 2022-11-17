@@ -4,11 +4,11 @@ schema:
 dataSources:
   - kind: ethereum
     name: Treasury
-    network: sepolia
+    network: mumbai
     source:
-      address: "0xaD05DAc2B3E137086Bd025B31208c8aeC949d406"
+      address: "0x18d04735d18495B5336e00CD092c5d17c9e5a0B4"
       abi: Treasury
-      startBlock: 2306456
+      startBlock: 29198931
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -30,11 +30,11 @@ dataSources:
       file: Treasury\Treasury.wasm
   - kind: ethereum
     name: ROI
-    network: sepolia
+    network: mumbai
     source:
-      address: "0xB08E12256B18705aB7801046322CeD28028A2E73"
+      address: "0x76a565e2B94a4ac3F65f6982f77b898c35962429"
       abi: ROI
-      startBlock: 2306459
+      startBlock: 29198954
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -50,11 +50,11 @@ dataSources:
       file: ROI\ROI.wasm
   - kind: ethereum
     name: Stabl3Staking
-    network: sepolia
+    network: mumbai
     source:
-      address: "0x5f62AC59374829C6162913cdFd878CbC153Fcd22"
+      address: "0x024CE3e12Cb6e5eD0c942D9D3f4F7aeA07239A05"
       abi: Stabl3Staking
-      startBlock: 2306464
+      startBlock: 29198960
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
