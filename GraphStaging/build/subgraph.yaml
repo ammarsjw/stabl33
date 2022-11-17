@@ -4,11 +4,11 @@ schema:
 dataSources:
   - kind: ethereum
     name: Treasury
-    network: fantom-testnet
+    network: sepolia
     source:
-      address: "0xCE4f5275Af3280AefD5aCF244cF9453336FF7e01"
+      address: "0xaD05DAc2B3E137086Bd025B31208c8aeC949d406"
       abi: Treasury
-      startBlock: 12068513
+      startBlock: 2306456
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -30,11 +30,11 @@ dataSources:
       file: Treasury\Treasury.wasm
   - kind: ethereum
     name: ROI
-    network: fantom-testnet
+    network: sepolia
     source:
-      address: "0x5008d6e33ea5134f5feb3823a4ff7e8f86311bb0"
+      address: "0xB08E12256B18705aB7801046322CeD28028A2E73"
       abi: ROI
-      startBlock: 12068521
+      startBlock: 2306459
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -50,11 +50,11 @@ dataSources:
       file: ROI\ROI.wasm
   - kind: ethereum
     name: Stabl3Staking
-    network: fantom-testnet
+    network: sepolia
     source:
-      address: "0xed3c83b4cea3a03b9f6b4cf1d18adddfa808a05e"
+      address: "0x5f62AC59374829C6162913cdFd878CbC153Fcd22"
       abi: Stabl3Staking
-      startBlock: 12068547
+      startBlock: 2306464
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6

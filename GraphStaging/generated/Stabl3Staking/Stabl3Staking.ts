@@ -1016,6 +1016,29 @@ export class Stabl3Staking extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
+  dormantROIReserves(): BigInt {
+    let result = super.call(
+      "dormantROIReserves",
+      "dormantROIReserves():(uint256)",
+      []
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_dormantROIReserves(): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "dormantROIReserves",
+      "dormantROIReserves():(uint256)",
+      []
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
   emergencyState(): boolean {
     let result = super.call("emergencyState", "emergencyState():(bool)", []);
 
@@ -1029,29 +1052,6 @@ export class Stabl3Staking extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toBoolean());
-  }
-
-  excludedFromROIReserves(): BigInt {
-    let result = super.call(
-      "excludedFromROIReserves",
-      "excludedFromROIReserves():(uint256)",
-      []
-    );
-
-    return result[0].toBigInt();
-  }
-
-  try_excludedFromROIReserves(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall(
-      "excludedFromROIReserves",
-      "excludedFromROIReserves():(uint256)",
-      []
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
   getAmountRewardAll(
@@ -1607,6 +1607,29 @@ export class Stabl3Staking extends ethereum.SmartContract {
     let result = super.tryCall(
       "unstakeFeePercentage",
       "unstakeFeePercentage():(uint256)",
+      []
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
+  withdrawnROIReserves(): BigInt {
+    let result = super.call(
+      "withdrawnROIReserves",
+      "withdrawnROIReserves():(uint256)",
+      []
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_withdrawnROIReserves(): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "withdrawnROIReserves",
+      "withdrawnROIReserves():(uint256)",
       []
     );
     if (result.reverted) {

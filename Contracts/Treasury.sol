@@ -80,7 +80,7 @@ contract Treasury is Ownable {
 
     constructor() {
         // TODO change
-        uniswapRouter = IUniswapV2Router02(0xa6AD18C2aC47803E193F75c3677b14BF19B94883);
+        uniswapRouter = IUniswapV2Router02(0x01a93b7153Ee160F3176af0B0F31121DF9f0FFA5);
         uniswapFactory = IUniswapV2Factory(uniswapRouter.factory());
 
         // TODO change
