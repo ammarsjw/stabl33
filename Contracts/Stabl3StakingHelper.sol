@@ -159,7 +159,20 @@ contract Stabl3StakingHelper is IStabl3StakingStruct {
             staking.isRealEstate == _isRealEstate &&
             staking.rewardWithdrawTimeLast < endTime
         ) {
-            uint256 timestampToConsider = _timestamp > endTime ? endTime : _timestamp;
+            // uint256 timestampToConsider = _timestamp > endTime ? endTime : _timestamp;
+            uint256 timestampToConsider =
+                stabl3Staking.emergencyState() ?
+                stabl3Staking.emergencyTime() :
+                _timestamp > endTime ?
+                    endTime :
+                    _timestamp;
+
+            // if (stabl3Staking.emergencyState()) {
+            //     timestampToConsider = stabl3Staking.emergencyTime();
+            // }
+            // else {
+            //     timestampToConsider = _timestamp > endTime ? endTime : _timestamp;
+            // }
 
             uint256 numberOfDays = (timestampToConsider - staking.rewardWithdrawTimeLast) / oneDayTime;
 

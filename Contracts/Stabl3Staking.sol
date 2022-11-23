@@ -55,6 +55,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
     uint256 public lastProcessedStaking;
 
     bool public emergencyState;
+    uint256 public emergencyTime;
 
     bool public stakeState;
 
@@ -235,6 +236,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
     function updateEmergencyState(bool _state) external onlyOwner {
         require (emergencyState != _state, "Stabl3Staking: Emergency State is already of the value 'state'");
+        emergencyTime = _state ? block.timestamp : 0;
         emergencyState = _state;
     }
 
@@ -278,9 +280,10 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         uint8 _stakingType,
         bool _isLending
     ) public stakeActive reserved(_token) nonReentrant {
+        require(!emergencyState, "Stabl3Staking: Cannot Stake right now");
         require(ROI.getAPR() > 0, "Stabl3Staking: No APR to give");
         require(1 <= _stakingType && _stakingType <= 4, "Stabl3Staking: Incorrect staking type");
-        require(_amountToken > 1, "Stabl3Staking: Insufficient amount");
+        require(_amountToken > 4, "Stabl3Staking: Insufficient amount");
         (uint256 maxPool, uint256 currentPool) = ROI.validatePool(_token, _amountToken, _stakingType, _isLending);
         require(currentPool <= maxPool, "Stabl3Staking: Staking pool limit reached. Please try again later or try a different amount");
 
@@ -386,6 +389,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
      * @dev Requires external checks, transfers, records, updatePool calls, updateAPR calls and event emissions
      */
     function accessWithPermit(address _user, Staking memory _staking, uint8 _identifier) external {
+        require(!emergencyState, "Stabl3Staking: Cannot Stake right now");
         require(permitted[msg.sender] || msg.sender == owner(), "Stabl3Staking: Not permitted");
 
         if (_identifier == 0) {
