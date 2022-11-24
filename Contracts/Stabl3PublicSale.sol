@@ -236,6 +236,7 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
      */
     function exchange(
         IERC20 _exchangingToken,
+        uint256 _amountExchangingTokenMin,
         IERC20 _token,
         uint256 _amountToken
     ) external saleActive reserved(_exchangingToken) reserved(_token) nonReentrant {
@@ -243,6 +244,8 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
         require(_amountToken > 0, "Stabl3PublicSale: Insufficient amount");
 
         uint256 amountExchangingToken = treasury.getExchangeAmountOut(_exchangingToken, _token, _amountToken);
+
+        require(amountExchangingToken >= _amountExchangingTokenMin, "StablePublicSale: Slippage");
 
         _handleLimit(_exchangingToken, amountExchangingToken);
 
