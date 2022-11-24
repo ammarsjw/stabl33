@@ -148,7 +148,7 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
     // }
 
     function updateSaleState(bool _state) external onlyOwner {
-        require(saleState != _state, "Stabl3PublicSale: Sale State is already of the value 'state'");
+        require(saleState != _state, "Stabl3PublicSale: Sale State is already this state");
         saleState = _state;
     }
 

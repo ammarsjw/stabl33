@@ -104,7 +104,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
     }
 
     function updatePermission(address _contractAddress, bool _state) public onlyOwner {
-        require(permitted[_contractAddress] != _state, "ROI: Contract Address is already of the value 'state'");
+        require(permitted[_contractAddress] != _state, "ROI: Contract Address is already this state");
 
         permitted[_contractAddress] = _state;
 

@@ -183,12 +183,12 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
     }
 
     function updateBondState(bool _state) external onlyOwner {
-        require(bondState != _state, "Stabl3Bonding: Bond State is already of the value 'state'");
+        require(bondState != _state, "Stabl3Bonding: Bond State is already this state");
         bondState = _state;
     }
 
     function updateAdmin(address _account, bool _state) external onlyOwner {
-        require(admin[_account] != _state, "Stabl3Bonding: Account is already of the value 'state'");
+        require(admin[_account] != _state, "Stabl3Bonding: Account is already this state");
         admin[_account] = _state;
         emit UpdatedAdmin(_account, _state);
     }

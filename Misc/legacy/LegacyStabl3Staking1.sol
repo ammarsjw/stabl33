@@ -231,7 +231,7 @@ contract Stabl3Staking is Ownable {
     }
 
     function updateStakeState(bool _state) external onlyOwner {
-        require(stakeState != _state, "Stabl3Staking: Stake State is already of the value 'state'");
+        require(stakeState != _state, "Stabl3Staking: Stake State is already this state");
         stakeState = _state;
     }
 
@@ -326,7 +326,7 @@ contract Stabl3Staking is Ownable {
     }
 
     function updatePermission(address _contractAddress, bool _state) external onlyOwner {
-        require(permitted[_contractAddress] != _state, "Stabl3Staking: Address is already of the value 'state'");
+        require(permitted[_contractAddress] != _state, "Stabl3Staking: Address is already this state");
         permitted[_contractAddress] = _state;
         emit UpdatedPermission(_contractAddress, _state);
     }

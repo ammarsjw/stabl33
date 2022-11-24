@@ -135,7 +135,7 @@ contract Treasury is Ownable {
     }
 
     function updatePermission(address _contractAddress, bool _state) public onlyOwner {
-        require(permitted[_contractAddress] != _state, "Treasury: Contract Address is already of the value 'state'");
+        require(permitted[_contractAddress] != _state, "Treasury: Contract Address is already this state");
 
         permitted[_contractAddress] = _state;
 
@@ -162,7 +162,7 @@ contract Treasury is Ownable {
     }
 
     function updateReservedToken(IERC20 _token, bool _state) public onlyOwner {
-        require(isReservedToken[_token] != _state, "Treasury: Reserved token is already of the value 'state'");
+        require(isReservedToken[_token] != _state, "Treasury: Reserved token is already this state");
         isReservedToken[_token] = _state;
         allReservedTokens.push(_token);
         emit UpdatedReservedToken(_token, _state);

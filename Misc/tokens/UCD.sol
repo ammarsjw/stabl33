@@ -563,7 +563,7 @@ contract UCD is Ownable, ERC20 {
     }
 
     function updatePermission(address contractAddress, bool state) external onlyOwner {
-        require(_permitted[contractAddress] != state, "UCD: Contract Address is already of the value 'state'");
+        require(_permitted[contractAddress] != state, "UCD: Contract Address is already this state");
 
         _permitted[contractAddress] = state;
 
