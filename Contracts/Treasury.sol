@@ -88,6 +88,8 @@ contract Treasury is Ownable {
 
         // TODO change
         stabl3 = IERC20(0xc3Bf0c0172E3638d383361801e9BF63B4FfE0d6e);
+
+        // TODO change
         ucd = IERC20(0xB0124F5d0e906d3652d0b58F03E315eC42A57E9a);
 
         exchangeFee = 3;
@@ -252,7 +254,7 @@ contract Treasury is Ownable {
         }
     }
 
-    function getAmountOut(IERC20 _token, uint256 _amountToken) external view reserved(_token) returns (uint256) {
+    function getAmountOut(IERC20 _token, uint256 _amountToken) external view returns (uint256) {
         require(_amountToken > 0, "Treasury: Insufficient amount");
         if (stabl3.balanceOf(address(this)) == 0) {
             return 0;
@@ -296,7 +298,7 @@ contract Treasury is Ownable {
         }
     }
 
-    function getAmountIn(uint256 _amountStabl3, IERC20 _token) external view reserved(_token) returns (uint256) {
+    function getAmountIn(uint256 _amountStabl3, IERC20 _token) external view returns (uint256) {
         require(_amountStabl3 > 0, "Treasury: Insufficient amount");
         if (stabl3.balanceOf(address(this)) == 0) {
             return 0;

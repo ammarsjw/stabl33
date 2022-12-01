@@ -27,7 +27,9 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
 
     IUCD public ucd;
 
-    uint256 public exchangeFee;
+    uint256 public exchangeFeeUCD;
+
+    uint8[] public exchangePoolsUCD;
 
     bool public borrowState;
 
@@ -50,12 +52,13 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
 
     event UpdatedHQ(address newHQ, address oldHQ);
 
-    event UpdatedExchangeFee(uint256 newExchangeFee, uint256 oldExchangeFee);
+    event UpdatedExchangeFeeUCD(uint256 newExchangeFeeUCD, uint256 oldExchangeFeeUCD);
 
     event Borrow(
         address indexed user,
-        uint256 amountStabl3,
         uint256 amountUCD,
+        uint256 amountStabl3,
+        uint256 rate,
         uint256 timestamp
     );
 
@@ -63,13 +66,15 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
         address indexed user,
         uint256 amountUCD,
         uint256 amountStabl3,
+        uint256 rate,
         uint256 timestamp
     );
 
-    event Exchange(
+    event ExchangeUCD(
         address indexed user,
-        IERC20 token,
-        uint256 amountToken,
+        IERC20 exchangingToken,
+        uint256 amountExchangingToken,
+        uint256 amountUCD,
         uint256 fee,
         uint256 timestamp
     );
@@ -84,9 +89,13 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
 
         // TODO change
         stabl3 = IERC20(0xc3Bf0c0172E3638d383361801e9BF63B4FfE0d6e);
+
+        // TODO change
         ucd = IUCD(0x01fa8dEEdDEA8E4e465f158d93e162438d61c9eB);
 
-        exchangeFee = 3;
+        exchangeFeeUCD = 3;
+
+        exchangePoolsUCD = [0, 1, 2, 5];
     }
 
     function updateTreasury(address _treasury) external onlyOwner {
@@ -112,10 +121,14 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
         ucd = IUCD(_ucd);
     }
 
-    function updateExchangeFee(uint256 _exchangeFee) external onlyOwner {
-        require(exchangeFee != _exchangeFee, "Stabl3Borrowing: Exchange Fee is already this value");
-        emit UpdatedExchangeFee(_exchangeFee, exchangeFee);
-        exchangeFee = _exchangeFee;
+    function updateExchangeFeeUCD(uint256 _exchangeFeeUCD) external onlyOwner {
+        require(exchangeFeeUCD != _exchangeFeeUCD, "Stabl3Borrowing: Exchange Fee is already this value");
+        emit UpdatedExchangeFeeUCD(_exchangeFeeUCD, exchangeFeeUCD);
+        exchangeFeeUCD = _exchangeFeeUCD;
+    }
+
+    function updateExchangePoolsUCD(uint8[] memory _exchangePoolsUCD) external onlyOwner {
+        exchangePoolsUCD = _exchangePoolsUCD;
     }
 
     function updateBorrowState(bool _state) external onlyOwner {
@@ -123,33 +136,30 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
         borrowState = _state;
     }
 
-    function getEquivalenceToken() public view returns (IERC20) {
-        IERC20 equivalenceToken;
+    // function getEquivalenceToken() public view returns (IERC20) {
+    //     IERC20 equivalenceToken;
 
-        for (uint256 i = 0 ; i < treasury.allReservedTokensLength() ; i++) {
-            IERC20 reservedToken = treasury.allReservedTokens(i);
+    //     for (uint256 i = 0 ; i < treasury.allReservedTokensLength() ; i++) {
+    //         IERC20 reservedToken = treasury.allReservedTokens(i);
 
-            if (treasury.isReservedToken(reservedToken)) {
-                if (ucd.decimals() == reservedToken.decimals()) {
-                    equivalenceToken = reservedToken;
-                    break;
-                }
-            }
-        }
+    //         if (treasury.isReservedToken(reservedToken)) {
+    //             equivalenceToken = reservedToken;
+    //             break;
+    //         }
+    //     }
 
-        return equivalenceToken;
-    }
+    //     return equivalenceToken;
+    // }
 
     /**
      * @dev This function allows users to deposit stabl3 and to receive UCD at current protocol rates
      */
-    function borrow(uint256 _amountStabl3) external borrowActive {
+    function borrow(uint256 _amountStabl3) external borrowActive nonReentrant {
         require(_amountStabl3 > 0, "Stabl3Borrowing: Insufficient amount");
 
-        IERC20 equivalenceToken = getEquivalenceToken();
-        require(address(equivalenceToken) != address(0), "Stabl3Borrowing: No Equivalent Token");
+        uint256 rate = treasury.getRate();
 
-        uint256 amountUCD = treasury.getAmountIn(_amountStabl3, equivalenceToken);
+        uint256 amountUCD = _amountStabl3 * rate;
 
         Borrowing storage borrowing = getBorrowings[msg.sender];
 
@@ -165,38 +175,29 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
 
         treasury.updateStabl3CirculatingSupply(_amountStabl3, false);
 
-        emit Borrow(msg.sender, _amountStabl3, amountUCD, block.timestamp);
+        emit Borrow(msg.sender, amountUCD, _amountStabl3, rate, block.timestamp);
     }
 
-    // add ROI.returnFunds here
-    function exchange(IERC20 _token, uint256 _amountUCD) external borrowActive {
-        require(_amountUCD > 0, "Stabl3Borrowing: Insufficient amount");
-
-        // handleLimit?
-
-        uint256 amountTokenWithFee = _amountUCD.mul(exchangeFee).div(1000);
-
-        SafeERC20.safeTransferFrom(_token, address(treasury), msg.sender, amountTokenWithFee);
-    }
-
+    // TODO
     // flashloan protection?
+    // frontrunning bots?
     // any security features?
-    // when a user has fully returned his UCD do we uncollateralize the rest of his collateralized Stabl3?
-    // consider current price when borrowing/paying back
+    // DONE when a user has fully returned his UCD do we uncollateralize the rest of his collateralized Stabl3?
+    // DONE consider current price when borrowing/paying back
+
     /**
      * @dev This function allows users to repay their borrowed UCD in return for Stabl3 Token at current protocol rates
      */
-    function payback(uint256 _amountUCD) external borrowActive {
+    function payback(uint256 _amountUCD) external borrowActive nonReentrant {
         require(_amountUCD > 0, "Stabl3Borrowing: Insufficient amount");
 
         Borrowing storage borrowing = getBorrowings[msg.sender];
 
         require(borrowing.amountUCD > 0, "Stabl3Borrowing: No UCD to payback");
 
-        IERC20 equivalenceToken = getEquivalenceToken();
-        require(address(equivalenceToken) != address(0), "Stabl3Borrowing: No Equivalent Token");
+        uint256 rate = treasury.getRate();
 
-        uint256 amountStabl3 = treasury.getAmountOut(equivalenceToken, _amountUCD);
+        uint256 amountStabl3 = _amountUCD / rate;
 
         borrowing.amountUCD -= _amountUCD;
         borrowing.amountStabl3 -= amountStabl3;
@@ -213,7 +214,72 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
 
         treasury.updateStabl3CirculatingSupply(amountStabl3, true);
 
-        emit Payback(msg.sender, amountStabl3, _amountUCD, block.timestamp);
+        emit Payback(msg.sender, _amountUCD, amountStabl3, rate, block.timestamp);
+    }
+
+    function exchangeUCD(IERC20 _exchangingToken, uint256 _amountUCD) external borrowActive reserved(_exchangingToken) nonReentrant {
+        require(_amountUCD > 0, "Stabl3Borrowing: Insufficient amount");
+
+        // TODO
+        // handleLimit?
+
+        uint256 fee = (_amountUCD * exchangeFeeUCD) / 1000;
+        uint256 amountUCDWithFee = _amountUCD - fee;
+
+        uint256 decimalsExchangingToken = _exchangingToken.decimals();
+        uint256 decimalsUCD = ucd.decimals();
+
+        uint256 amountExchangingToken;
+        if (decimalsExchangingToken > decimalsUCD) {
+            amountExchangingToken = amountUCDWithFee * 10 ** (decimalsExchangingToken - decimalsUCD);
+        }
+        else if (decimalsExchangingToken < decimalsUCD) {
+            amountExchangingToken = amountUCDWithFee / 10 ** (decimalsUCD - decimalsExchangingToken);
+        }
+
+        if (amountExchangingToken > _exchangingToken.balanceOf(address(treasury))) {
+            ROI.returnFunds(_exchangingToken, amountExchangingToken - _exchangingToken.balanceOf(address(treasury)));
+        }
+
+        // TODO
+        // for now the fee's only purpose is to reduce the amountExchangingToken
+        // fee is UCD
+        // fee needs to be converted if it needs to be used. maybe change logic
+
+        _exchangeAndUpdate(_exchangingToken, amountExchangingToken);
+
+        SafeERC20.safeTransferFrom(_exchangingToken, address(treasury), msg.sender, amountExchangingToken);
+
+        ucd.burnWithPermit(msg.sender, _amountUCD);
+
+        treasury.updatePool(UCD_TO_TOKEN_EXCHANGE_POOL, _exchangingToken, amountExchangingToken, 0, 0, true);
+        treasury.updatePool(UCD_TO_TOKEN_EXCHANGE_POOL, ucd, _amountUCD, 0, 0, true);
+
+        emit ExchangeUCD(msg.sender, _exchangingToken, amountExchangingToken, _amountUCD, fee, block.timestamp);
+    }
+
+    function _exchangeAndUpdate(IERC20 _exchangingToken, uint256 _amountExchangingToken) internal {
+        uint256 amountExchangingToUpdate = _amountExchangingToken;
+
+        for (uint8 i = 0 ; i < exchangePoolsUCD.length ; i++) {
+            uint256 amountExchangingPool = treasury.getTreasuryPool(exchangePoolsUCD[i], _exchangingToken);
+
+            if (amountExchangingPool != 0) {
+                if (amountExchangingPool < amountExchangingToUpdate) {
+                    treasury.updatePool(exchangePoolsUCD[i], _exchangingToken, amountExchangingPool, 0, 0, false);
+
+                    amountExchangingToUpdate -= amountExchangingPool;
+                }
+                else {
+                    treasury.updatePool(exchangePoolsUCD[i], _exchangingToken, amountExchangingToUpdate, 0, 0, false);
+
+                    amountExchangingToUpdate = 0;
+                    break;
+                }
+            }
+        }
+
+        require(amountExchangingToUpdate == 0, "Stabl3Borrowing: Not enough funds in the specified pools");
     }
 
     // modifiers

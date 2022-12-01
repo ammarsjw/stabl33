@@ -2,13 +2,13 @@
 
 pragma solidity 0.8.17;
 
-import "./Ownable.sol";
-import "./SafeMathUpgradeable.sol";
-import "./SafeERC20.sol";
-import "./ReentrancyGuard.sol";
+import "../../Contracts/Ownable.sol";
+import "../../Contracts/SafeMathUpgradeable.sol";
+import "../../Contracts/SafeERC20.sol";
+import "../../Contracts/ReentrancyGuard.sol";
 
-import "./ITreasury.sol";
-import "./IROI.sol";
+import "../../Contracts/ITreasury.sol";
+import "../../Contracts/IROI.sol";
 
 contract Stabl3PublicSale is Ownable, ReentrancyGuard {
     using SafeMathUpgradeable for uint256;
@@ -31,6 +31,8 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
     uint256 public exchangePauseTime;
     uint256 public exchangeLimitTime;
     uint256 public exchangeLimitPercentage;
+
+    // uint8[] public exchangePools;
 
     bool public saleState;
 
@@ -91,6 +93,8 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
         exchangePauseTime = 180; // 3 minutes time in seconds
         exchangeLimitTime = 86400; // 1 day time in seconds
         exchangeLimitPercentage = 300;
+
+        // exchangePools = [0, 1, 2, 5];
     }
 
     function updateTreasury(address _treasury) external onlyOwner {
@@ -138,6 +142,10 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
         require(exchangeLimitPercentage != _exchangeLimitPercentage, "Stabl3PublicSale: Exchange Limit Percentage is already this value");
         exchangeLimitPercentage = _exchangeLimitPercentage;
     }
+
+    // function updateExchangePools(uint8[] memory _exchangePools) external onlyOwner {
+    //     exchangePools = _exchangePools;
+    // }
 
     function updateSaleState(bool _state) external onlyOwner {
         require(saleState != _state, "Stabl3PublicSale: Sale State is already this state");
@@ -195,6 +203,7 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
             _exchangingToken.balanceOf(address(treasury))
             .safeSub(treasury.getTreasuryPool(STAKE_POOL, _exchangingToken))
             .safeSub(treasury.getTreasuryPool(LEND_POOL, _exchangingToken));
+            // _exchangingToken.balanceOf(address(treasury)) + _exchangingToken.balanceOf(address(ROI));
 
         uint256 decimals = _exchangingToken.decimals();
 
@@ -240,6 +249,10 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
 
         _handleLimit(_exchangingToken, amountExchangingToken);
 
+        // if (amountExchangingToken > _exchangingToken.balanceOf(address(treasury))) {
+        //     ROI.returnFunds(_exchangingToken, amountExchangingToken - _exchangingToken.balanceOf(address(treasury)));
+        // }
+
         uint256 fee = (_amountToken * treasury.exchangeFee()) / 1000;
         uint256 amountTokenWithFee = _amountToken - fee;
 
@@ -257,6 +270,8 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
 
         emit Buy(msg.sender, amountStabl3, _token, fee, block.timestamp);
 
+        // _exchangeFunds(_exchangingToken, amountExchangingToken, _token, amountTokenWithFee);
+
         SafeERC20.safeTransferFrom(_exchangingToken, address(treasury), msg.sender, amountExchangingToken);
 
         SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), amountTokenWithFee);
@@ -266,6 +281,54 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
 
         emit Exchange(msg.sender, _exchangingToken, amountExchangingToken, _token, amountTokenWithFee, fee, block.timestamp);
     }
+
+    // function _exchangeFunds(
+    //     IERC20 _exchangingToken,
+    //     uint256 _amountExchangingToken,
+    //     IERC20 _token,
+    //     uint256 _amountToken
+    // ) internal {
+    //     uint256 amountExchangingToUpdate = _amountExchangingToken;
+    //     uint256 amountToUpdate = _amountToken;
+
+    //     uint256 decimalsExchangingToken = _exchangingToken.decimals();
+    //     uint256 decimals = _token.decimals();
+
+    //     for (uint8 i = 0 ; i < exchangePools.length ; i++) {
+    //         uint256 amountExchangingPool = treasury.getTreasuryPool(exchangePools[i], _exchangingToken);
+
+    //         if (amountExchangingPool != 0) {
+    //             if (amountExchangingPool < amountExchangingToUpdate) {
+    //                 uint256 amountPool;
+    //                 if (decimalsExchangingToken > decimals) {
+    //                     amountPool = amountExchangingPool / 10 ** (decimalsExchangingToken - decimals);
+    //                 }
+    //                 else if (decimalsExchangingToken < decimals) {
+    //                     amountPool = amountExchangingPool * 10 ** (decimals - decimalsExchangingToken);
+    //                 }
+
+    //                 treasury.updatePool(exchangePools[i], _exchangingToken, amountExchangingPool, 0, 0, false);
+    //                 treasury.updatePool(exchangePools[i], _token, amountPool, 0, 0, true);
+
+    //                 amountExchangingToUpdate -= amountExchangingPool;
+    //                 amountToUpdate -= amountPool;
+    //             }
+    //             else {
+    //                 treasury.updatePool(exchangePools[i], _exchangingToken, amountExchangingToUpdate, 0, 0, false);
+    //                 treasury.updatePool(exchangePools[i], _token, amountToUpdate, 0, 0, true);
+
+    //                 amountExchangingToUpdate = 0;
+    //                 amountToUpdate = 0;
+    //                 break;
+    //             }
+    //         }
+    //     }
+
+    //     require(amountExchangingToUpdate == 0 && amountToUpdate == 0, "Stabl3PublicSale: Not enough funds in the specified pools");
+
+    //     SafeERC20.safeTransferFrom(_exchangingToken, address(treasury), msg.sender, _amountExchangingToken);
+    //     SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), _amountToken);
+    // }
 
     // modifiers
 
