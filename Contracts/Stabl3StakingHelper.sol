@@ -44,7 +44,9 @@ contract Stabl3StakingHelper is IStabl3StakingStruct {
         uint256 unlockedStakingLength;
         uint256 lockedStakingLength;
 
-        for (uint256 i = 0 ; i < stabl3Staking.allStakingsLength(_user) ; i++) {
+        uint256 allStakingsLength = stabl3Staking.allStakingsLength(_user);
+
+        for (uint256 i = 0 ; i < allStakingsLength ; i++) {
             Staking memory staking = stabl3Staking.getStakings(_user, i);
 
             if (
@@ -93,7 +95,7 @@ contract Stabl3StakingHelper is IStabl3StakingStruct {
         unlockedStakingLength = 0;
         lockedStakingLength = 0;
 
-        for (uint256 i = 0 ; i < stabl3Staking.allStakingsLength(_user) ; i++) {
+        for (uint256 i = 0 ; i < allStakingsLength ; i++) {
             Staking memory staking = stabl3Staking.getStakings(_user, i);
 
             if (
@@ -196,12 +198,14 @@ contract Stabl3StakingHelper is IStabl3StakingStruct {
         return amountReward;
     }
 
-    function getAmountRewardAll(address _user, bool _isLending, bool _isRealEstate) public view returns (uint256) {
+    function getAmountRewardAll(address _user, bool _isLending, bool _isRealEstate) external view returns (uint256) {
         uint256 totalAmountReward;
 
         uint256 timestampToConsider = block.timestamp;
 
-        for (uint256 i = 0 ; i < stabl3Staking.allStakingsLength(_user) ; i++) {
+        uint256 allStakingsLength = stabl3Staking.allStakingsLength(_user);
+
+        for (uint256 i = 0 ; i < allStakingsLength ; i++) {
             Staking memory staking = stabl3Staking.getStakings(_user, i);
 
             if (
@@ -244,12 +248,14 @@ contract Stabl3StakingHelper is IStabl3StakingStruct {
         return claimableStabl3Lending;
     }
 
-    function getClaimableStabl3LendingAll(address _user) public view returns (uint256) {
+    function getClaimableStabl3LendingAll(address _user) external view returns (uint256) {
         uint256 totalClaimableStabl3Lending;
 
         uint256 timestampToConsider = block.timestamp;
 
-        for (uint256 i = 0 ; i < stabl3Staking.allStakingsLength(_user) ; i++) {
+        uint256 allStakingsLength = stabl3Staking.allStakingsLength(_user);
+
+        for (uint256 i = 0 ; i < allStakingsLength ; i++) {
             uint256 claimableStabl3Lending = getClaimableStabl3LendingSingle(_user, i, timestampToConsider);
 
             if (claimableStabl3Lending > 0) {

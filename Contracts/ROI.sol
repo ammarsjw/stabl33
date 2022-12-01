@@ -118,7 +118,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
         maxPoolPercentage = _maxPoolPercentage;
     }
 
-    function updateReturnPools(uint8[] memory _returnPools) external onlyOwner {
+    function updateReturnPools(uint8[] calldata _returnPools) external onlyOwner {
         returnPools = _returnPools;
     }
 

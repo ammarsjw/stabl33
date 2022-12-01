@@ -225,7 +225,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         lendingStabl3ClaimTime = _lendingStabl3ClaimTime;
     }
 
-    function updateLockTimes(uint256[5] memory _lockTimes) external onlyOwner {
+    function updateLockTimes(uint256[5] calldata _lockTimes) external onlyOwner {
         lockTimes = _lockTimes;
     }
 
@@ -253,11 +253,10 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         return getStakings[_user].length;
     }
 
-    // TODO add locked to unlocked for emergency
     function allStakings(
         address _user,
         bool _isRealEstate
-    ) public view returns (
+    ) external view returns (
         Staking[] memory unlockedLending,
         Staking[] memory lockedLending,
         Staking[] memory unlockedStaking,
@@ -388,7 +387,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
      * @dev Requires permit
      * @dev Requires external checks, transfers, records, updatePool calls, updateAPR calls and event emissions
      */
-    function accessWithPermit(address _user, Staking memory _staking, uint8 _identifier) external {
+    function accessWithPermit(address _user, Staking calldata _staking, uint8 _identifier) external {
         require(!emergencyState, "Stabl3Staking: Cannot stake right now");
         require(permitted[msg.sender] || msg.sender == owner(), "Stabl3Staking: Not permitted");
 
@@ -420,7 +419,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         return stabl3StakingHelper.getAmountRewardSingle(_user, _index, _isLending, _isRealEstate, _timestamp);
     }
 
-    function getAmountRewardAll(address _user, bool _isLending, bool _isRealEstate) public view returns (uint256) {
+    function getAmountRewardAll(address _user, bool _isLending, bool _isRealEstate) external view returns (uint256) {
         return stabl3StakingHelper.getAmountRewardAll(_user, _isLending, _isRealEstate);
     }
 
@@ -479,8 +478,6 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
     }
 
     function withdrawAmountRewardAll(bool _isLending) external stakeActive {
-        require(getAmountRewardAll(msg.sender, _isLending, false) > 0, "Stabl3Staking: No reward to withdraw");
-
         uint256 timestampToConsider = block.timestamp;
 
         for (uint256 i = 0 ; i < getStakings[msg.sender].length ; i++) {
@@ -496,7 +493,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         return stabl3StakingHelper.getClaimableStabl3LendingSingle(_user, _index, _timestamp);
     }
 
-    function getClaimableStabl3LendingAll(address _user) public view returns (uint256) {
+    function getClaimableStabl3LendingAll(address _user) external view returns (uint256) {
         return stabl3StakingHelper.getClaimableStabl3LendingAll(_user);
     }
 
@@ -528,8 +525,6 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
     }
 
     function claimStabl3LendingAll() external stakeActive {
-        require(getClaimableStabl3LendingAll(msg.sender) > 0, "Stabl3Staking: No Lending Stabl3 to claim");
-
         uint256 timestampToConsider = block.timestamp;
 
         for (uint256 i = 0 ; i < getStakings[msg.sender].length ; i++) {
@@ -633,7 +628,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         _unstakeSingle(_index, staking.amountTokenStaked);
     }
 
-    function unstakeMultiple(uint256[] memory _indexes) external stakeActive {
+    function unstakeMultiple(uint256[] calldata _indexes) external stakeActive {
         for (uint256 i = 0 ; i < _indexes.length ; i++) {
             unstakeSingle(_indexes[i]);
         }

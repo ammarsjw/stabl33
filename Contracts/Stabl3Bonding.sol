@@ -27,15 +27,14 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
 
     uint256 public bondingClaimTime;
 
-    uint256 public totalBondTypes;
+    uint256 public totalBondIndexes;
 
     bool public bondState;
 
     // structs
 
     struct BondInfo {
-        uint256 bondType;
-        bool status;
+        uint256 bondIndex;
         IERC20 token;
         uint256 bondAmount;
         uint256 bondAmountConsumed;
@@ -47,11 +46,11 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
     struct Bonding {
         uint256 index;
         address user;
+        uint256 bondIndex;
         bool status;
-        uint256 bondType;
+        uint256 amountStabl3;
         IERC20 token;
         uint256 amountToken;
-        uint256 amountStabl3;
         uint256 startTime;
         uint256 endTime;
     }
@@ -63,8 +62,8 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
 
     // mappings
 
-    // bonds created by admin/owner
-    BondInfo[] public getBondInfo;
+    // current bond set by the admin/owner
+    BondInfo public getBondInfo;
 
     // user bondings
     mapping (address => Bonding[]) public getBondings;
@@ -73,7 +72,7 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
     mapping (address => Record) public getRecords;
 
     // admins are accounts that have permission to access certain bonding functions
-    mapping (address => bool) public admin;
+    // mapping (address => bool) public admin;
 
     // events
 
@@ -85,42 +84,34 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
 
     event UpdatedBondingClaimTime(uint256 newBondingClaimTime, uint256 oldBondingClaimTime);
 
-    event UpdatedAdmin(address account, bool state);
+    // event UpdatedAdmin(address account, bool state);
 
     event CreatedBond(
-        uint256 bondType,
-        IERC20 token,
+        uint256 bondIndex,
         uint256 bondAmount,
         uint256 discount,
-        uint256 expiryTime
-    );
-
-    event UpdatedBond(
-        uint256 bondType,
-        bool status,
-        IERC20 token,
-        uint256 bondAmount,
-        uint256 discount,
+        uint256 startTime,
         uint256 expiryTime
     );
 
     event Bond(
         address indexed user,
-        uint256 bondType,
         uint256 index,
+        uint256 bondIndex,
+        uint256 amountStabl3,
         IERC20 token,
         uint256 amountToken,
-        uint256 amountStabl3,
         uint256 totalAmountToken,
         uint256 timestamp
     );
 
     event ClaimedBond(
         address indexed user,
-        uint256 bondType,
         uint256 index,
-        uint256 amountToken,
+        uint256 bondIndex,
         uint256 amountStabl3,
+        IERC20 token,
+        uint256 amountToken,
         uint256 totalAmountStabl3,
         uint256 timestamp
     );
@@ -187,77 +178,49 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
         bondState = _state;
     }
 
-    function updateAdmin(address _account, bool _state) external onlyOwner {
-        require(admin[_account] != _state, "Stabl3Bonding: Account is already this state");
-        admin[_account] = _state;
-        emit UpdatedAdmin(_account, _state);
-    }
+    // function updateAdmin(address _account, bool _state) external onlyOwner {
+    //     require(admin[_account] != _state, "Stabl3Bonding: Account is already this state");
+    //     admin[_account] = _state;
+    //     emit UpdatedAdmin(_account, _state);
+    // }
 
     function createBond(
-        IERC20 _token,
         uint256 _bondAmount,
         uint256 _discount,
         uint256 _expiryTime
-    ) external bondActive onlyAdmin reserved(_token) {
+    ) external bondActive onlyOwner {
         require(_bondAmount > 0, "Stabl3Bonding: Insufficient amount");
 
         uint256 timestampToConsider = block.timestamp;
 
+        require(timestampToConsider >= getBondInfo.expiryTime, "Stabl3Bonding: Previous bond is still active");
+
         BondInfo memory bondInfo;
-        bondInfo.bondType = totalBondTypes;
-        bondInfo.status = true;
-        bondInfo.token = _token;
+        bondInfo.bondIndex = totalBondIndexes;
         bondInfo.bondAmount = _bondAmount;
         // bondInfo.bondAmountConsumed = 0;
         bondInfo.discount = _discount;
         bondInfo.startTime = timestampToConsider;
         bondInfo.expiryTime = timestampToConsider + _expiryTime;
 
-        getBondInfo.push(bondInfo);
+        getBondInfo = bondInfo;
 
-        totalBondTypes++;
+        totalBondIndexes++;
 
-        emit CreatedBond(bondInfo.bondType, bondInfo.token, bondInfo.bondAmount, bondInfo.discount, bondInfo.expiryTime);
+        emit CreatedBond(bondInfo.bondIndex, bondInfo.bondAmount, bondInfo.discount, bondInfo.startTime, bondInfo.expiryTime);
     }
 
-    function updateBond(
-        uint256 _bondType,
-        bool _status,
-        IERC20 _token,
-        uint256 _bondAmount,
-        uint256 _discount,
-        uint256 _expiryTime
-    ) external bondActive onlyAdmin reserved(_token) {
-        require(_bondAmount > 0, "Stabl3Bonding: Insufficient amount");
-
-        BondInfo storage bondInfo = getBondInfo[_bondType];
-
-        require(bondInfo.bondAmount > 0, "Stabl3Bonding: Invalid bond type");
-
-        if (!_status) {
-            bondInfo.status = false;
-        }
-        else {
-            bondInfo.status = _status;
-            bondInfo.token = _token;
-            bondInfo.bondAmount = _bondAmount;
-            bondInfo.discount = _discount;
-            bondInfo.expiryTime = _expiryTime;
-        }
-
-        emit UpdatedBond(bondInfo.bondType, bondInfo.status, bondInfo.token, bondInfo.bondAmount, bondInfo.discount, bondInfo.expiryTime);
-    }
-
-    function bond(uint256 _bondType, IERC20 _token, uint256 _amountToken) external bondActive reserved(_token) nonReentrant {
+    function bond(IERC20 _token, uint256 _amountToken) external bondActive reserved(_token) nonReentrant {
         require(_amountToken > 0, "Stabl3Bonding: Insufficient amount");
 
-        BondInfo storage bondInfo = getBondInfo[_bondType];
+        BondInfo storage bondInfo = getBondInfo;
 
         uint256 timestampToConsider = block.timestamp;
 
-        require(bondInfo.status, "Stabl3Bonding: Invalid Bond Type");
+        uint256 amountTokenConverted = _token.decimals() < 18 ? _amountToken * 10 ** (18 - _token.decimals()) : _amountToken;
+
         require(timestampToConsider < bondInfo.expiryTime, "Stabl3Bonding: Bond has expired");
-        require(bondInfo.bondAmountConsumed + _amountToken <= bondInfo.bondAmount, "Stabl3Bonding: Bond limit reached");
+        require(bondInfo.bondAmountConsumed + amountTokenConverted <= bondInfo.bondAmount, "Stabl3Bonding: Bond limit reached");
 
         {
             uint256 amountTreasury = _amountToken.mul(treasuryPercentage).div(1000);
@@ -285,8 +248,8 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
         Bonding memory bonding;
         bonding.index = getBondings[msg.sender].length;
         bonding.user = msg.sender;
+        bonding.bondIndex = bondInfo.bondIndex;
         bonding.status = true;
-        bonding.bondType = bondInfo.bondType;
         bonding.token = _token;
         bonding.amountToken = _amountToken;
         bonding.amountStabl3 = amountStabl3;
@@ -295,11 +258,10 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
 
         getBondings[msg.sender].push(bonding);
 
-        bondInfo.bondAmountConsumed += _amountToken;
+        bondInfo.bondAmountConsumed += amountTokenConverted;
 
         Record storage record = getRecords[msg.sender];
 
-        uint256 amountTokenConverted = _token.decimals() < 18 ? _amountToken * 10 ** (18 - _token.decimals()) : _amountToken;
         record.totalAmountToken += amountTokenConverted;
 
         treasury.updateRate(_token, _amountToken);
@@ -308,17 +270,48 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
 
         emit Bond(
             bonding.user,
-            bonding.bondType,
             bonding.index,
+            bonding.bondIndex,
+            bonding.amountStabl3,
             bonding.token,
             bonding.amountToken,
-            bonding.amountStabl3,
             record.totalAmountToken,
             timestampToConsider
         );
     }
 
-    function claimBond(uint256 _index) external bondActive nonReentrant {
+    function getClaimableBondSingle(address _user, uint256 _index, uint256 _timestamp) public view returns (uint256) {
+        uint256 claimableBond;
+
+        Bonding memory bonding = getBondings[_user][_index];
+
+        if (
+            bonding.status &&
+            _timestamp >= bonding.endTime
+        ) {
+            claimableBond = bonding.amountStabl3;
+        }
+        
+        return claimableBond;
+    }
+
+    function getClaimableBondAll(address _user) external view returns (uint256) {
+        uint256 totalClaimableBond;
+
+        uint256 timestampToConsider = block.timestamp;
+
+        for (uint256 i = 0 ; i < getBondings[_user].length ; i++) {
+            uint256 claimableBond = getClaimableBondSingle(_user, i, timestampToConsider);
+
+            if (claimableBond > 0) {
+                totalClaimableBond += claimableBond;
+            }
+        }
+
+        return totalClaimableBond;
+    }
+
+    function claimBondSingle(uint256 _index) public bondActive nonReentrant {
         Bonding storage bonding = getBondings[msg.sender][_index];
 
         uint256 timestampToConsider = block.timestamp;
@@ -338,13 +331,20 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
 
         emit ClaimedBond(
             bonding.user,
-            bonding.bondType,
             bonding.index,
-            bonding.amountToken,
+            bonding.bondIndex,
             bonding.amountStabl3,
+            bonding.token,
+            bonding.amountToken,
             record.totalAmountStabl3,
             timestampToConsider
         );
+    }
+
+    function claimBondMultiple(uint256[] calldata _indexes) external bondActive {
+        for (uint256 i = 0 ; i < _indexes.length ; i++) {
+            claimBondSingle(_indexes[i]);
+        }
     }
 
     // modifiers
@@ -354,10 +354,10 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
         _;
     }
 
-    modifier onlyAdmin() {
-        require(admin[msg.sender] || msg.sender == owner(), "Stabl3Bonding: Caller is not an admin");
-        _;
-    }
+    // modifier onlyAdmin() {
+    //     require(admin[msg.sender] || msg.sender == owner(), "Stabl3Bonding: Caller is not an admin");
+    //     _;
+    // }
 
     modifier reserved(IERC20 _token) {
         require(treasury.isReservedToken(_token), "Stabl3Bonding: Not a reserved token");
