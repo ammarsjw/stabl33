@@ -189,7 +189,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
 
                 totalRewardDistributed +=
                     decimals < 18 ?
-                    (stakeRewardAmount * 10 ** (18 - decimals)) + (lendRewardAmount * 10 ** (18 - decimals)) :
+                    (stakeRewardAmount * (10 ** (18 - decimals))) + (lendRewardAmount * (10 ** (18 - decimals))) :
                     stakeRewardAmount + lendRewardAmount;
             }
         }
@@ -208,7 +208,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
 
                 uint256 decimals = reservedToken.decimals();
 
-                totalReserves += decimals < 18 ? amountToken * 10 ** (18 - decimals) : amountToken;
+                totalReserves += decimals < 18 ? amountToken * (10 ** (18 - decimals)) : amountToken;
             }
         }
 
@@ -232,7 +232,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
 
                 maxPool +=
                     decimals < 18 ?
-                    (boughtAmount * 10 ** (18 - decimals)) + (bondedAmount * 10 ** (18 - decimals)) :
+                    (boughtAmount * (10 ** (18 - decimals))) + (bondedAmount * (10 ** (18 - decimals))) :
                     boughtAmount + bondedAmount;
             }
         }
@@ -263,7 +263,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
 
                 maxPool +=
                     decimals < 18 ?
-                    (boughtAmount * 10 ** (18 - decimals)) + (bondedAmount * 10 ** (18 - decimals)) :
+                    (boughtAmount * (10 ** (18 - decimals))) + (bondedAmount * 10 ** (18 - decimals)) :
                     boughtAmount + bondedAmount;
             }
         }
@@ -277,7 +277,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
             _amountToken = _amountToken.mul(1000 - stabl3Staking.lendingStabl3Percentage()).div(1000);
         }
 
-        currentPool += _token.decimals() < 18 ? _amountToken * 10 ** (18 - _token.decimals()) : _amountToken;
+        currentPool += _token.decimals() < 18 ? _amountToken * (10 ** (18 - _token.decimals())) : _amountToken;
     }
 
     function distributeReward(

@@ -354,7 +354,7 @@ contract DAI is Context, IERC20, Ownable {
     _name = "DAI Stable Coin";
     _symbol = "DAI";
     _decimals = 18;
-    _totalSupply = 1000000000000 * 10**_decimals;
+    _totalSupply = 1000000000000 * (10 ** _decimals);
     _balances[msg.sender] = _totalSupply;
 
     emit Transfer(address(0), msg.sender, _totalSupply);

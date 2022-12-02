@@ -159,7 +159,7 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
 
         uint256 rate = treasury.getRate();
 
-        uint256 amountUCD = _amountStabl3 * rate;
+        uint256 amountUCD = (_amountStabl3 * rate) / (10 ** 18);
 
         Borrowing storage borrowing = getBorrowings[msg.sender];
 
@@ -197,7 +197,7 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
 
         uint256 rate = treasury.getRate();
 
-        uint256 amountStabl3 = _amountUCD / rate;
+        uint256 amountStabl3 = (_amountUCD * (10 ** 18)) / rate;
 
         borrowing.amountUCD -= _amountUCD;
         borrowing.amountStabl3 -= amountStabl3;
@@ -231,10 +231,10 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
 
         uint256 amountExchangingToken;
         if (decimalsExchangingToken > decimalsUCD) {
-            amountExchangingToken = amountUCDWithFee * 10 ** (decimalsExchangingToken - decimalsUCD);
+            amountExchangingToken = amountUCDWithFee * (10 ** (decimalsExchangingToken - decimalsUCD));
         }
         else if (decimalsExchangingToken < decimalsUCD) {
-            amountExchangingToken = amountUCDWithFee / 10 ** (decimalsUCD - decimalsExchangingToken);
+            amountExchangingToken = amountUCDWithFee / (10 ** (decimalsUCD - decimalsExchangingToken));
         }
 
         if (amountExchangingToken > _exchangingToken.balanceOf(address(treasury))) {

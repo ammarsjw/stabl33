@@ -195,7 +195,7 @@ contract Treasury is Ownable {
 
                 uint256 decimals = allReservedTokens[i].decimals();
 
-                totalReserves += decimals < 18 ? amountToken * 10 ** (18 - decimals) : amountToken;
+                totalReserves += decimals < 18 ? amountToken * (10 ** (18 - decimals)) : amountToken;
             }
         }
 
@@ -214,7 +214,7 @@ contract Treasury is Ownable {
 
                 uint256 decimals = allReservedTokens[i].decimals();
 
-                totalValueLocked += decimals < 18 ? amountToken * 10 ** (18 - decimals) : amountToken;
+                totalValueLocked += decimals < 18 ? amountToken * (10 ** (18 - decimals)) : amountToken;
             }
         }
 
@@ -228,7 +228,7 @@ contract Treasury is Ownable {
 
     // rate is in 18 decimals
     function getRateImpact(IERC20 _token, uint256 _amountToken) public view reserved(_token) returns (uint256) {
-        uint256 amountTokenConverted = _token.decimals() < 18 ? _amountToken * 10 ** (18 - _token.decimals()) : _amountToken;
+        uint256 amountTokenConverted = _token.decimals() < 18 ? _amountToken * (10 ** (18 - _token.decimals())) : _amountToken;
 
         uint256 amountTokenToConsider = amountTokenConverted + rateInfo.tokenWindowConsumed;
 
@@ -260,7 +260,7 @@ contract Treasury is Ownable {
             return 0;
         }
 
-        uint256 amountTokenConverted = _token.decimals() < 18 ? _amountToken * 10 ** (18 - _token.decimals()) : _amountToken;
+        uint256 amountTokenConverted = _token.decimals() < 18 ? _amountToken * (10 ** (18 - _token.decimals())) : _amountToken;
 
         uint256 amountTokenToConsider = amountTokenConverted + rateInfo.tokenWindowConsumed;
 
@@ -342,7 +342,7 @@ contract Treasury is Ownable {
         }
 
         if (_token.decimals() < 18) {
-            amountTokenToConsider /= 10 ** (18 - _token.decimals());
+            amountTokenToConsider /= (10 ** (18 - _token.decimals()));
         }
 
         return amountTokenToConsider;
@@ -421,7 +421,7 @@ contract Treasury is Ownable {
     }
 
     function updateRate(IERC20 _token, uint256 _amountToken) external permission reserved(_token) {
-        uint256 amountTokenConverted = _token.decimals() < 18 ? _amountToken * 10 ** (18 - _token.decimals()) : _amountToken;
+        uint256 amountTokenConverted = _token.decimals() < 18 ? _amountToken * (10 ** (18 - _token.decimals())) : _amountToken;
 
         uint256 amountTokenToConsider = amountTokenConverted + rateInfo.tokenWindowConsumed;
 

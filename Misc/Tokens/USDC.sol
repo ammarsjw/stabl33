@@ -800,13 +800,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
 contract USDC is ERC20, Ownable {
     using SafeMath for uint256;
 
-    // constructor
-
     constructor() ERC20("USDC", "USDC") {
-
         _mint(owner(), 100_000_000_000 * (10 ** 6));
-
     }
-
-   
 }

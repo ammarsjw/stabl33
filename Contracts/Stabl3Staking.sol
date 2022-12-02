@@ -362,7 +362,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
         Record storage record = getRecords[msg.sender][_isLending];
 
-        uint256 amountTokenConverted = _token.decimals() < 18 ? _amountToken * 10 ** (18 - _token.decimals()) : _amountToken;
+        uint256 amountTokenConverted = _token.decimals() < 18 ? _amountToken * (10 ** (18 - _token.decimals())) : _amountToken;
 
         treasury.updatePool(STAKING_TYPE_POOL + _stakingType, IERC20(address(0)), amountTokenConverted, 0, 0, true);
         record.totalAmountTokenStaked += amountTokenConverted;
@@ -439,7 +439,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
             uint256 decimals = staking.token.decimals();
 
-            uint256 rewardConverted = decimals < 18 ? reward * 10 ** (18 - decimals) : reward;
+            uint256 rewardConverted = decimals < 18 ? reward * (10 ** (18 - decimals)) : reward;
 
             if (staking.isDormant) {
                 dormantROIReserves = dormantROIReserves.safeSub(rewardConverted);
@@ -448,7 +448,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
             if (_timestamp > endTime) {
                 uint256 rewardWithdrawnConverted =
                     decimals < 18 ?
-                    staking.rewardWithdrawn * 10 ** (18 - decimals) :
+                    staking.rewardWithdrawn * (10 ** (18 - decimals)) :
                     staking.rewardWithdrawn;
 
                 withdrawnROIReserves = withdrawnROIReserves.safeSub(rewardWithdrawnConverted);
@@ -564,7 +564,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
             uint256 amountTokenConverted =
                 staking.token.decimals() < 18 ?
-                staking.amountTokenStaked * 10 ** (18 - staking.token.decimals()) :
+                staking.amountTokenStaked * (10 ** (18 - staking.token.decimals())) :
                 staking.amountTokenStaked;
 
             treasury.updatePool(STAKING_TYPE_POOL + staking.stakingType, IERC20(address(0)), amountTokenConverted, 0, 0, false);
@@ -675,7 +675,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
                 (uint256 amountTokenConverted, uint256 rewardConverted) =
                     decimals < 18 ?
-                    (staking.amountTokenStaked * 10 ** (18 - decimals), reward * 10 ** (18 - decimals)) :
+                    (staking.amountTokenStaked * (10 ** (18 - decimals)), reward * (10 ** (18 - decimals))) :
                     (staking.amountTokenStaked, reward);
 
                 dormantROIReserves += rewardConverted;
@@ -709,12 +709,6 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
         lastProcessedUser = newLastProcessedUser;
         lastProcessedStaking = newLastProcessedStaking;
-    }
-
-    function _compoundSingle(uint256 _principal, uint256 _ratio) internal pure returns (uint256) {
-        uint256 accruedAmount = _principal.mul(_ratio).div(10 ** 18);
-
-        return accruedAmount;
     }
 
     // modifiers

@@ -570,19 +570,20 @@ contract UCD is Ownable, ERC20 {
         emit UpdatedPermission(contractAddress, state);
     }
 
-    function mintWithPermit(address account, uint256 amount) external returns (bool) {
-        require(_permitted[_msgSender()] || _msgSender() == owner(), "UCD: Not permitted");
-
+    function mintWithPermit(address account, uint256 amount) external permission returns (bool) {
         _mint(account, amount);
 
         return true;
     }
 
-    function burnWithPermit(address account, uint256 amount) external returns (bool) {
-        require(_permitted[_msgSender()] || _msgSender() == owner(), "UCD: Not permitted");
-
+    function burnWithPermit(address account, uint256 amount) external permission returns (bool) {
         _burn(account, amount);
 
         return true;
+    }
+
+    modifier permission() {
+        require(_permitted[_msgSender()] || _msgSender() == owner(), "UCD: Not permitted");
+        _;
     }
 }

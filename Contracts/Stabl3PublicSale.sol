@@ -200,7 +200,7 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
 
         (_amountExchangingToken, amountExchangingTokenToConsider) =
             decimals < 18 ?
-            (_amountExchangingToken * 10 ** (18 - decimals), amountExchangingTokenToConsider * 10 ** (18 - decimals)) :
+            (_amountExchangingToken * (10 ** (18 - decimals)), amountExchangingTokenToConsider * (10 ** (18 - decimals))) :
             (_amountExchangingToken, amountExchangingTokenToConsider);
 
         if (limit.amount + _amountExchangingToken > amountExchangingTokenToConsider.mul(exchangeLimitPercentage).div(1000)) {

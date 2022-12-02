@@ -217,7 +217,7 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
 
         uint256 timestampToConsider = block.timestamp;
 
-        uint256 amountTokenConverted = _token.decimals() < 18 ? _amountToken * 10 ** (18 - _token.decimals()) : _amountToken;
+        uint256 amountTokenConverted = _token.decimals() < 18 ? _amountToken * (10 ** (18 - _token.decimals())) : _amountToken;
 
         require(timestampToConsider < bondInfo.expiryTime, "Stabl3Bonding: Bond has expired");
         require(bondInfo.bondAmountConsumed + amountTokenConverted <= bondInfo.bondAmount, "Stabl3Bonding: Bond limit reached");

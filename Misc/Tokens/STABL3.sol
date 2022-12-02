@@ -355,7 +355,7 @@ contract STABL3 is Context, IERC20, Ownable {
     _name = "STABL3";
     _symbol = "STABL3";
     _decimals = 6;
-    _totalSupply = 4700000000 * 10**_decimals;
+    _totalSupply = 4700000000 * (10 ** _decimals);
     _balances[msg.sender] = _totalSupply;
 
     emit Transfer(address(0), msg.sender, _totalSupply);

@@ -216,7 +216,7 @@ contract Stabl3StakingHelper is IStabl3StakingStruct {
 
                 if (amountReward > 0) {
                     if (staking.token.decimals() < 18) {
-                        amountReward *= 10 ** (18 - staking.token.decimals());
+                        amountReward *= (10 ** (18 - staking.token.decimals()));
                     }
 
                     totalAmountReward += amountReward;
@@ -288,7 +288,7 @@ contract Stabl3StakingHelper is IStabl3StakingStruct {
                 uint256 amountStakedUnlocked = unlocked[i].amountTokenStaked;
 
                 if (unlocked[i].token.decimals() < 18) {
-                    amountStakedUnlocked *= 10 ** (18 - unlocked[i].token.decimals());
+                    amountStakedUnlocked *= (10 ** (18 - unlocked[i].token.decimals()));
                 }
 
                 totalAmountStakedUnlocked += amountStakedUnlocked;
@@ -298,7 +298,7 @@ contract Stabl3StakingHelper is IStabl3StakingStruct {
                 uint256 amountStakedLocked = locked[i].amountTokenStaked;
 
                 if (locked[i].token.decimals() < 18) {
-                    amountStakedLocked *= 10 ** (18 - locked[i].token.decimals());
+                    amountStakedLocked *= (10 ** (18 - locked[i].token.decimals()));
                 }
 
                 totalAmountStakedLocked += amountStakedLocked;
