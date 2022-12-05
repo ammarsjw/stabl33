@@ -23,9 +23,11 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
     IROI public ROI;
     address public HQ;
 
-    IERC20 public immutable stabl3;
+    IERC20 public immutable STABL3;
 
-    IUCD public ucd;
+    IUCD public UCD;
+
+    uint256 private burnedUCD;
 
     uint256 public exchangeFeeUCD;
 
@@ -88,10 +90,10 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
         HQ = 0x294d0487fdf7acecf342ae70AFc5549A6E90f3e0;
 
         // TODO change
-        stabl3 = IERC20(0xc3Bf0c0172E3638d383361801e9BF63B4FfE0d6e);
+        STABL3 = IERC20(0xc3Bf0c0172E3638d383361801e9BF63B4FfE0d6e);
 
         // TODO change
-        ucd = IUCD(0xB0124F5d0e906d3652d0b58F03E315eC42A57E9a);
+        UCD = IUCD(0xB0124F5d0e906d3652d0b58F03E315eC42A57E9a);
 
         exchangeFeeUCD = 3;
 
@@ -117,8 +119,8 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
     }
 
     function updateUCD(address _ucd) external onlyOwner {
-        require(address(ucd) != _ucd, "Stabl3Borrowing: UCD is already this address");
-        ucd = IUCD(_ucd);
+        require(address(UCD) != _ucd, "Stabl3Borrowing: UCD is already this address");
+        UCD = IUCD(_ucd);
     }
 
     function updateExchangeFeeUCD(uint256 _exchangeFeeUCD) external onlyOwner {
@@ -134,6 +136,14 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
     function updateBorrowState(bool _state) external onlyOwner {
         require(borrowState != _state, "Stabl3Borrowing: Borrow State is already this state");
         borrowState = _state;
+    }
+
+    function getReservesUCD() public view returns (uint256 availableUCD, uint256 borrowedUCD, uint256 returnedUCD) {
+        return (
+            treasury.getReserves() + ROI.getReserves(),
+            UCD.totalSupply(),
+            burnedUCD
+        );
     }
 
     // function getEquivalenceToken() public view returns (IERC20) {
@@ -152,7 +162,7 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
     // }
 
     /**
-     * @dev This function allows users to deposit stabl3 and to receive UCD at current protocol rates
+     * @dev This function allows users to deposit STABL3 and to receive UCD at current protocol rates
      */
     function borrow(uint256 _amountStabl3) external borrowActive nonReentrant {
         require(_amountStabl3 > 0, "Stabl3Borrowing: Insufficient amount");
@@ -161,17 +171,20 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
 
         uint256 amountUCD = (_amountStabl3 * rate) / (10 ** 18);
 
+        (uint256 availableUCD, uint256 borrowedUCD, ) = getReservesUCD();
+        require(borrowedUCD + amountUCD <= availableUCD, "Stabl3Borrowing: Insufficient available UCD");
+
         Borrowing storage borrowing = getBorrowings[msg.sender];
 
         borrowing.amountUCD += amountUCD;
         borrowing.amountStabl3 += _amountStabl3;
 
-        stabl3.transferFrom(msg.sender, address(treasury), _amountStabl3);
+        STABL3.transferFrom(msg.sender, address(treasury), _amountStabl3);
 
-        ucd.mintWithPermit(msg.sender, amountUCD);
+        UCD.mintWithPermit(msg.sender, amountUCD);
 
-        treasury.updatePool(UCD_BORROW_POOL, ucd, amountUCD, 0, 0, true);
-        treasury.updatePool(STABL3_COLLATERAL_POOL, stabl3, _amountStabl3, 0, 0, true);
+        treasury.updatePool(UCD_BORROW_POOL, UCD, amountUCD, 0, 0, true);
+        treasury.updatePool(STABL3_COLLATERAL_POOL, STABL3, _amountStabl3, 0, 0, true);
 
         treasury.updateStabl3CirculatingSupply(_amountStabl3, false);
 
@@ -202,14 +215,15 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
         borrowing.amountUCD -= _amountUCD;
         borrowing.amountStabl3 -= amountStabl3;
 
-        ucd.burnWithPermit(msg.sender, _amountUCD);
+        UCD.burnWithPermit(msg.sender, _amountUCD);
+        burnedUCD += _amountUCD;
 
-        stabl3.transferFrom(address(treasury), msg.sender, amountStabl3);
+        STABL3.transferFrom(address(treasury), msg.sender, amountStabl3);
 
-        treasury.updatePool(UCD_PAYBACK_POOL, ucd, _amountUCD, 0, 0, true);
-        treasury.updatePool(STABL3_COLLATERAL_POOL, stabl3, amountStabl3, 0, 0, false);
+        treasury.updatePool(UCD_PAYBACK_POOL, UCD, _amountUCD, 0, 0, true);
+        treasury.updatePool(STABL3_COLLATERAL_POOL, STABL3, amountStabl3, 0, 0, false);
         if (borrowing.amountUCD == 0) {
-            treasury.updatePool(STABL3_COLLATERAL_POOL, stabl3, borrowing.amountStabl3, 0, 0, false);
+            treasury.updatePool(STABL3_COLLATERAL_POOL, STABL3, borrowing.amountStabl3, 0, 0, false);
         }
 
         treasury.updateStabl3CirculatingSupply(amountStabl3, true);
@@ -223,11 +237,11 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
         // TODO
         // handleLimit?
 
-        uint256 fee = (_amountUCD * exchangeFeeUCD) / 1000;
+        uint256 fee = _amountUCD.mul(exchangeFeeUCD).div(1000);
         uint256 amountUCDWithFee = _amountUCD - fee;
 
         uint256 decimalsExchangingToken = _exchangingToken.decimals();
-        uint256 decimalsUCD = ucd.decimals();
+        uint256 decimalsUCD = UCD.decimals();
 
         uint256 amountExchangingToken;
         if (decimalsExchangingToken > decimalsUCD) {
@@ -244,16 +258,17 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
         // TODO
         // for now the fee's only purpose is to reduce the amountExchangingToken
         // fee is UCD
-        // fee needs to be converted if it needs to be used. maybe change logic
+        // fee needs to be converted to correct decimals if it needs to be used, change logic as well
 
         _exchangeAndUpdate(_exchangingToken, amountExchangingToken);
 
         SafeERC20.safeTransferFrom(_exchangingToken, address(treasury), msg.sender, amountExchangingToken);
 
-        ucd.burnWithPermit(msg.sender, _amountUCD);
+        UCD.burnWithPermit(msg.sender, _amountUCD);
+        burnedUCD += _amountUCD;
 
         treasury.updatePool(UCD_TO_TOKEN_EXCHANGE_POOL, _exchangingToken, amountExchangingToken, 0, 0, true);
-        treasury.updatePool(UCD_TO_TOKEN_EXCHANGE_POOL, ucd, _amountUCD, 0, 0, true);
+        treasury.updatePool(UCD_TO_TOKEN_EXCHANGE_POOL, UCD, _amountUCD, 0, 0, true);
 
         emit ExchangeUCD(msg.sender, _exchangingToken, amountExchangingToken, _amountUCD, fee, block.timestamp);
     }

@@ -29,9 +29,9 @@ contract ROI is Ownable, IStabl3StakingStruct {
 
     ITreasury public treasury;
 
-    IERC20 public immutable stabl3;
+    IERC20 public immutable STABL3;
 
-    IERC20 public ucd;
+    IERC20 public UCD;
 
     IStabl3Staking public stabl3Staking;
     uint256 public maxPoolPercentage;
@@ -78,10 +78,10 @@ contract ROI is Ownable, IStabl3StakingStruct {
         treasury = _treasury;
 
         // TODO change
-        stabl3 = IERC20(0xc3Bf0c0172E3638d383361801e9BF63B4FfE0d6e);
+        STABL3 = IERC20(0xc3Bf0c0172E3638d383361801e9BF63B4FfE0d6e);
 
         // TODO change
-        ucd = IERC20(0xB0124F5d0e906d3652d0b58F03E315eC42A57E9a);
+        UCD = IERC20(0xB0124F5d0e906d3652d0b58F03E315eC42A57E9a);
 
         maxPoolPercentage = 700;
         stakingTypePercentage = 250;
@@ -104,8 +104,8 @@ contract ROI is Ownable, IStabl3StakingStruct {
     }
 
     function updateUCD(address _ucd) external onlyOwner {
-        require(address(ucd) != _ucd, "ROI: UCD is already this address");
-        ucd = IERC20(_ucd);
+        require(address(UCD) != _ucd, "ROI: UCD is already this address");
+        UCD = IERC20(_ucd);
     }
 
     function updateStabl3Staking(address _stabl3Staking) external onlyOwner {
@@ -141,7 +141,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
         if (endTimeWeightedAPR.timeWeight != _endTimeWeight) {
             uint256 timeWeight = _endTimeWeight - endTimeWeightedAPR.timeWeight;
 
-            endTimeWeightedAPR.APR += endAPR.mul(timeWeight);
+            endTimeWeightedAPR.APR += endAPR * timeWeight;
             endTimeWeightedAPR.timeWeight += timeWeight;
         }
 
@@ -154,18 +154,18 @@ contract ROI is Ownable, IStabl3StakingStruct {
         permitted[_contractAddress] = _state;
 
         if (_state) {
-            delegateApprove(stabl3, _contractAddress, true);
+            delegateApprove(STABL3, _contractAddress, true);
 
-            delegateApprove(ucd, _contractAddress, true);
+            delegateApprove(UCD, _contractAddress, true);
 
             for (uint256 i = 0 ; i < treasury.allReservedTokensLength() ; i++) {
                 delegateApprove(treasury.allReservedTokens(i), _contractAddress, true);
             }
         }
         else {
-            delegateApprove(stabl3, _contractAddress, false);
+            delegateApprove(STABL3, _contractAddress, false);
 
-            delegateApprove(ucd, _contractAddress, false);
+            delegateApprove(UCD, _contractAddress, false);
 
             for (uint256 i = 0 ; i < treasury.allReservedTokensLength() ; i++) {
                 delegateApprove(treasury.allReservedTokens(i), _contractAddress, false);
@@ -359,7 +359,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
         // Time Weighted APR Calculation
         uint256 timeWeight = (block.timestamp - updateTimestampLast) / oneDayTime;
 
-        timeWeightedAPR.APR += updateAPRLast.mul(timeWeight);
+        timeWeightedAPR.APR += updateAPRLast * timeWeight;
         timeWeightedAPR.timeWeight += timeWeight;
 
         updateAPRLast = currentAPR;

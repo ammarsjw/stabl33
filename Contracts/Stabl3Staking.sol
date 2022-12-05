@@ -36,7 +36,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
     Stabl3StakingHelper private stabl3StakingHelper;
 
-    IERC20 public immutable stabl3;
+    IERC20 public immutable STABL3;
 
     uint256[2] public treasuryPercentages;
     uint256[2] public ROIPercentages;
@@ -148,7 +148,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         stabl3StakingHelper = new Stabl3StakingHelper();
 
         // TODO change
-        stabl3 = IERC20(0xc3Bf0c0172E3638d383361801e9BF63B4FfE0d6e);
+        STABL3 = IERC20(0xc3Bf0c0172E3638d383361801e9BF63B4FfE0d6e);
 
         treasuryPercentages = [975, 761];
         ROIPercentages = [0, 0];
@@ -505,7 +505,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         uint256 amountStabl3Lending = getClaimableStabl3LendingSingle(msg.sender, _index, _timestamp);
 
         if (amountStabl3Lending > 0) {
-            stabl3.transferFrom(address(treasury), msg.sender, amountStabl3Lending);
+            STABL3.transferFrom(address(treasury), msg.sender, amountStabl3Lending);
 
             record.totalAmountStabl3Withdrawn += amountStabl3Lending;
 

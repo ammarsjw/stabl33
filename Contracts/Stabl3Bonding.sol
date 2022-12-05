@@ -19,7 +19,7 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
     IROI public ROI;
     address public HQ;
 
-    IERC20 public immutable stabl3;
+    IERC20 public immutable STABL3;
 
     uint256 public treasuryPercentage;
     uint256 public ROIPercentage;
@@ -125,7 +125,7 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
         HQ = 0x294d0487fdf7acecf342ae70AFc5549A6E90f3e0;
 
         // TODO change
-        stabl3 = IERC20(0xc3Bf0c0172E3638d383361801e9BF63B4FfE0d6e);
+        STABL3 = IERC20(0xc3Bf0c0172E3638d383361801e9BF63B4FfE0d6e);
 
         treasuryPercentage = 800;
         ROIPercentage = 161;
@@ -319,7 +319,7 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
         require(bonding.status, "Stabl3Bonding: Invalid Bonding");
         require(timestampToConsider >= bonding.endTime, "Stabl3Bonding: Bonding not yet claimable");
 
-        stabl3.transferFrom(address(treasury), msg.sender, bonding.amountStabl3);
+        STABL3.transferFrom(address(treasury), msg.sender, bonding.amountStabl3);
 
         bonding.status = false;
 

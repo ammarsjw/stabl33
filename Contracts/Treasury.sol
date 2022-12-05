@@ -21,10 +21,10 @@ contract Treasury is Ownable {
     address public ROI;
     address public HQ;
 
-    IERC20 public immutable stabl3;
+    IERC20 public immutable STABL3;
     uint256 public stabl3CirculatingSupply;
 
-    IERC20 public ucd;
+    IERC20 public UCD;
 
     uint256 public exchangeFee;
 
@@ -87,10 +87,10 @@ contract Treasury is Ownable {
         HQ = 0x294d0487fdf7acecf342ae70AFc5549A6E90f3e0;
 
         // TODO change
-        stabl3 = IERC20(0xc3Bf0c0172E3638d383361801e9BF63B4FfE0d6e);
+        STABL3 = IERC20(0xc3Bf0c0172E3638d383361801e9BF63B4FfE0d6e);
 
         // TODO change
-        ucd = IERC20(0xB0124F5d0e906d3652d0b58F03E315eC42A57E9a);
+        UCD = IERC20(0xB0124F5d0e906d3652d0b58F03E315eC42A57E9a);
 
         exchangeFee = 3;
 
@@ -126,8 +126,8 @@ contract Treasury is Ownable {
     }
 
     function updateUCD(address _ucd) external onlyOwner {
-        require(address(ucd) != _ucd, "Treasury: UCD is already this address");
-        ucd = IERC20(_ucd);
+        require(address(UCD) != _ucd, "Treasury: UCD is already this address");
+        UCD = IERC20(_ucd);
     }
 
     function updateExchangeFee(uint256 _exchangeFee) external onlyOwner {
@@ -142,18 +142,18 @@ contract Treasury is Ownable {
         permitted[_contractAddress] = _state;
 
         if (_state) {
-            delegateApprove(stabl3, _contractAddress, true);
+            delegateApprove(STABL3, _contractAddress, true);
 
-            delegateApprove(ucd, _contractAddress, true);
+            delegateApprove(UCD, _contractAddress, true);
 
             for (uint256 i = 0 ; i < allReservedTokens.length ; i++) {
                 delegateApprove(allReservedTokens[i], _contractAddress, true);
             }
         }
         else {
-            delegateApprove(stabl3, _contractAddress, false);
+            delegateApprove(STABL3, _contractAddress, false);
 
-            delegateApprove(ucd, _contractAddress, false);
+            delegateApprove(UCD, _contractAddress, false);
 
             for (uint256 i = 0 ; i < allReservedTokens.length ; i++) {
                 delegateApprove(allReservedTokens[i], _contractAddress, false);
@@ -256,7 +256,7 @@ contract Treasury is Ownable {
 
     function getAmountOut(IERC20 _token, uint256 _amountToken) external view returns (uint256) {
         require(_amountToken > 0, "Treasury: Insufficient amount");
-        if (stabl3.balanceOf(address(this)) == 0) {
+        if (STABL3.balanceOf(address(this)) == 0) {
             return 0;
         }
 
@@ -300,7 +300,7 @@ contract Treasury is Ownable {
 
     function getAmountIn(uint256 _amountStabl3, IERC20 _token) external view returns (uint256) {
         require(_amountStabl3 > 0, "Treasury: Insufficient amount");
-        if (stabl3.balanceOf(address(this)) == 0) {
+        if (STABL3.balanceOf(address(this)) == 0) {
             return 0;
         }
 
@@ -355,7 +355,7 @@ contract Treasury is Ownable {
     ) external view reserved(_token) returns (uint256) {
         require(_amountToken > 0, "Treasury: Insufficient amount");
 
-        uint256 fee = (_amountToken * exchangeFee) / 1000;
+        uint256 fee = _amountToken.mul(exchangeFee).div(1000);
         uint256 amountTokenWithFee = _amountToken - fee;
 
         address pair = uniswapFactory.getPair(address(_token), address(_exchangingToken));
@@ -386,7 +386,7 @@ contract Treasury is Ownable {
             uniswapRouter.quote(_amountExchangingToken, reserve0, reserve1) :
             uniswapRouter.quote(_amountExchangingToken, reserve1, reserve0);
 
-        uint256 amountTokenWithFee = (amountToken * 1000) / (1000 - exchangeFee);
+        uint256 amountTokenWithFee = amountToken.mul(1000).div(1000 - exchangeFee);
 
         return amountTokenWithFee;
     }

@@ -22,7 +22,7 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
     IROI public ROI;
     address public HQ;
 
-    IERC20 public immutable stabl3;
+    IERC20 public immutable STABL3;
 
     uint256 public treasuryPercentage;
     uint256 public ROIPercentage;
@@ -82,7 +82,7 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
         HQ = 0x294d0487fdf7acecf342ae70AFc5549A6E90f3e0;
 
         // TODO change
-        stabl3 = IERC20(0xc3Bf0c0172E3638d383361801e9BF63B4FfE0d6e);
+        STABL3 = IERC20(0xc3Bf0c0172E3638d383361801e9BF63B4FfE0d6e);
 
         treasuryPercentage = 800;
         ROIPercentage = 161;
@@ -164,7 +164,7 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
 
         uint256 amountStabl3 = treasury.getAmountOut(_token, _amountToken);
 
-        stabl3.transferFrom(address(treasury), msg.sender, amountStabl3);
+        STABL3.transferFrom(address(treasury), msg.sender, amountStabl3);
 
         treasury.updatePool(BUY_POOL, _token, amountTreasury, amountROI, amountHQ, true);
         treasury.updateStabl3CirculatingSupply(amountStabl3, true);
@@ -240,14 +240,14 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
 
         _handleLimit(_exchangingToken, amountExchangingToken);
 
-        uint256 fee = (_amountToken * treasury.exchangeFee()) / 1000;
+        uint256 fee = _amountToken.mul(treasury.exchangeFee()).div(1000);
         uint256 amountTokenWithFee = _amountToken - fee;
 
         SafeERC20.safeTransferFrom(_token, msg.sender, address(ROI), fee);
 
         uint256 amountStabl3 = treasury.getAmountOut(_token, fee);
 
-        stabl3.transferFrom(address(treasury), msg.sender, amountStabl3);
+        STABL3.transferFrom(address(treasury), msg.sender, amountStabl3);
 
         treasury.updatePool(BUY_POOL, _token, 0, fee, 0, true);
         treasury.updateStabl3CirculatingSupply(amountStabl3, true);
