@@ -9,20 +9,6 @@ type Transaction @entity {
   gasPrice: BigInt!
 }
 
-type OwnershipTransferred @entity {
-  id: ID!
-  transaction: Transaction!
-  previousOwner: Bytes!
-  newOwner: Bytes!
-}
-
-type UpdatedPermission @entity {
-  id: ID!
-  transaction: Transaction!
-  contractAddress: Bytes!
-  state: Boolean!
-}
-
 type UpdatedReservedToken @entity {
   id: ID!
   transaction: Transaction!
@@ -38,27 +24,6 @@ type Rate @entity {
   totalValueLocked: BigInt!
   stabl3CirculatingSupply: BigInt!
   timestamp: BigInt!
-}
-
-type UpdatedROI @entity {
-  id: ID!
-  transaction: Transaction!
-  newROI: Bytes!
-  oldROI: Bytes!
-}
-
-type UpdatedHQ @entity {
-  id: ID!
-  transaction: Transaction!
-  newHQ: Bytes!
-  oldHQ: Bytes!
-}
-
-type UpdatedTreasury @entity {
-  id: ID!
-  transaction: Transaction!
-  newTreasury: Bytes!
-  oldTreasury: Bytes!
 }
 
 type APR @entity {
@@ -119,4 +84,35 @@ type Unstake @entity {
   reward: BigInt
   stakingType: Int
   isLend: Boolean
+}
+
+type Borrow @entity {
+  id: ID!
+  transaction: Transaction!
+  user : Bytes!
+  amountUCD : BigInt!
+  amountStabl3 : BigInt!
+  rate : BigInt!
+  timestamp : BigInt!
+}
+
+type Payback @entity {
+  id: ID!
+  transaction: Transaction!
+  user : Bytes!
+  amountUCD : BigInt!
+  amountStabl3 : BigInt!
+  rate : BigInt!
+  timestamp : BigInt!
+}
+
+type ExchangeUCD @entity {
+  id: ID!
+  transaction: Transaction!
+  user : Bytes!
+  exchangingToken : Bytes!
+  amountExchangingToken : BigInt!
+  amountUCD : BigInt!
+  fee : BigInt!
+  timestamp : BigInt!
 }

@@ -78,3 +78,29 @@ dataSources:
         - event: WithdrewReward(indexed address,uint256,address,uint256,uint256,bool,uint256)
           handler: handleWithdrewReward
       file: Stabl3Staking\Stabl3Staking.wasm
+  - kind: ethereum
+    name: Stabl3Borrowing
+    network: mumbai
+    source:
+      address: "0x0895eb285b89709c169e11Dbb6C9ECF503417A68"
+      abi: Stabl3Borrowing
+      startBlock: 29554208
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - Borrow
+        - Payback
+        - ExchangeUCD
+      abis:
+        - name: Stabl3Borrowing
+          file: Stabl3Borrowing\abis\Stabl3Borrowing.json
+      eventHandlers:
+        - event: Borrow(indexed address,uint256,uint256,uint256,uint256)
+          handler: handleBorrow
+        - event: Payback(indexed address,uint256,uint256,uint256,uint256)
+          handler: handlePayback
+        - event: ExchangeUCD(indexed address,address,uint256,uint256,uint256,uint256)
+          handler: handleExchangeUCD
+      file: Stabl3Borrowing\Stabl3Borrowing.wasm

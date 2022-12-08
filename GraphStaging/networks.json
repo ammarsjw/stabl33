@@ -8,6 +8,9 @@
     },
     "Stabl3Staking": {
       "address": "0x024CE3e12Cb6e5eD0c942D9D3f4F7aeA07239A05"
+    },
+    "Stabl3Borrowing": {
+      "address": "0x0895eb285b89709c169e11Dbb6C9ECF503417A68"
     }
   }
 }
