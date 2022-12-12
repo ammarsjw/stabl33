@@ -2,16 +2,17 @@
 
 pragma solidity 0.8.17;
 
+import "./Stabl3StakingHelper.sol";
+
 import "./Ownable.sol";
-import "./SafeMathUpgradeable.sol";
-import "./SafeERC20.sol";
 import "./ReentrancyGuard.sol";
 
+import "./SafeMathUpgradeable.sol";
+import "./SafeERC20.sol";
+
+import "./IStabl3StakingStruct.sol";
 import "./ITreasury.sol";
 import "./IROI.sol";
-import "./IStabl3StakingStruct.sol";
-
-import "./Stabl3StakingHelper.sol";
 
 contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
     using SafeMathUpgradeable for uint256;

@@ -3,9 +3,10 @@
 pragma solidity 0.8.17;
 
 import "./Ownable.sol";
+import "./ReentrancyGuard.sol";
+
 import "./SafeMathUpgradeable.sol";
 import "./SafeERC20.sol";
-import "./ReentrancyGuard.sol";
 
 import "./ITreasury.sol";
 import "./IROI.sol";
@@ -192,11 +193,11 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
     }
 
     // TODO
-    // flashloan protection?
-    // frontrunning bots?
-    // any security features?
-    // DONE when a user has fully returned his UCD do we uncollateralize the rest of his collateralized Stabl3?
+    // DONE when a user has fully returned his UCD do we uncollateralize the rest of his collateralized Stabl3
     // DONE consider current price when borrowing/paying back
+    // flashloan protection (?)
+    // frontrunning bots -> Slippage (Stabl3 Purchase and UCD Exchange) (?)
+    // handle limit in UCD Exchange (?)
 
     /**
      * @dev This function allows users to repay their borrowed UCD in return for Stabl3 Token at current protocol rates
@@ -224,6 +225,7 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
         treasury.updatePool(STABL3_COLLATERAL_POOL, STABL3, amountStabl3, 0, 0, false);
         if (borrowing.amountUCD == 0) {
             treasury.updatePool(STABL3_COLLATERAL_POOL, STABL3, borrowing.amountStabl3, 0, 0, false);
+            borrowing.amountStabl3 = 0;
         }
 
         treasury.updateStabl3CirculatingSupply(amountStabl3, true);
