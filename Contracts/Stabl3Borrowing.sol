@@ -141,26 +141,11 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
 
     function getReservesUCD() public view returns (uint256 availableUCD, uint256 borrowedUCD, uint256 returnedUCD) {
         return (
-            treasury.getReserves() + ROI.getReserves(),
+            (treasury.getReserves() + ROI.getReserves()) / (10 ** 12),
             UCD.totalSupply(),
             burnedUCD
         );
     }
-
-    // function getEquivalenceToken() public view returns (IERC20) {
-    //     IERC20 equivalenceToken;
-
-    //     for (uint256 i = 0 ; i < treasury.allReservedTokensLength() ; i++) {
-    //         IERC20 reservedToken = treasury.allReservedTokens(i);
-
-    //         if (treasury.isReservedToken(reservedToken)) {
-    //             equivalenceToken = reservedToken;
-    //             break;
-    //         }
-    //     }
-
-    //     return equivalenceToken;
-    // }
 
     /**
      * @dev This function allows users to deposit STABL3 and to receive UCD at current protocol rates
@@ -195,9 +180,9 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
     // TODO
     // DONE when a user has fully returned his UCD do we uncollateralize the rest of his collateralized Stabl3
     // DONE consider current price when borrowing/paying back
-    // flashloan protection (?)
-    // frontrunning bots -> Slippage (Stabl3 Purchase and UCD Exchange) (?)
-    // handle limit in UCD Exchange (?)
+    // flashloan protection (how to add?)
+    // frontrunning bots -> Slippage (where to add? Stabl3 Purchase and UCD Exchange?)
+    // handle limit in UCD Exchange (ask if this is needed)
 
     /**
      * @dev This function allows users to repay their borrowed UCD in return for Stabl3 Token at current protocol rates
@@ -213,22 +198,25 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
 
         uint256 amountStabl3 = (_amountUCD * (10 ** 18)) / rate;
 
-        borrowing.amountUCD -= _amountUCD;
-        borrowing.amountStabl3 -= amountStabl3;
+        borrowing.amountUCD = borrowing.amountUCD.safeSub(_amountUCD);
+        borrowing.amountStabl3 = borrowing.amountStabl3.safeSub(amountStabl3);
 
         UCD.burnWithPermit(msg.sender, _amountUCD);
         burnedUCD += _amountUCD;
 
         STABL3.transferFrom(address(treasury), msg.sender, amountStabl3);
 
-        treasury.updatePool(UCD_PAYBACK_POOL, UCD, _amountUCD, 0, 0, true);
-        treasury.updatePool(STABL3_COLLATERAL_POOL, STABL3, amountStabl3, 0, 0, false);
+        uint256 amountStabl3ToConsider = amountStabl3;
+
         if (borrowing.amountUCD == 0) {
-            treasury.updatePool(STABL3_COLLATERAL_POOL, STABL3, borrowing.amountStabl3, 0, 0, false);
+            amountStabl3ToConsider += borrowing.amountStabl3;
             borrowing.amountStabl3 = 0;
         }
 
-        treasury.updateStabl3CirculatingSupply(amountStabl3, true);
+        treasury.updatePool(UCD_PAYBACK_POOL, UCD, _amountUCD, 0, 0, true);
+        treasury.updatePool(STABL3_COLLATERAL_POOL, STABL3, amountStabl3ToConsider, 0, 0, false);
+
+        treasury.updateStabl3CirculatingSupply(amountStabl3ToConsider, true);
 
         emit Payback(msg.sender, _amountUCD, amountStabl3, rate, block.timestamp);
     }
