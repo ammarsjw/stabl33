@@ -216,7 +216,7 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
         treasury.updatePool(UCD_PAYBACK_POOL, UCD, _amountUCD, 0, 0, true);
         treasury.updatePool(STABL3_COLLATERAL_POOL, STABL3, amountStabl3ToConsider, 0, 0, false);
 
-        treasury.updateStabl3CirculatingSupply(amountStabl3ToConsider, true);
+        treasury.updateStabl3CirculatingSupply(amountStabl3, true);
 
         emit Payback(msg.sender, _amountUCD, amountStabl3, rate, block.timestamp);
     }
