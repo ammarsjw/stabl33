@@ -36,7 +36,6 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
 
     struct BondInfo {
         uint256 bondIndex;
-        IERC20 token;
         uint256 bondAmount;
         uint256 bondAmountConsumed;
         uint256 discount;
