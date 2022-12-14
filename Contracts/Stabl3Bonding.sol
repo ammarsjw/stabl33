@@ -185,10 +185,17 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
     //     emit UpdatedAdmin(_account, _state);
     // }
 
+    /**
+     * @dev Once made the bond cannot be changed
+     * @dev A new bond can only be started once the current one's time expires or the bond amount is fully consumed
+     * @param _bondAmount in 18 decimals
+     * @param _discount all percentages are magnified by 10
+     * @param _duration in seconds
+     */
     function createBond(
         uint256 _bondAmount,
         uint256 _discount,
-        uint256 _expiryTime
+        uint256 _duration
     ) external bondActive onlyOwner {
         require(_bondAmount > 0, "Stabl3Bonding: Insufficient amount");
 
@@ -202,7 +209,7 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
         // bondInfo.bondAmountConsumed = 0;
         bondInfo.discount = _discount;
         bondInfo.startTime = timestampToConsider;
-        bondInfo.expiryTime = timestampToConsider + _expiryTime;
+        bondInfo.expiryTime = timestampToConsider + _duration;
 
         getBondInfo = bondInfo;
 

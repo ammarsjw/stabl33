@@ -141,7 +141,7 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
 
     function getReservesUCD() public view returns (uint256 availableUCD, uint256 borrowedUCD, uint256 returnedUCD) {
         return (
-            (treasury.getReserves() + ROI.getReserves()) / (10 ** 12),
+            ((treasury.getReserves() + ROI.getReserves()) / (10 ** 12)).safeSub(UCD.totalSupply()),
             UCD.totalSupply(),
             burnedUCD
         );
@@ -157,8 +157,8 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
 
         uint256 amountUCD = (_amountStabl3 * rate) / (10 ** 18);
 
-        (uint256 availableUCD, uint256 borrowedUCD, ) = getReservesUCD();
-        require(borrowedUCD + amountUCD <= availableUCD, "Stabl3Borrowing: Insufficient available UCD");
+        (uint256 availableUCD, , ) = getReservesUCD();
+        require(amountUCD <= availableUCD, "Stabl3Borrowing: Insufficient available UCD");
 
         Borrowing storage borrowing = getBorrowings[msg.sender];
 
