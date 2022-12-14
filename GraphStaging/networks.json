@@ -10,7 +10,10 @@
       "address": "0x024CE3e12Cb6e5eD0c942D9D3f4F7aeA07239A05"
     },
     "Stabl3Borrowing": {
-      "address": "0x5bFE60341ff936D606f968648f260B5171edDFbb"
+      "address": "0xcff51c04eB8CFD2Bf497fAC9b7dafB9df365C38b"
+    },
+    "Stabl3Bonding": {
+      "address": "0x3cC4926187A1FaBB733b53972f1004aD91c3E81A"
     }
   }
 }

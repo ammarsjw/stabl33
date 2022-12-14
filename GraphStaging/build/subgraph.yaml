@@ -82,9 +82,9 @@ dataSources:
     name: Stabl3Borrowing
     network: mumbai
     source:
-      address: "0x5bFE60341ff936D606f968648f260B5171edDFbb"
+      address: "0xcff51c04eB8CFD2Bf497fAC9b7dafB9df365C38b"
       abi: Stabl3Borrowing
-      startBlock: 29640086
+      startBlock: 29683678
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -104,3 +104,30 @@ dataSources:
         - event: ExchangeUCD(indexed address,address,uint256,uint256,uint256,uint256)
           handler: handleExchangeUCD
       file: Stabl3Borrowing\Stabl3Borrowing.wasm
+  - kind: ethereum
+    name: Stabl3Bonding
+    network: mumbai
+    source:
+      address: "0x3cC4926187A1FaBB733b53972f1004aD91c3E81A"
+      abi: Stabl3Bonding
+      startBlock: 29683809
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - CreatedBond
+        - Bond
+        - ClaimedBond
+      abis:
+        - name: Stabl3Bonding
+          file: Stabl3Bonding\abis\Stabl3Bonding.json
+      eventHandlers:
+        - event: CreatedBond(uint256,uint256,uint256,uint256,uint256)
+          handler: handleCreatedBond
+        - event: Bond(indexed address,uint256,uint256,uint256,address,uint256,uint256,uint256)
+          handler: handleBond
+        - event: ClaimedBond(indexed
+            address,uint256,uint256,uint256,address,uint256,uint256,uint256)
+          handler: handleClaimedBond
+      file: Stabl3Bonding\Stabl3Bonding.wasm

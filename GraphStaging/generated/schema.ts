@@ -1249,3 +1249,324 @@ export class ExchangeUCD extends Entity {
     this.set("timestamp", Value.fromBigInt(value));
   }
 }
+
+export class CreatedBond extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save CreatedBond entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type CreatedBond must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("CreatedBond", id.toString(), this);
+    }
+  }
+
+  static load(id: string): CreatedBond | null {
+    return changetype<CreatedBond | null>(store.get("CreatedBond", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get transaction(): string {
+    let value = this.get("transaction");
+    return value!.toString();
+  }
+
+  set transaction(value: string) {
+    this.set("transaction", Value.fromString(value));
+  }
+
+  get bondIndex(): BigInt {
+    let value = this.get("bondIndex");
+    return value!.toBigInt();
+  }
+
+  set bondIndex(value: BigInt) {
+    this.set("bondIndex", Value.fromBigInt(value));
+  }
+
+  get bondAmount(): BigInt {
+    let value = this.get("bondAmount");
+    return value!.toBigInt();
+  }
+
+  set bondAmount(value: BigInt) {
+    this.set("bondAmount", Value.fromBigInt(value));
+  }
+
+  get discount(): BigInt {
+    let value = this.get("discount");
+    return value!.toBigInt();
+  }
+
+  set discount(value: BigInt) {
+    this.set("discount", Value.fromBigInt(value));
+  }
+
+  get startTime(): BigInt {
+    let value = this.get("startTime");
+    return value!.toBigInt();
+  }
+
+  set startTime(value: BigInt) {
+    this.set("startTime", Value.fromBigInt(value));
+  }
+
+  get expiryTime(): BigInt {
+    let value = this.get("expiryTime");
+    return value!.toBigInt();
+  }
+
+  set expiryTime(value: BigInt) {
+    this.set("expiryTime", Value.fromBigInt(value));
+  }
+}
+
+export class Bond extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save Bond entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type Bond must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("Bond", id.toString(), this);
+    }
+  }
+
+  static load(id: string): Bond | null {
+    return changetype<Bond | null>(store.get("Bond", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get transaction(): string {
+    let value = this.get("transaction");
+    return value!.toString();
+  }
+
+  set transaction(value: string) {
+    this.set("transaction", Value.fromString(value));
+  }
+
+  get user(): Bytes {
+    let value = this.get("user");
+    return value!.toBytes();
+  }
+
+  set user(value: Bytes) {
+    this.set("user", Value.fromBytes(value));
+  }
+
+  get index(): BigInt {
+    let value = this.get("index");
+    return value!.toBigInt();
+  }
+
+  set index(value: BigInt) {
+    this.set("index", Value.fromBigInt(value));
+  }
+
+  get bondIndex(): BigInt {
+    let value = this.get("bondIndex");
+    return value!.toBigInt();
+  }
+
+  set bondIndex(value: BigInt) {
+    this.set("bondIndex", Value.fromBigInt(value));
+  }
+
+  get status(): boolean {
+    let value = this.get("status");
+    return value!.toBoolean();
+  }
+
+  set status(value: boolean) {
+    this.set("status", Value.fromBoolean(value));
+  }
+
+  get amountStabl3(): BigInt {
+    let value = this.get("amountStabl3");
+    return value!.toBigInt();
+  }
+
+  set amountStabl3(value: BigInt) {
+    this.set("amountStabl3", Value.fromBigInt(value));
+  }
+
+  get token(): Bytes {
+    let value = this.get("token");
+    return value!.toBytes();
+  }
+
+  set token(value: Bytes) {
+    this.set("token", Value.fromBytes(value));
+  }
+
+  get amountToken(): BigInt {
+    let value = this.get("amountToken");
+    return value!.toBigInt();
+  }
+
+  set amountToken(value: BigInt) {
+    this.set("amountToken", Value.fromBigInt(value));
+  }
+
+  get totalAmountToken(): BigInt {
+    let value = this.get("totalAmountToken");
+    return value!.toBigInt();
+  }
+
+  set totalAmountToken(value: BigInt) {
+    this.set("totalAmountToken", Value.fromBigInt(value));
+  }
+
+  get timestamp(): BigInt {
+    let value = this.get("timestamp");
+    return value!.toBigInt();
+  }
+
+  set timestamp(value: BigInt) {
+    this.set("timestamp", Value.fromBigInt(value));
+  }
+}
+
+export class ClaimedBond extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save ClaimedBond entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type ClaimedBond must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("ClaimedBond", id.toString(), this);
+    }
+  }
+
+  static load(id: string): ClaimedBond | null {
+    return changetype<ClaimedBond | null>(store.get("ClaimedBond", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get transaction(): string {
+    let value = this.get("transaction");
+    return value!.toString();
+  }
+
+  set transaction(value: string) {
+    this.set("transaction", Value.fromString(value));
+  }
+
+  get user(): Bytes {
+    let value = this.get("user");
+    return value!.toBytes();
+  }
+
+  set user(value: Bytes) {
+    this.set("user", Value.fromBytes(value));
+  }
+
+  get index(): BigInt {
+    let value = this.get("index");
+    return value!.toBigInt();
+  }
+
+  set index(value: BigInt) {
+    this.set("index", Value.fromBigInt(value));
+  }
+
+  get bondIndex(): BigInt {
+    let value = this.get("bondIndex");
+    return value!.toBigInt();
+  }
+
+  set bondIndex(value: BigInt) {
+    this.set("bondIndex", Value.fromBigInt(value));
+  }
+
+  get amountStabl3(): BigInt {
+    let value = this.get("amountStabl3");
+    return value!.toBigInt();
+  }
+
+  set amountStabl3(value: BigInt) {
+    this.set("amountStabl3", Value.fromBigInt(value));
+  }
+
+  get token(): Bytes {
+    let value = this.get("token");
+    return value!.toBytes();
+  }
+
+  set token(value: Bytes) {
+    this.set("token", Value.fromBytes(value));
+  }
+
+  get amountToken(): BigInt {
+    let value = this.get("amountToken");
+    return value!.toBigInt();
+  }
+
+  set amountToken(value: BigInt) {
+    this.set("amountToken", Value.fromBigInt(value));
+  }
+
+  get totalAmountStabl3(): BigInt {
+    let value = this.get("totalAmountStabl3");
+    return value!.toBigInt();
+  }
+
+  set totalAmountStabl3(value: BigInt) {
+    this.set("totalAmountStabl3", Value.fromBigInt(value));
+  }
+
+  get timestamp(): BigInt {
+    let value = this.get("timestamp");
+    return value!.toBigInt();
+  }
+
+  set timestamp(value: BigInt) {
+    this.set("timestamp", Value.fromBigInt(value));
+  }
+}
