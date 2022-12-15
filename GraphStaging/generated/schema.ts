@@ -1465,6 +1465,15 @@ export class Bond extends Entity {
   set endTime(value: BigInt) {
     this.set("endTime", Value.fromBigInt(value));
   }
+
+  get discount(): BigInt {
+    let value = this.get("discount");
+    return value!.toBigInt();
+  }
+
+  set discount(value: BigInt) {
+    this.set("discount", Value.fromBigInt(value));
+  }
 }
 
 export class ClaimedBond extends Entity {

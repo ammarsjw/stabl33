@@ -140,6 +140,7 @@ type Bond @entity {
   totalAmountToken : BigInt!
   startTime : BigInt!
   endTime : BigInt!
+  discount : BigInt!
 }
 
 type ClaimedBond @entity {

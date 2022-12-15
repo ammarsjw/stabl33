@@ -16,7 +16,8 @@ import { loadOrCreateTransaction } from "./utils/Transactions"
 
 export function handleCreatedBond(event: CreatedBondEvent): void {
   let transaction = loadOrCreateTransaction(event.transaction, event.block)
-  let entity = new CreatedBond(transaction.id)
+  let id = event.params.bondIndex.toString()
+  let entity = new CreatedBond(id)
   entity.transaction = transaction.id
   entity.bondIndex = event.params.bondIndex
   entity.bondAmount = event.params.bondAmount
@@ -42,6 +43,13 @@ export function handleBond(event: BondEvent): void {
   entity.startTime = event.params.timestamp
   let x = event.params.timestamp.toI32() + 300
   entity.endTime = BigInt.fromI32(x)
+
+  id = event.params.bondIndex.toString()
+  let entityToRead = CreatedBond.load(id)
+  if (entityToRead) {
+    entity.discount = entityToRead.discount
+  }
+
   entity.save()
 }
 
