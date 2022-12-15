@@ -1448,13 +1448,22 @@ export class Bond extends Entity {
     this.set("totalAmountToken", Value.fromBigInt(value));
   }
 
-  get timestamp(): BigInt {
-    let value = this.get("timestamp");
+  get startTime(): BigInt {
+    let value = this.get("startTime");
     return value!.toBigInt();
   }
 
-  set timestamp(value: BigInt) {
-    this.set("timestamp", Value.fromBigInt(value));
+  set startTime(value: BigInt) {
+    this.set("startTime", Value.fromBigInt(value));
+  }
+
+  get endTime(): BigInt {
+    let value = this.get("endTime");
+    return value!.toBigInt();
+  }
+
+  set endTime(value: BigInt) {
+    this.set("endTime", Value.fromBigInt(value));
   }
 }
 
@@ -1561,12 +1570,21 @@ export class ClaimedBond extends Entity {
     this.set("totalAmountStabl3", Value.fromBigInt(value));
   }
 
-  get timestamp(): BigInt {
-    let value = this.get("timestamp");
+  get startTime(): BigInt {
+    let value = this.get("startTime");
     return value!.toBigInt();
   }
 
-  set timestamp(value: BigInt) {
-    this.set("timestamp", Value.fromBigInt(value));
+  set startTime(value: BigInt) {
+    this.set("startTime", Value.fromBigInt(value));
+  }
+
+  get endTime(): BigInt {
+    let value = this.get("endTime");
+    return value!.toBigInt();
+  }
+
+  set endTime(value: BigInt) {
+    this.set("endTime", Value.fromBigInt(value));
   }
 }

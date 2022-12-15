@@ -44,8 +44,8 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
     }
 
     struct Bonding {
-        uint256 index;
         address user;
+        uint256 index;
         uint256 bondIndex;
         bool status;
         uint256 amountStabl3;
@@ -102,7 +102,8 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
         IERC20 token,
         uint256 amountToken,
         uint256 totalAmountToken,
-        uint256 timestamp
+        uint256 startTime,
+        uint256 endTime
     );
 
     event ClaimedBond(
@@ -113,7 +114,8 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
         IERC20 token,
         uint256 amountToken,
         uint256 totalAmountStabl3,
-        uint256 timestamp
+        uint256 startTime,
+        uint256 endTime
     );
 
     // constructor
@@ -185,7 +187,7 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
     // }
 
     /**
-     * @dev Once made the bond cannot be changed
+     * @dev Once created the bond cannot be changed
      * @dev A new bond can only be started once the current one's time expires or the bond amount is fully consumed
      * @param _bondAmount in 18 decimals
      * @param _discount all percentages are magnified by 10
@@ -283,7 +285,8 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
             bonding.token,
             bonding.amountToken,
             record.totalAmountToken,
-            timestampToConsider
+            bonding.startTime,
+            bonding.endTime
         );
     }
 
@@ -344,7 +347,8 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
             bonding.token,
             bonding.amountToken,
             record.totalAmountStabl3,
-            timestampToConsider
+            bonding.startTime,
+            bonding.endTime
         );
     }
 

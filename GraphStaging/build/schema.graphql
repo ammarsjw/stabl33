@@ -138,7 +138,8 @@ type Bond @entity {
   token : Bytes!
   amountToken : BigInt!
   totalAmountToken : BigInt!
-  timestamp : BigInt!
+  startTime : BigInt!
+  endTime : BigInt!
 }
 
 type ClaimedBond @entity {
@@ -151,5 +152,6 @@ type ClaimedBond @entity {
   token : Bytes!
   amountToken : BigInt!
   totalAmountStabl3 : BigInt!
-  timestamp : BigInt!
+  startTime : BigInt!
+  endTime : BigInt!
 }
