@@ -92,8 +92,6 @@ contract Treasury is Ownable {
 
         exchangeFee = 3;
 
-        // rate = 0.0007 * (10 ** 18);
-        // rateImpactSlope = 0.000000000699993 * (10 ** 18);
         rateInfo.rate = 0.0007 * (10 ** 18);
         rateInfo.rateImpactSlope = 0.000000000699993 * (10 ** 18);
 
@@ -222,7 +220,7 @@ contract Treasury is Ownable {
     }
 
     /// @dev rate is in 18 decimals
-    function getRate() public view returns (uint256) {
+    function getRate() external view returns (uint256) {
         return rateInfo.rate;
     }
 
@@ -234,9 +232,9 @@ contract Treasury is Ownable {
 
         uint256 amountTokenConverted = _token.decimals() < 18 ? _amountToken * (10 ** (18 - _token.decimals())) : _amountToken;
 
-        uint256 rateImpact = rateInfo.rate + ((amountTokenConverted * rateInfo.rateImpactSlope) / (10 ** 18));
+        uint256 rate = rateInfo.rate + ((amountTokenConverted * rateInfo.rateImpactSlope) / (10 ** 18));
 
-        return rateImpact;
+        return rate;
     }
 
     function getAmountOut(IERC20 _token, uint256 _amountToken) external view returns (uint256) {
@@ -248,9 +246,9 @@ contract Treasury is Ownable {
 
         uint256 reserves = getReserves();
 
-        uint256 rateImpact = getRateImpact(_token, _amountToken);
+        uint256 rate = getRateImpact(_token, _amountToken);
 
-        uint256 projectedStabl3CirculatingSupply = (reserves + amountTokenConverted) / rateImpact;
+        uint256 projectedStabl3CirculatingSupply = (reserves + amountTokenConverted) / rate;
 
         uint256 amountStabl3 = projectedStabl3CirculatingSupply - stabl3CirculatingSupply;
 
@@ -352,13 +350,13 @@ contract Treasury is Ownable {
     }
 
     function updateRate(IERC20 _token, uint256 _amountToken) external permission reserved(_token) {
-        uint256 rateImpact = getRateImpact(_token, _amountToken);
+        uint256 rate = getRateImpact(_token, _amountToken);
 
         uint256 reserves = getReserves();
 
         uint256 totalValueLocked = getTotalValueLocked();
 
-        emit Rate(rateImpact, reserves, totalValueLocked, stabl3CirculatingSupply, block.timestamp);
+        emit Rate(rate, reserves, totalValueLocked, stabl3CirculatingSupply, block.timestamp);
     }
 
     function delegateApprove(IERC20 _token, address _spender, bool _isApprove) public onlyOwner {
