@@ -208,58 +208,6 @@ export class Treasury__allPoolsResult {
   }
 }
 
-export class Treasury__rateInfoResult {
-  value0: BigInt;
-  value1: BigInt;
-  value2: BigInt;
-  value3: BigInt;
-  value4: BigInt;
-
-  constructor(
-    value0: BigInt,
-    value1: BigInt,
-    value2: BigInt,
-    value3: BigInt,
-    value4: BigInt
-  ) {
-    this.value0 = value0;
-    this.value1 = value1;
-    this.value2 = value2;
-    this.value3 = value3;
-    this.value4 = value4;
-  }
-
-  toMap(): TypedMap<string, ethereum.Value> {
-    let map = new TypedMap<string, ethereum.Value>();
-    map.set("value0", ethereum.Value.fromUnsignedBigInt(this.value0));
-    map.set("value1", ethereum.Value.fromUnsignedBigInt(this.value1));
-    map.set("value2", ethereum.Value.fromUnsignedBigInt(this.value2));
-    map.set("value3", ethereum.Value.fromUnsignedBigInt(this.value3));
-    map.set("value4", ethereum.Value.fromUnsignedBigInt(this.value4));
-    return map;
-  }
-
-  getCompoundPercentage(): BigInt {
-    return this.value0;
-  }
-
-  getRate(): BigInt {
-    return this.value1;
-  }
-
-  getTokenWindow(): BigInt {
-    return this.value2;
-  }
-
-  getStabl3Window(): BigInt {
-    return this.value3;
-  }
-
-  getTokenWindowConsumed(): BigInt {
-    return this.value4;
-  }
-}
-
 export class Treasury extends ethereum.SmartContract {
   static bind(address: Address): Treasury {
     return new Treasury("Treasury", address);
@@ -288,6 +236,36 @@ export class Treasury extends ethereum.SmartContract {
 
   try_ROI(): ethereum.CallResult<Address> {
     let result = super.tryCall("ROI", "ROI():(address)", []);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+
+  STABL3(): Address {
+    let result = super.call("STABL3", "STABL3():(address)", []);
+
+    return result[0].toAddress();
+  }
+
+  try_STABL3(): ethereum.CallResult<Address> {
+    let result = super.tryCall("STABL3", "STABL3():(address)", []);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+
+  UCD(): Address {
+    let result = super.call("UCD", "UCD():(address)", []);
+
+    return result[0].toAddress();
+  }
+
+  try_UCD(): ethereum.CallResult<Address> {
+    let result = super.tryCall("UCD", "UCD():(address)", []);
     if (result.reverted) {
       return new ethereum.CallResult();
     }
@@ -768,58 +746,6 @@ export class Treasury extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBoolean());
   }
 
-  rateInfo(): Treasury__rateInfoResult {
-    let result = super.call(
-      "rateInfo",
-      "rateInfo():(uint256,uint256,uint256,uint256,uint256)",
-      []
-    );
-
-    return new Treasury__rateInfoResult(
-      result[0].toBigInt(),
-      result[1].toBigInt(),
-      result[2].toBigInt(),
-      result[3].toBigInt(),
-      result[4].toBigInt()
-    );
-  }
-
-  try_rateInfo(): ethereum.CallResult<Treasury__rateInfoResult> {
-    let result = super.tryCall(
-      "rateInfo",
-      "rateInfo():(uint256,uint256,uint256,uint256,uint256)",
-      []
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(
-      new Treasury__rateInfoResult(
-        value[0].toBigInt(),
-        value[1].toBigInt(),
-        value[2].toBigInt(),
-        value[3].toBigInt(),
-        value[4].toBigInt()
-      )
-    );
-  }
-
-  stabl3(): Address {
-    let result = super.call("stabl3", "stabl3():(address)", []);
-
-    return result[0].toAddress();
-  }
-
-  try_stabl3(): ethereum.CallResult<Address> {
-    let result = super.tryCall("stabl3", "stabl3():(address)", []);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toAddress());
-  }
-
   stabl3CirculatingSupply(): BigInt {
     let result = super.call(
       "stabl3CirculatingSupply",
@@ -870,21 +796,6 @@ export class Treasury extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
-  ucd(): Address {
-    let result = super.call("ucd", "ucd():(address)", []);
-
-    return result[0].toAddress();
-  }
-
-  try_ucd(): ethereum.CallResult<Address> {
-    let result = super.tryCall("ucd", "ucd():(address)", []);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toAddress());
   }
 
   uniswapFactory(): Address {

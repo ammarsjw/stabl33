@@ -6,9 +6,9 @@ dataSources:
     name: Treasury
     network: mumbai
     source:
-      address: "0x18d04735d18495B5336e00CD092c5d17c9e5a0B4"
+      address: "0x6d4eaE732C9f34C6EAE0CFFD9c267b2d25583782"
       abi: Treasury
-      startBlock: 29198931
+      startBlock: 29885503
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
