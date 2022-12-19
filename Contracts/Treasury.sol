@@ -29,8 +29,14 @@ contract Treasury is Ownable {
 
     uint256 public exchangeFee;
 
-    uint256 private rate;
-    uint256 private rateImpactSlope;
+    RateInfo private rateInfo;
+
+    // structs
+
+    struct RateInfo {
+        uint256 rate;
+        uint256 rateImpactSlope;
+    }
 
     // mappings
 
@@ -86,8 +92,10 @@ contract Treasury is Ownable {
 
         exchangeFee = 3;
 
-        rate = 0.0007 * (10 ** 18);
-        rateImpactSlope = 0.000000000699993 * (10 ** 18);
+        // rate = 0.0007 * (10 ** 18);
+        // rateImpactSlope = 0.000000000699993 * (10 ** 18);
+        rateInfo.rate = 0.0007 * (10 ** 18);
+        rateInfo.rateImpactSlope = 0.000000000699993 * (10 ** 18);
 
         // TODO change
         IERC20 USDC = IERC20(0x16c1038a989E7c52c7B0FBDE889249C02d7e205D);
@@ -215,18 +223,18 @@ contract Treasury is Ownable {
 
     /// @dev rate is in 18 decimals
     function getRate() public view returns (uint256) {
-        return rate;
+        return rateInfo.rate;
     }
 
     /// @dev rate is in 18 decimals
     function getRateImpact(IERC20 _token, uint256 _amountToken) public view reserved(_token) returns (uint256) {
         if (_amountToken == 0) {
-            return rate;
+            return rateInfo.rate;
         }
 
         uint256 amountTokenConverted = _token.decimals() < 18 ? _amountToken * (10 ** (18 - _token.decimals())) : _amountToken;
 
-        uint256 rateImpact = rate + ((amountTokenConverted * rateImpactSlope) / (10 ** 18));
+        uint256 rateImpact = rateInfo.rate + ((amountTokenConverted * rateInfo.rateImpactSlope) / (10 ** 18));
 
         return rateImpact;
     }
@@ -259,7 +267,8 @@ contract Treasury is Ownable {
         uint256 reserves = getReserves();
 
         uint256 amountTokenConverted =
-            (reserves - (projectedStabl3CirculatingSupply * rate)) / ((projectedStabl3CirculatingSupply * rateImpactSlope) - 1);
+            (reserves - (projectedStabl3CirculatingSupply * rateInfo.rate)) /
+            ((projectedStabl3CirculatingSupply * rateInfo.rateImpactSlope) - 1);
 
         uint256 amountToken = _token.decimals() < 18 ? amountTokenConverted / (10 ** (18 - _token.decimals())) : amountTokenConverted;
 
