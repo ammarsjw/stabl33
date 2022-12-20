@@ -12,8 +12,8 @@ interface IStabl3StakingStruct {
     }
 
     struct Staking {
-        address user;
         uint256 index;
+        address user;
         bool status;
         uint8 stakingType;
         IERC20 token;

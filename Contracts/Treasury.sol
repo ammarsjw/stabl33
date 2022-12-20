@@ -16,6 +16,8 @@ contract Treasury is Ownable {
 
     uint256 private constant MAX_INT = 2 ** 256 - 1;
 
+    uint8 private constant STABL3_COLLATERAL_POOL = 11;
+
     IUniswapV2Router02 public uniswapRouter;
     IUniswapV2Factory public uniswapFactory;
 
@@ -244,13 +246,15 @@ contract Treasury is Ownable {
 
         uint256 amountTokenConverted = _token.decimals() < 18 ? _amountToken * (10 ** (18 - _token.decimals())) : _amountToken;
 
-        uint256 reserves = getReserves();
+        uint256 totalValueLocked = getTotalValueLocked();
 
         uint256 rate = getRateImpact(_token, _amountToken);
 
-        uint256 projectedStabl3CirculatingSupply = ((reserves + amountTokenConverted) * (10 ** 6)) / rate;
+        uint256 stabl3CollateralPool = getTreasuryPool[STABL3_COLLATERAL_POOL][STABL3];
 
-        uint256 amountStabl3 = projectedStabl3CirculatingSupply - stabl3CirculatingSupply;
+        uint256 projectedStabl3CirculatingSupply = ((amountTokenConverted + totalValueLocked) * (10 ** 6)) / rate;
+
+        uint256 amountStabl3 = projectedStabl3CirculatingSupply - stabl3CirculatingSupply - stabl3CollateralPool;
 
         return amountStabl3;
     }
@@ -260,12 +264,14 @@ contract Treasury is Ownable {
             return 0;
         }
 
-        uint256 projectedStabl3CirculatingSupply = _amountStabl3 + stabl3CirculatingSupply;
+        uint256 stabl3CollateralPool = getTreasuryPool[STABL3_COLLATERAL_POOL][STABL3];
 
-        uint256 reserves = getReserves();
+        uint256 projectedStabl3CirculatingSupply = _amountStabl3 + stabl3CirculatingSupply + stabl3CollateralPool;
+
+        uint256 totalValueLocked = getTotalValueLocked();
 
         uint256 amountTokenConverted =
-            ((((projectedStabl3CirculatingSupply * rateInfo.rate) / (10 ** 6)) - reserves) * (10 ** 18)) /
+            ((((projectedStabl3CirculatingSupply * rateInfo.rate) / (10 ** 6)) - totalValueLocked) * (10 ** 18)) /
             ((1 * (10 ** 18)) - ((projectedStabl3CirculatingSupply * rateInfo.rateImpactSlope) / (10 ** 6)));
 
         uint256 amountToken = _token.decimals() < 18 ? amountTokenConverted / (10 ** (18 - _token.decimals())) : amountTokenConverted;
