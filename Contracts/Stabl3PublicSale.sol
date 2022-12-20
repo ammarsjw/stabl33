@@ -140,7 +140,7 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
         exchangeLimitPercentage = _exchangeLimitPercentage;
     }
 
-    function updateSaleState(bool _state) external onlyOwner {
+    function updateState(bool _state) external onlyOwner {
         require(saleState != _state, "Stabl3PublicSale: Sale State is already this state");
         saleState = _state;
     }

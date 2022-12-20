@@ -134,7 +134,7 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
         exchangePoolsUCD = _exchangePoolsUCD;
     }
 
-    function updateBorrowState(bool _state) external onlyOwner {
+    function updateState(bool _state) external onlyOwner {
         require(borrowState != _state, "Stabl3Borrowing: Borrow State is already this state");
         borrowState = _state;
     }

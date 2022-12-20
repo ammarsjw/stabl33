@@ -68,10 +68,8 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
     // all users
     address[] public getStakers;
 
-    /**
-     * @notice Stores each user's lifetime staking records
-     * @dev No deductions when unstaking
-     */
+    // user's lifetime staking records
+    // no deductions when unstaking
     mapping (address => mapping (bool => Record)) public getRecords;
 
     // contracts with permission to access Stabl3 Staking functions
@@ -235,13 +233,13 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         unstakeFeePercentage = _unstakeFeePercentage;
     }
 
-    function updateEmergencyState(bool _state) external onlyOwner {
-        require (emergencyState != _state, "Stabl3Staking: Emergency State is already this state");
-        emergencyTime = _state ? block.timestamp : 0;
-        emergencyState = _state;
+    function updateEmergencyState(bool _emergencyState) external onlyOwner {
+        require (emergencyState != _emergencyState, "Stabl3Staking: Emergency State is already this state");
+        emergencyTime = _emergencyState ? block.timestamp : 0;
+        emergencyState = _emergencyState;
     }
 
-    function updateStakeState(bool _state) external onlyOwner {
+    function updateState(bool _state) external onlyOwner {
         require(stakeState != _state, "Stabl3Staking: Stake State is already this state");
         stakeState = _state;
     }
