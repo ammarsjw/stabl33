@@ -907,6 +907,21 @@ export class Stabl3Staking extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
+  STABL3(): Address {
+    let result = super.call("STABL3", "STABL3():(address)", []);
+
+    return result[0].toAddress();
+  }
+
+  try_STABL3(): ethereum.CallResult<Address> {
+    let result = super.tryCall("STABL3", "STABL3():(address)", []);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+
   allStakersLength(): BigInt {
     let result = super.call(
       "allStakersLength",
@@ -1052,6 +1067,25 @@ export class Stabl3Staking extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toBoolean());
+  }
+
+  emergencyTime(): BigInt {
+    let result = super.call("emergencyTime", "emergencyTime():(uint256)", []);
+
+    return result[0].toBigInt();
+  }
+
+  try_emergencyTime(): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "emergencyTime",
+      "emergencyTime():(uint256)",
+      []
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
   getAmountRewardAll(
@@ -1523,21 +1557,6 @@ export class Stabl3Staking extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toBoolean());
-  }
-
-  stabl3(): Address {
-    let result = super.call("stabl3", "stabl3():(address)", []);
-
-    return result[0].toAddress();
-  }
-
-  try_stabl3(): ethereum.CallResult<Address> {
-    let result = super.tryCall("stabl3", "stabl3():(address)", []);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toAddress());
   }
 
   stakeState(): boolean {

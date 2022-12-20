@@ -196,6 +196,36 @@ export class ROI extends ethereum.SmartContract {
     return new ROI("ROI", address);
   }
 
+  STABL3(): Address {
+    let result = super.call("STABL3", "STABL3():(address)", []);
+
+    return result[0].toAddress();
+  }
+
+  try_STABL3(): ethereum.CallResult<Address> {
+    let result = super.tryCall("STABL3", "STABL3():(address)", []);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+
+  UCD(): Address {
+    let result = super.call("UCD", "UCD():(address)", []);
+
+    return result[0].toAddress();
+  }
+
+  try_UCD(): ethereum.CallResult<Address> {
+    let result = super.tryCall("UCD", "UCD():(address)", []);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+
   contractCreationTime(): BigInt {
     let result = super.call(
       "contractCreationTime",
@@ -441,21 +471,6 @@ export class ROI extends ethereum.SmartContract {
     );
   }
 
-  stabl3(): Address {
-    let result = super.call("stabl3", "stabl3():(address)", []);
-
-    return result[0].toAddress();
-  }
-
-  try_stabl3(): ethereum.CallResult<Address> {
-    let result = super.tryCall("stabl3", "stabl3():(address)", []);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toAddress());
-  }
-
   stabl3Staking(): Address {
     let result = super.call("stabl3Staking", "stabl3Staking():(address)", []);
 
@@ -534,21 +549,6 @@ export class ROI extends ethereum.SmartContract {
 
   try_treasury(): ethereum.CallResult<Address> {
     let result = super.tryCall("treasury", "treasury():(address)", []);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toAddress());
-  }
-
-  ucd(): Address {
-    let result = super.call("ucd", "ucd():(address)", []);
-
-    return result[0].toAddress();
-  }
-
-  try_ucd(): ethereum.CallResult<Address> {
-    let result = super.tryCall("ucd", "ucd():(address)", []);
     if (result.reverted) {
       return new ethereum.CallResult();
     }
