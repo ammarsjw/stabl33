@@ -16,6 +16,8 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
 
     uint8 private constant BOND_POOL = 1;
 
+    uint8 private constant STABL3_RESERVED_POOL = 25;
+
     ITreasury public treasury;
     IROI public ROI;
     address public HQ;
@@ -231,6 +233,10 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
         require(timestampToConsider < bondInfo.expiryTime, "Stabl3Bonding: Bond has expired");
         require(bondInfo.bondAmountConsumed + amountTokenConverted <= bondInfo.bondAmount, "Stabl3Bonding: Bond limit reached");
 
+        uint256 amountStabl3 = treasury.getAmountOut(_token, _amountToken);
+
+        amountStabl3 = amountStabl3.mul(1000).div(1000 - bondInfo.discount);
+
         {
             uint256 amountTreasury = _amountToken.mul(treasuryPercentage).div(1000);
 
@@ -248,11 +254,8 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
             SafeERC20.safeTransferFrom(_token, msg.sender, HQ, amountHQ);
 
             treasury.updatePool(BOND_POOL, _token, amountTreasury, amountROI, amountHQ, true);
+            treasury.updatePool(STABL3_RESERVED_POOL, STABL3, amountStabl3, 0, 0, true);
         }
-
-        uint256 amountStabl3 = treasury.getAmountOut(_token, _amountToken);
-
-        amountStabl3 = amountStabl3.mul(1000).div(1000 - bondInfo.discount);
 
         Bonding memory bonding;
         bonding.index = getBondings[msg.sender].length;
@@ -337,6 +340,7 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
 
         record.totalAmountStabl3 += bonding.amountStabl3;
 
+        treasury.updatePool(STABL3_RESERVED_POOL, STABL3, bonding.amountStabl3, 0, 0, false);
         treasury.updateStabl3CirculatingSupply(bonding.amountStabl3, true);
 
         emit ClaimedBond(

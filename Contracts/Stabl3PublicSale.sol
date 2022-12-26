@@ -148,6 +148,8 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
     function buy(IERC20 _token, uint256 _amountToken) external saleActive reserved(_token) nonReentrant {
         require(_amountToken > 0, "Stabl3PublicSale: Insufficient amount");
 
+        uint256 amountStabl3 = treasury.getAmountOut(_token, _amountToken);
+
         uint256 amountTreasury = _amountToken.mul(treasuryPercentage).div(1000);
 
         uint256 amountROI = _amountToken.mul(ROIPercentage).div(1000);
@@ -163,12 +165,11 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
         SafeERC20.safeTransferFrom(_token, msg.sender, address(ROI), amountROI);
         SafeERC20.safeTransferFrom(_token, msg.sender, HQ, amountHQ);
 
-        uint256 amountStabl3 = treasury.getAmountOut(_token, _amountToken);
-
         STABL3.transferFrom(address(treasury), msg.sender, amountStabl3);
 
         treasury.updatePool(BUY_POOL, _token, amountTreasury, amountROI, amountHQ, true);
         treasury.updateStabl3CirculatingSupply(amountStabl3, true);
+
         treasury.updateRate(_token, _amountToken);
 
         ROI.updateAPR();
@@ -244,26 +245,27 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
         uint256 fee = _amountToken.mul(treasury.exchangeFee()).div(1000);
         uint256 amountTokenWithFee = _amountToken - fee;
 
-        SafeERC20.safeTransferFrom(_token, msg.sender, address(ROI), fee);
-
+        // buy
         uint256 amountStabl3 = treasury.getAmountOut(_token, fee);
+
+        SafeERC20.safeTransferFrom(_token, msg.sender, address(ROI), fee);
 
         STABL3.transferFrom(address(treasury), msg.sender, amountStabl3);
 
         treasury.updatePool(BUY_POOL, _token, 0, fee, 0, true);
         treasury.updateStabl3CirculatingSupply(amountStabl3, true);
+
         treasury.updateRate(_token, fee);
 
-        ROI.updateAPR();
-
-        emit Buy(msg.sender, amountStabl3, _token, fee, block.timestamp);
-
+        // exchange
         SafeERC20.safeTransferFrom(_exchangingToken, address(treasury), msg.sender, amountExchangingToken);
 
         SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), amountTokenWithFee);
 
         treasury.updatePool(BUY_POOL, _exchangingToken, amountExchangingToken, 0, 0, false);
         treasury.updatePool(BUY_POOL, _token, amountTokenWithFee, 0, 0, true);
+
+        ROI.updateAPR();
 
         emit Exchange(msg.sender, _exchangingToken, amountExchangingToken, _token, amountTokenWithFee, fee, block.timestamp);
     }

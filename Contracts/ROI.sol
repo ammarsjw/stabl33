@@ -129,8 +129,8 @@ contract ROI is Ownable, IStabl3StakingStruct {
         TimeWeightedAPR memory endTimeWeightedAPR;
         uint256 endAPR;
 
-        for (uint256 i = _endTimeWeight ; i >= _startTimeWeight && i > 0 ; i--) {
-            if (getTimeWeightedAPRs[i].timeWeight != 0) {
+        for (uint256 i = _endTimeWeight ; i >= _startTimeWeight && i >= 0 ; i--) {
+            if (getTimeWeightedAPRs[i].timeWeight != 0 || i == 0) {
                 endTimeWeightedAPR.APR = getTimeWeightedAPRs[i].APR;
                 endTimeWeightedAPR.timeWeight = i;
 
@@ -174,6 +174,12 @@ contract ROI is Ownable, IStabl3StakingStruct {
         }
 
         emit UpdatedPermission(_contractAddress, _state);
+    }
+
+    function updatePermissionMultiple(address[] memory _contractAddresses, bool _state) public onlyOwner {
+        for (uint256 i = 0 ; i < _contractAddresses.length ; i++) {
+            updatePermission(_contractAddresses[i], _state);
+        }
     }
 
     function getTotalRewardDistributed() public view returns (uint256) {

@@ -28,6 +28,8 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
     uint8 private constant STAKING_TYPE_POOL = 20;
 
+    uint8 private constant STABL3_RESERVED_POOL = 25;
+
     uint256 private immutable oneDayTime;
     uint256 private immutable oneYearTime;
 
@@ -144,7 +146,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         // TODO change
         HQ = 0x294d0487fdf7acecf342ae70AFc5549A6E90f3e0;
 
-        stabl3StakingHelper = new Stabl3StakingHelper();
+        stabl3StakingHelper = new Stabl3StakingHelper(_ROI);
 
         // TODO change
         STABL3 = IERC20(0xc3Bf0c0172E3638d383361801e9BF63B4FfE0d6e);
@@ -272,6 +274,12 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         emit UpdatedPermission(_contractAddress, _state);
     }
 
+    function updatePermissionMultiple(address[] memory _contractAddresses, bool _state) public onlyOwner {
+        for (uint256 i = 0 ; i < _contractAddresses.length ; i++) {
+            updatePermission(_contractAddresses[i], _state);
+        }
+    }
+
     function stake(
         IERC20 _token,
         uint256 _amountToken,
@@ -310,8 +318,9 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
             SafeERC20.safeTransferFrom(_token, msg.sender, address(ROI), amountTokenLending);
 
             treasury.updatePool(LEND_POOL, _token, amountTreasury + amountHQ, amountROI, amountHQ, true);
-
             treasury.updatePool(BUY_POOL, _token, 0, amountTokenLending, 0, true);
+            treasury.updatePool(STABL3_RESERVED_POOL, STABL3, amountStabl3Lending, 0, 0, true);
+
             treasury.updateRate(_token, amountTokenLending);
         }
         else {
@@ -508,6 +517,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
             record.totalAmountStabl3Withdrawn += amountStabl3Lending;
 
+            treasury.updatePool(STABL3_RESERVED_POOL, STABL3, amountStabl3Lending, 0, 0, false);
             treasury.updateStabl3CirculatingSupply(amountStabl3Lending, true);
 
             emit ClaimedLendingStabl3(

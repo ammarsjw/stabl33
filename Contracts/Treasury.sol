@@ -18,6 +18,8 @@ contract Treasury is Ownable {
 
     uint8 private constant STABL3_COLLATERAL_POOL = 11;
 
+    uint8 private constant STABL3_RESERVED_POOL = 25;
+
     IUniswapV2Router02 public uniswapRouter;
     IUniswapV2Factory public uniswapFactory;
 
@@ -163,6 +165,12 @@ contract Treasury is Ownable {
         emit UpdatedPermission(_contractAddress, _state);
     }
 
+    function updatePermissionMultiple(address[] memory _contractAddresses, bool _state) public onlyOwner {
+        for (uint256 i = 0 ; i < _contractAddresses.length ; i++) {
+            updatePermission(_contractAddresses[i], _state);
+        }
+    }
+
     function updateReservedToken(IERC20 _token, bool _state) public onlyOwner {
         require(isReservedToken[_token] != _state, "Treasury: Reserved token is already this state");
         isReservedToken[_token] = _state;
@@ -250,11 +258,11 @@ contract Treasury is Ownable {
 
         uint256 rate = getRateImpact(_token, _amountToken);
 
-        uint256 stabl3CollateralPool = getTreasuryPool[STABL3_COLLATERAL_POOL][STABL3];
-
         uint256 projectedStabl3CirculatingSupply = ((amountTokenConverted + totalValueLocked) * (10 ** 6)) / rate;
 
-        uint256 amountStabl3 = projectedStabl3CirculatingSupply - stabl3CirculatingSupply - stabl3CollateralPool;
+        uint256 amountStabl3Locked = getTreasuryPool[STABL3_COLLATERAL_POOL][STABL3] + getTreasuryPool[STABL3_RESERVED_POOL][STABL3];
+
+        uint256 amountStabl3 = projectedStabl3CirculatingSupply - (stabl3CirculatingSupply + amountStabl3Locked);
 
         return amountStabl3;
     }
@@ -264,9 +272,9 @@ contract Treasury is Ownable {
             return 0;
         }
 
-        uint256 stabl3CollateralPool = getTreasuryPool[STABL3_COLLATERAL_POOL][STABL3];
+        uint256 amountStabl3Locked = getTreasuryPool[STABL3_COLLATERAL_POOL][STABL3] + getTreasuryPool[STABL3_RESERVED_POOL][STABL3];
 
-        uint256 projectedStabl3CirculatingSupply = _amountStabl3 + stabl3CirculatingSupply + stabl3CollateralPool;
+        uint256 projectedStabl3CirculatingSupply = _amountStabl3 + (stabl3CirculatingSupply + amountStabl3Locked);
 
         uint256 totalValueLocked = getTotalValueLocked();
 

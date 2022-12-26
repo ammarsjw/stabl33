@@ -14,11 +14,13 @@ contract Stabl3StakingHelper is IStabl3StakingStruct {
     uint256 private immutable oneDayTime;
     uint256 private immutable oneYearTime;
 
+    IROI public ROI;
+
     IStabl3Staking public stabl3Staking;
 
     // constructor
 
-    constructor() {
+    constructor(address _ROI) {
         // TODO remove
         // oneDayTime = 8 minutes;
         // oneYearTime = 48 hours;
@@ -26,6 +28,8 @@ contract Stabl3StakingHelper is IStabl3StakingStruct {
         oneYearTime = 3600;
         // oneDayTime = 86400; // 1 day time in seconds
         // oneYearTime = 31104000; // 1 year time in seconds
+
+        ROI = IROI(_ROI);
 
         stabl3Staking = IStabl3Staking(msg.sender);
     }
@@ -165,7 +169,7 @@ contract Stabl3StakingHelper is IStabl3StakingStruct {
             uint256 timestampToConsider =
                 stabl3Staking.emergencyState() ?
                 stabl3Staking.emergencyTime() :
-                _timestamp > endTime ?
+                    _timestamp > endTime ?
                     endTime :
                     _timestamp;
 
@@ -179,10 +183,10 @@ contract Stabl3StakingHelper is IStabl3StakingStruct {
             uint256 numberOfDays = (timestampToConsider - staking.rewardWithdrawTimeLast) / oneDayTime;
 
             if (numberOfDays > 0) {
-                uint256 timeWeightToConsider = (timestampToConsider - stabl3Staking.ROI().contractCreationTime()) / oneDayTime;
+                uint256 timeWeightToConsider = (timestampToConsider - ROI.contractCreationTime()) / oneDayTime;
 
                 TimeWeightedAPR memory timeWeightedAPR =
-                    stabl3Staking.ROI().searchTimeWeightedAPR(staking.timeWeightedAPRLast.timeWeight, timeWeightToConsider);
+                    ROI.searchTimeWeightedAPR(staking.timeWeightedAPRLast.timeWeight, timeWeightToConsider);
 
                 uint256 dAPR = (timeWeightedAPR.APR - staking.timeWeightedAPRLast.APR);
                 uint256 dTimeWeight = (timeWeightedAPR.timeWeight - staking.timeWeightedAPRLast.timeWeight);
