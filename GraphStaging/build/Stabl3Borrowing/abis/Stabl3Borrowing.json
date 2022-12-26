@@ -157,6 +157,25 @@
       {
         "indexed": false,
         "internalType": "uint256",
+        "name": "newBorrowFee",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "oldBorrowFee",
+        "type": "uint256"
+      }
+    ],
+    "name": "UpdatedBorrowFee",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
         "name": "newExchangeFeeUCD",
         "type": "uint256"
       },
@@ -294,6 +313,19 @@
   },
   {
     "inputs": [],
+    "name": "borrowFee",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "borrowState",
     "outputs": [
       {
@@ -313,25 +345,6 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "exchangePoolsUCD",
-    "outputs": [
-      {
-        "internalType": "uint8",
-        "name": "",
-        "type": "uint8"
       }
     ],
     "stateMutability": "view",
@@ -438,6 +451,25 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "returnBorrowingPools",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "newOwner",
         "type": "address"
@@ -464,12 +496,12 @@
   {
     "inputs": [
       {
-        "internalType": "bool",
-        "name": "_state",
-        "type": "bool"
+        "internalType": "uint256",
+        "name": "_borrowFee",
+        "type": "uint256"
       }
     ],
-    "name": "updateBorrowState",
+    "name": "updateBorrowFee",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -483,19 +515,6 @@
       }
     ],
     "name": "updateExchangeFeeUCD",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint8[]",
-        "name": "_exchangePoolsUCD",
-        "type": "uint8[]"
-      }
-    ],
-    "name": "updateExchangePoolsUCD",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -522,6 +541,32 @@
       }
     ],
     "name": "updateROI",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint8[]",
+        "name": "_returnBorrowingPools",
+        "type": "uint8[]"
+      }
+    ],
+    "name": "updateReturnBorrowingPools",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bool",
+        "name": "_state",
+        "type": "bool"
+      }
+    ],
+    "name": "updateState",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

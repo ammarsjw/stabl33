@@ -1111,6 +1111,40 @@ export class UpdatePermissionCall__Outputs {
   }
 }
 
+export class UpdatePermissionMultipleCall extends ethereum.Call {
+  get inputs(): UpdatePermissionMultipleCall__Inputs {
+    return new UpdatePermissionMultipleCall__Inputs(this);
+  }
+
+  get outputs(): UpdatePermissionMultipleCall__Outputs {
+    return new UpdatePermissionMultipleCall__Outputs(this);
+  }
+}
+
+export class UpdatePermissionMultipleCall__Inputs {
+  _call: UpdatePermissionMultipleCall;
+
+  constructor(call: UpdatePermissionMultipleCall) {
+    this._call = call;
+  }
+
+  get _contractAddresses(): Array<Address> {
+    return this._call.inputValues[0].value.toAddressArray();
+  }
+
+  get _state(): boolean {
+    return this._call.inputValues[1].value.toBoolean();
+  }
+}
+
+export class UpdatePermissionMultipleCall__Outputs {
+  _call: UpdatePermissionMultipleCall;
+
+  constructor(call: UpdatePermissionMultipleCall) {
+    this._call = call;
+  }
+}
+
 export class UpdatePoolCall extends ethereum.Call {
   get inputs(): UpdatePoolCall__Inputs {
     return new UpdatePoolCall__Inputs(this);

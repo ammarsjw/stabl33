@@ -40,16 +40,13 @@ export function handleBond(event: BondEvent): void {
   entity.token = event.params.token
   entity.amountToken = event.params.amountToken
   entity.totalAmountToken = event.params.totalAmountToken
-  entity.startTime = event.params.timestamp
-  let x = event.params.timestamp.toI32() + 300
-  entity.endTime = BigInt.fromI32(x)
-
+  entity.startTime = event.params.startTime
+  entity.endTime = event.params.endTime
   id = event.params.bondIndex.toString()
   let entityToRead = CreatedBond.load(id)
   if (entityToRead) {
     entity.discount = entityToRead.discount
   }
-
   entity.save()
 }
 
@@ -65,9 +62,8 @@ export function handleClaimedBond(event: ClaimedBondEvent): void {
   entity.token = event.params.token
   entity.amountToken = event.params.amountToken
   entity.totalAmountStabl3 = event.params.totalAmountStabl3
-  entity.startTime = event.params.timestamp
-  let x = event.params.timestamp.toI32() + 300
-  entity.endTime = BigInt.fromI32(x)
+  entity.startTime = event.params.startTime
+  entity.endTime = event.params.endTime
   entity.save()
 
   let entityToUpdate = Bond.load(id)

@@ -51,8 +51,12 @@ export class Bond__Params {
     return this._event.parameters[6].value.toBigInt();
   }
 
-  get timestamp(): BigInt {
+  get startTime(): BigInt {
     return this._event.parameters[7].value.toBigInt();
+  }
+
+  get endTime(): BigInt {
+    return this._event.parameters[8].value.toBigInt();
   }
 }
 
@@ -97,8 +101,12 @@ export class ClaimedBond__Params {
     return this._event.parameters[6].value.toBigInt();
   }
 
-  get timestamp(): BigInt {
+  get startTime(): BigInt {
     return this._event.parameters[7].value.toBigInt();
+  }
+
+  get endTime(): BigInt {
+    return this._event.parameters[8].value.toBigInt();
   }
 }
 
@@ -307,8 +315,8 @@ export class Stabl3Bonding__getBondInfoResult {
 }
 
 export class Stabl3Bonding__getBondingsResult {
-  value0: BigInt;
-  value1: Address;
+  value0: Address;
+  value1: BigInt;
   value2: BigInt;
   value3: boolean;
   value4: BigInt;
@@ -318,8 +326,8 @@ export class Stabl3Bonding__getBondingsResult {
   value8: BigInt;
 
   constructor(
-    value0: BigInt,
-    value1: Address,
+    value0: Address,
+    value1: BigInt,
     value2: BigInt,
     value3: boolean,
     value4: BigInt,
@@ -341,8 +349,8 @@ export class Stabl3Bonding__getBondingsResult {
 
   toMap(): TypedMap<string, ethereum.Value> {
     let map = new TypedMap<string, ethereum.Value>();
-    map.set("value0", ethereum.Value.fromUnsignedBigInt(this.value0));
-    map.set("value1", ethereum.Value.fromAddress(this.value1));
+    map.set("value0", ethereum.Value.fromAddress(this.value0));
+    map.set("value1", ethereum.Value.fromUnsignedBigInt(this.value1));
     map.set("value2", ethereum.Value.fromUnsignedBigInt(this.value2));
     map.set("value3", ethereum.Value.fromBoolean(this.value3));
     map.set("value4", ethereum.Value.fromUnsignedBigInt(this.value4));
@@ -353,11 +361,11 @@ export class Stabl3Bonding__getBondingsResult {
     return map;
   }
 
-  getIndex(): BigInt {
+  getUser(): Address {
     return this.value0;
   }
 
-  getUser(): Address {
+  getIndex(): BigInt {
     return this.value1;
   }
 
@@ -582,7 +590,7 @@ export class Stabl3Bonding extends ethereum.SmartContract {
   ): Stabl3Bonding__getBondingsResult {
     let result = super.call(
       "getBondings",
-      "getBondings(address,uint256):(uint256,address,uint256,bool,uint256,address,uint256,uint256,uint256)",
+      "getBondings(address,uint256):(address,uint256,uint256,bool,uint256,address,uint256,uint256,uint256)",
       [
         ethereum.Value.fromAddress(param0),
         ethereum.Value.fromUnsignedBigInt(param1)
@@ -590,8 +598,8 @@ export class Stabl3Bonding extends ethereum.SmartContract {
     );
 
     return new Stabl3Bonding__getBondingsResult(
-      result[0].toBigInt(),
-      result[1].toAddress(),
+      result[0].toAddress(),
+      result[1].toBigInt(),
       result[2].toBigInt(),
       result[3].toBoolean(),
       result[4].toBigInt(),
@@ -608,7 +616,7 @@ export class Stabl3Bonding extends ethereum.SmartContract {
   ): ethereum.CallResult<Stabl3Bonding__getBondingsResult> {
     let result = super.tryCall(
       "getBondings",
-      "getBondings(address,uint256):(uint256,address,uint256,bool,uint256,address,uint256,uint256,uint256)",
+      "getBondings(address,uint256):(address,uint256,uint256,bool,uint256,address,uint256,uint256,uint256)",
       [
         ethereum.Value.fromAddress(param0),
         ethereum.Value.fromUnsignedBigInt(param1)
@@ -620,8 +628,8 @@ export class Stabl3Bonding extends ethereum.SmartContract {
     let value = result.value;
     return ethereum.CallResult.fromValue(
       new Stabl3Bonding__getBondingsResult(
-        value[0].toBigInt(),
-        value[1].toAddress(),
+        value[0].toAddress(),
+        value[1].toBigInt(),
         value[2].toBigInt(),
         value[3].toBoolean(),
         value[4].toBigInt(),
@@ -1027,36 +1035,6 @@ export class TransferOwnershipCall__Outputs {
   }
 }
 
-export class UpdateBondStateCall extends ethereum.Call {
-  get inputs(): UpdateBondStateCall__Inputs {
-    return new UpdateBondStateCall__Inputs(this);
-  }
-
-  get outputs(): UpdateBondStateCall__Outputs {
-    return new UpdateBondStateCall__Outputs(this);
-  }
-}
-
-export class UpdateBondStateCall__Inputs {
-  _call: UpdateBondStateCall;
-
-  constructor(call: UpdateBondStateCall) {
-    this._call = call;
-  }
-
-  get _state(): boolean {
-    return this._call.inputValues[0].value.toBoolean();
-  }
-}
-
-export class UpdateBondStateCall__Outputs {
-  _call: UpdateBondStateCall;
-
-  constructor(call: UpdateBondStateCall) {
-    this._call = call;
-  }
-}
-
 export class UpdateBondingClaimTimeCall extends ethereum.Call {
   get inputs(): UpdateBondingClaimTimeCall__Inputs {
     return new UpdateBondingClaimTimeCall__Inputs(this);
@@ -1181,6 +1159,36 @@ export class UpdateROICall__Outputs {
   _call: UpdateROICall;
 
   constructor(call: UpdateROICall) {
+    this._call = call;
+  }
+}
+
+export class UpdateStateCall extends ethereum.Call {
+  get inputs(): UpdateStateCall__Inputs {
+    return new UpdateStateCall__Inputs(this);
+  }
+
+  get outputs(): UpdateStateCall__Outputs {
+    return new UpdateStateCall__Outputs(this);
+  }
+}
+
+export class UpdateStateCall__Inputs {
+  _call: UpdateStateCall;
+
+  constructor(call: UpdateStateCall) {
+    this._call = call;
+  }
+
+  get _state(): boolean {
+    return this._call.inputValues[0].value.toBoolean();
+  }
+}
+
+export class UpdateStateCall__Outputs {
+  _call: UpdateStateCall;
+
+  constructor(call: UpdateStateCall) {
     this._call = call;
   }
 }

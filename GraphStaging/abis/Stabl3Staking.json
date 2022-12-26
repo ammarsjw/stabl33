@@ -1573,7 +1573,7 @@
     "inputs": [
       {
         "internalType": "bool",
-        "name": "_state",
+        "name": "_emergencyState",
         "type": "bool"
       }
     ],
@@ -1642,6 +1642,24 @@
   {
     "inputs": [
       {
+        "internalType": "address[]",
+        "name": "_contractAddresses",
+        "type": "address[]"
+      },
+      {
+        "internalType": "bool",
+        "name": "_state",
+        "type": "bool"
+      }
+    ],
+    "name": "updatePermissionMultiple",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_ROI",
         "type": "address"
@@ -1673,7 +1691,7 @@
         "type": "bool"
       }
     ],
-    "name": "updateStakeState",
+    "name": "updateState",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

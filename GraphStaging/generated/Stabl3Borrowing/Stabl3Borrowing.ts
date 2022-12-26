@@ -138,6 +138,28 @@ export class Payback__Params {
   }
 }
 
+export class UpdatedBorrowFee extends ethereum.Event {
+  get params(): UpdatedBorrowFee__Params {
+    return new UpdatedBorrowFee__Params(this);
+  }
+}
+
+export class UpdatedBorrowFee__Params {
+  _event: UpdatedBorrowFee;
+
+  constructor(event: UpdatedBorrowFee) {
+    this._event = event;
+  }
+
+  get newBorrowFee(): BigInt {
+    return this._event.parameters[0].value.toBigInt();
+  }
+
+  get oldBorrowFee(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
+  }
+}
+
 export class UpdatedExchangeFeeUCD extends ethereum.Event {
   get params(): UpdatedExchangeFeeUCD__Params {
     return new UpdatedExchangeFeeUCD__Params(this);
@@ -348,6 +370,21 @@ export class Stabl3Borrowing extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toAddress());
   }
 
+  borrowFee(): BigInt {
+    let result = super.call("borrowFee", "borrowFee():(uint256)", []);
+
+    return result[0].toBigInt();
+  }
+
+  try_borrowFee(): ethereum.CallResult<BigInt> {
+    let result = super.tryCall("borrowFee", "borrowFee():(uint256)", []);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
   borrowState(): boolean {
     let result = super.call("borrowState", "borrowState():(bool)", []);
 
@@ -380,29 +417,6 @@ export class Stabl3Borrowing extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
-  exchangePoolsUCD(param0: BigInt): i32 {
-    let result = super.call(
-      "exchangePoolsUCD",
-      "exchangePoolsUCD(uint256):(uint8)",
-      [ethereum.Value.fromUnsignedBigInt(param0)]
-    );
-
-    return result[0].toI32();
-  }
-
-  try_exchangePoolsUCD(param0: BigInt): ethereum.CallResult<i32> {
-    let result = super.tryCall(
-      "exchangePoolsUCD",
-      "exchangePoolsUCD(uint256):(uint8)",
-      [ethereum.Value.fromUnsignedBigInt(param0)]
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toI32());
   }
 
   getBorrowings(param0: Address): Stabl3Borrowing__getBorrowingsResult {
@@ -486,6 +500,29 @@ export class Stabl3Borrowing extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+
+  returnBorrowingPools(param0: BigInt): i32 {
+    let result = super.call(
+      "returnBorrowingPools",
+      "returnBorrowingPools(uint256):(uint8)",
+      [ethereum.Value.fromUnsignedBigInt(param0)]
+    );
+
+    return result[0].toI32();
+  }
+
+  try_returnBorrowingPools(param0: BigInt): ethereum.CallResult<i32> {
+    let result = super.tryCall(
+      "returnBorrowingPools",
+      "returnBorrowingPools(uint256):(uint8)",
+      [ethereum.Value.fromUnsignedBigInt(param0)]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toI32());
   }
 
   treasury(): Address {
@@ -688,32 +725,32 @@ export class TransferOwnershipCall__Outputs {
   }
 }
 
-export class UpdateBorrowStateCall extends ethereum.Call {
-  get inputs(): UpdateBorrowStateCall__Inputs {
-    return new UpdateBorrowStateCall__Inputs(this);
+export class UpdateBorrowFeeCall extends ethereum.Call {
+  get inputs(): UpdateBorrowFeeCall__Inputs {
+    return new UpdateBorrowFeeCall__Inputs(this);
   }
 
-  get outputs(): UpdateBorrowStateCall__Outputs {
-    return new UpdateBorrowStateCall__Outputs(this);
+  get outputs(): UpdateBorrowFeeCall__Outputs {
+    return new UpdateBorrowFeeCall__Outputs(this);
   }
 }
 
-export class UpdateBorrowStateCall__Inputs {
-  _call: UpdateBorrowStateCall;
+export class UpdateBorrowFeeCall__Inputs {
+  _call: UpdateBorrowFeeCall;
 
-  constructor(call: UpdateBorrowStateCall) {
+  constructor(call: UpdateBorrowFeeCall) {
     this._call = call;
   }
 
-  get _state(): boolean {
-    return this._call.inputValues[0].value.toBoolean();
+  get _borrowFee(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
   }
 }
 
-export class UpdateBorrowStateCall__Outputs {
-  _call: UpdateBorrowStateCall;
+export class UpdateBorrowFeeCall__Outputs {
+  _call: UpdateBorrowFeeCall;
 
-  constructor(call: UpdateBorrowStateCall) {
+  constructor(call: UpdateBorrowFeeCall) {
     this._call = call;
   }
 }
@@ -744,36 +781,6 @@ export class UpdateExchangeFeeUCDCall__Outputs {
   _call: UpdateExchangeFeeUCDCall;
 
   constructor(call: UpdateExchangeFeeUCDCall) {
-    this._call = call;
-  }
-}
-
-export class UpdateExchangePoolsUCDCall extends ethereum.Call {
-  get inputs(): UpdateExchangePoolsUCDCall__Inputs {
-    return new UpdateExchangePoolsUCDCall__Inputs(this);
-  }
-
-  get outputs(): UpdateExchangePoolsUCDCall__Outputs {
-    return new UpdateExchangePoolsUCDCall__Outputs(this);
-  }
-}
-
-export class UpdateExchangePoolsUCDCall__Inputs {
-  _call: UpdateExchangePoolsUCDCall;
-
-  constructor(call: UpdateExchangePoolsUCDCall) {
-    this._call = call;
-  }
-
-  get _exchangePoolsUCD(): Array<i32> {
-    return this._call.inputValues[0].value.toI32Array();
-  }
-}
-
-export class UpdateExchangePoolsUCDCall__Outputs {
-  _call: UpdateExchangePoolsUCDCall;
-
-  constructor(call: UpdateExchangePoolsUCDCall) {
     this._call = call;
   }
 }
@@ -834,6 +841,66 @@ export class UpdateROICall__Outputs {
   _call: UpdateROICall;
 
   constructor(call: UpdateROICall) {
+    this._call = call;
+  }
+}
+
+export class UpdateReturnBorrowingPoolsCall extends ethereum.Call {
+  get inputs(): UpdateReturnBorrowingPoolsCall__Inputs {
+    return new UpdateReturnBorrowingPoolsCall__Inputs(this);
+  }
+
+  get outputs(): UpdateReturnBorrowingPoolsCall__Outputs {
+    return new UpdateReturnBorrowingPoolsCall__Outputs(this);
+  }
+}
+
+export class UpdateReturnBorrowingPoolsCall__Inputs {
+  _call: UpdateReturnBorrowingPoolsCall;
+
+  constructor(call: UpdateReturnBorrowingPoolsCall) {
+    this._call = call;
+  }
+
+  get _returnBorrowingPools(): Array<i32> {
+    return this._call.inputValues[0].value.toI32Array();
+  }
+}
+
+export class UpdateReturnBorrowingPoolsCall__Outputs {
+  _call: UpdateReturnBorrowingPoolsCall;
+
+  constructor(call: UpdateReturnBorrowingPoolsCall) {
+    this._call = call;
+  }
+}
+
+export class UpdateStateCall extends ethereum.Call {
+  get inputs(): UpdateStateCall__Inputs {
+    return new UpdateStateCall__Inputs(this);
+  }
+
+  get outputs(): UpdateStateCall__Outputs {
+    return new UpdateStateCall__Outputs(this);
+  }
+}
+
+export class UpdateStateCall__Inputs {
+  _call: UpdateStateCall;
+
+  constructor(call: UpdateStateCall) {
+    this._call = call;
+  }
+
+  get _state(): boolean {
+    return this._call.inputValues[0].value.toBoolean();
+  }
+}
+
+export class UpdateStateCall__Outputs {
+  _call: UpdateStateCall;
+
+  constructor(call: UpdateStateCall) {
     this._call = call;
   }
 }

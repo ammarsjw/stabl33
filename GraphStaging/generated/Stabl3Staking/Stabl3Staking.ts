@@ -2118,7 +2118,7 @@ export class UpdateEmergencyStateCall__Inputs {
     this._call = call;
   }
 
-  get _state(): boolean {
+  get _emergencyState(): boolean {
     return this._call.inputValues[0].value.toBoolean();
   }
 }
@@ -2255,6 +2255,40 @@ export class UpdatePermissionCall__Outputs {
   }
 }
 
+export class UpdatePermissionMultipleCall extends ethereum.Call {
+  get inputs(): UpdatePermissionMultipleCall__Inputs {
+    return new UpdatePermissionMultipleCall__Inputs(this);
+  }
+
+  get outputs(): UpdatePermissionMultipleCall__Outputs {
+    return new UpdatePermissionMultipleCall__Outputs(this);
+  }
+}
+
+export class UpdatePermissionMultipleCall__Inputs {
+  _call: UpdatePermissionMultipleCall;
+
+  constructor(call: UpdatePermissionMultipleCall) {
+    this._call = call;
+  }
+
+  get _contractAddresses(): Array<Address> {
+    return this._call.inputValues[0].value.toAddressArray();
+  }
+
+  get _state(): boolean {
+    return this._call.inputValues[1].value.toBoolean();
+  }
+}
+
+export class UpdatePermissionMultipleCall__Outputs {
+  _call: UpdatePermissionMultipleCall;
+
+  constructor(call: UpdatePermissionMultipleCall) {
+    this._call = call;
+  }
+}
+
 export class UpdateROICall extends ethereum.Call {
   get inputs(): UpdateROICall__Inputs {
     return new UpdateROICall__Inputs(this);
@@ -2315,20 +2349,20 @@ export class UpdateStabl3StakingHelperCall__Outputs {
   }
 }
 
-export class UpdateStakeStateCall extends ethereum.Call {
-  get inputs(): UpdateStakeStateCall__Inputs {
-    return new UpdateStakeStateCall__Inputs(this);
+export class UpdateStateCall extends ethereum.Call {
+  get inputs(): UpdateStateCall__Inputs {
+    return new UpdateStateCall__Inputs(this);
   }
 
-  get outputs(): UpdateStakeStateCall__Outputs {
-    return new UpdateStakeStateCall__Outputs(this);
+  get outputs(): UpdateStateCall__Outputs {
+    return new UpdateStateCall__Outputs(this);
   }
 }
 
-export class UpdateStakeStateCall__Inputs {
-  _call: UpdateStakeStateCall;
+export class UpdateStateCall__Inputs {
+  _call: UpdateStateCall;
 
-  constructor(call: UpdateStakeStateCall) {
+  constructor(call: UpdateStateCall) {
     this._call = call;
   }
 
@@ -2337,10 +2371,10 @@ export class UpdateStakeStateCall__Inputs {
   }
 }
 
-export class UpdateStakeStateCall__Outputs {
-  _call: UpdateStakeStateCall;
+export class UpdateStateCall__Outputs {
+  _call: UpdateStateCall;
 
-  constructor(call: UpdateStakeStateCall) {
+  constructor(call: UpdateStateCall) {
     this._call = call;
   }
 }

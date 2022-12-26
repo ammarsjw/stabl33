@@ -63,7 +63,13 @@
             {
                 "indexed": false,
                 "internalType": "uint256",
-                "name": "timestamp",
+                "name": "startTime",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "endTime",
                 "type": "uint256"
             }
         ],
@@ -118,7 +124,13 @@
             {
                 "indexed": false,
                 "internalType": "uint256",
-                "name": "timestamp",
+                "name": "startTime",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "endTime",
                 "type": "uint256"
             }
         ],
@@ -469,14 +481,14 @@
         "name": "getBondings",
         "outputs": [
             {
-                "internalType": "uint256",
-                "name": "index",
-                "type": "uint256"
-            },
-            {
                 "internalType": "address",
                 "name": "user",
                 "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "index",
+                "type": "uint256"
             },
             {
                 "internalType": "uint256",
@@ -664,19 +676,6 @@
     {
         "inputs": [
             {
-                "internalType": "bool",
-                "name": "_state",
-                "type": "bool"
-            }
-        ],
-        "name": "updateBondState",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
                 "internalType": "uint256",
                 "name": "_bondingClaimTime",
                 "type": "uint256"
@@ -732,6 +731,19 @@
             }
         ],
         "name": "updateROI",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bool",
+                "name": "_state",
+                "type": "bool"
+            }
+        ],
+        "name": "updateState",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
