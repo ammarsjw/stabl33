@@ -46,7 +46,7 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
         uint256 amountUCD;
     }
 
-    // mappings
+    // storage
 
     mapping (address => Borrowing) public getBorrowings;
 

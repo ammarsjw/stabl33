@@ -44,7 +44,7 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
         uint256 lastExchangeTime;
     }
 
-    // mappings
+    // storage
 
     mapping (address => Limit) public getLimit;
 

@@ -33,29 +33,33 @@ contract Treasury is Ownable {
 
     uint256 public exchangeFee;
 
-    RateInfo private rateInfo;
+    // TODO edit visibility
+    uint256 public rateImpactSlope;
+    RateInfo public rateInfo;
 
     // structs
 
+    /// @dev rate is in 18 decimals
     struct RateInfo {
         uint256 rate;
-        uint256 rateImpactSlope;
+        uint256 totalValueLocked;
+        uint256 stabl3CirculatingSupply;
     }
 
-    // mappings
+    // storage
 
-    // reserved tokens to buy STABL3
+    /// @dev reserved tokens that interact with the protocol
     mapping (IERC20 => bool) public isReservedToken;
 
-    // array for reserved tokens
+    /// @dev array for iteration of reserved tokens
     IERC20[] public allReservedTokens;
 
-    // record for funds pooled
+    /// @dev record for funds pooled
     mapping (uint8 => mapping(IERC20 => uint256)) public getTreasuryPool;
     mapping (uint8 => mapping(IERC20 => uint256)) public getROIPool;
     mapping (uint8 => mapping(IERC20 => uint256)) public getHQPool;
 
-    // contracts with permission to access treasury funds
+    /// @dev contracts with permission to access treasury funds
     mapping (address => bool) public permitted;
 
     // events
@@ -96,8 +100,10 @@ contract Treasury is Ownable {
 
         exchangeFee = 3;
 
+        rateImpactSlope = 0.000000000699993 * (10 ** 18);
         rateInfo.rate = 0.0007 * (10 ** 18);
-        rateInfo.rateImpactSlope = 0.000000000699993 * (10 ** 18);
+        // rateInfo.stabl3CirculatingSupply = 0;
+        // rateInfo.totalValueLocked = 0;
 
         // TODO change
         IERC20 USDC = IERC20(0x16c1038a989E7c52c7B0FBDE889249C02d7e205D);
@@ -229,12 +235,10 @@ contract Treasury is Ownable {
         return totalValueLocked;
     }
 
-    /// @dev rate is in 18 decimals
     function getRate() external view returns (uint256) {
         return rateInfo.rate;
     }
 
-    /// @dev rate is in 18 decimals
     function getRateImpact(IERC20 _token, uint256 _amountToken) public view reserved(_token) returns (uint256) {
         if (_amountToken == 0) {
             return rateInfo.rate;
@@ -242,27 +246,23 @@ contract Treasury is Ownable {
 
         uint256 amountTokenConverted = _token.decimals() < 18 ? _amountToken * (10 ** (18 - _token.decimals())) : _amountToken;
 
-        uint256 rate = rateInfo.rate + ((amountTokenConverted * rateInfo.rateImpactSlope) / (10 ** 18));
+        uint256 rate = rateInfo.rate + ((amountTokenConverted * rateImpactSlope) / (10 ** 18));
 
         return rate;
     }
 
-    function getAmountOut(IERC20 _token, uint256 _amountToken) external view returns (uint256) {
+    function getAmountOut(IERC20 _token, uint256 _amountToken) public view returns (uint256) {
         if (_amountToken == 0 || STABL3.balanceOf(address(this)) == 0) {
             return 0;
         }
 
-        uint256 amountTokenConverted = _token.decimals() < 18 ? _amountToken * (10 ** (18 - _token.decimals())) : _amountToken;
-
-        uint256 totalValueLocked = getTotalValueLocked();
-
         uint256 rate = getRateImpact(_token, _amountToken);
 
-        uint256 projectedStabl3CirculatingSupply = ((amountTokenConverted + totalValueLocked) * (10 ** 6)) / rate;
+        uint256 amountTokenConverted = _token.decimals() < 18 ? _amountToken * (10 ** (18 - _token.decimals())) : _amountToken;
 
-        uint256 amountStabl3Locked = getTreasuryPool[STABL3_COLLATERAL_POOL][STABL3] + getTreasuryPool[STABL3_RESERVED_POOL][STABL3];
+        uint256 projectedStabl3CirculatingSupply = ((amountTokenConverted + rateInfo.totalValueLocked) * (10 ** 6)) / rate;
 
-        uint256 amountStabl3 = projectedStabl3CirculatingSupply - (stabl3CirculatingSupply + amountStabl3Locked);
+        uint256 amountStabl3 = projectedStabl3CirculatingSupply.safeSub(rateInfo.stabl3CirculatingSupply);
 
         return amountStabl3;
     }
@@ -272,15 +272,11 @@ contract Treasury is Ownable {
             return 0;
         }
 
-        uint256 amountStabl3Locked = getTreasuryPool[STABL3_COLLATERAL_POOL][STABL3] + getTreasuryPool[STABL3_RESERVED_POOL][STABL3];
-
-        uint256 projectedStabl3CirculatingSupply = _amountStabl3 + (stabl3CirculatingSupply + amountStabl3Locked);
-
-        uint256 totalValueLocked = getTotalValueLocked();
+        uint256 projectedStabl3CirculatingSupply = _amountStabl3 + rateInfo.stabl3CirculatingSupply;
 
         uint256 amountTokenConverted =
-            ((((projectedStabl3CirculatingSupply * rateInfo.rate) / (10 ** 6)) - totalValueLocked) * (10 ** 18)) /
-            ((1 * (10 ** 18)) - ((projectedStabl3CirculatingSupply * rateInfo.rateImpactSlope) / (10 ** 6)));
+            ((((projectedStabl3CirculatingSupply * rateInfo.rate) / (10 ** 6)) - rateInfo.totalValueLocked) * (10 ** 18)) /
+            ((1 * (10 ** 18)) - ((projectedStabl3CirculatingSupply * rateImpactSlope) / (10 ** 6)));
 
         uint256 amountToken = _token.decimals() < 18 ? amountTokenConverted / (10 ** (18 - _token.decimals())) : amountTokenConverted;
 
@@ -364,6 +360,11 @@ contract Treasury is Ownable {
     }
 
     function updateRate(IERC20 _token, uint256 _amountToken) external permission reserved(_token) {
+        rateInfo.stabl3CirculatingSupply += getAmountOut(_token, _amountToken);
+        rateInfo.totalValueLocked +=
+            _token.decimals() < 18 ?
+            _amountToken * (10 ** (18 - _token.decimals())) :
+            _amountToken;
         rateInfo.rate = getRateImpact(_token, _amountToken);
 
         uint256 reserves = getReserves();

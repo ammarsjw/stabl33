@@ -34,6 +34,9 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
 
     bool public bondState;
 
+    /// @dev current bond set by the admin/owner
+    BondInfo public getBondInfo;
+
     // structs
 
     struct BondInfo {
@@ -62,19 +65,13 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
         uint256 totalAmountStabl3;
     }
 
-    // mappings
+    // storage
 
-    // current bond set by the admin/owner
-    BondInfo public getBondInfo;
-
-    // user bondings
+    /// @dev user bondings
     mapping (address => Bonding[]) public getBondings;
 
-    // user lifetime bonding records
+    /// @dev user lifetime bonding records
     mapping (address => Record) public getRecords;
-
-    // admins are accounts that have permission to access certain bonding functions
-    // mapping (address => bool) public admin;
 
     // events
 
@@ -85,8 +82,6 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
     event UpdatedHQ(address newHQ, address oldHQ);
 
     event UpdatedBondingClaimTime(uint256 newBondingClaimTime, uint256 oldBondingClaimTime);
-
-    // event UpdatedAdmin(address account, bool state);
 
     event CreatedBond(
         uint256 bondIndex,
@@ -181,12 +176,6 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
         require(bondState != _state, "Stabl3Bonding: Bond State is already this state");
         bondState = _state;
     }
-
-    // function updateAdmin(address _account, bool _state) external onlyOwner {
-    //     require(admin[_account] != _state, "Stabl3Bonding: Account is already this state");
-    //     admin[_account] = _state;
-    //     emit UpdatedAdmin(_account, _state);
-    // }
 
     /**
      * @dev Once created the bond cannot be changed
@@ -368,11 +357,6 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
         require(bondState, "Stabl3Bonding: Bond not yet started");
         _;
     }
-
-    // modifier onlyAdmin() {
-    //     require(admin[msg.sender] || msg.sender == owner(), "Stabl3Bonding: Caller is not an admin");
-    //     _;
-    // }
 
     modifier reserved(IERC20 _token) {
         require(treasury.isReservedToken(_token), "Stabl3Bonding: Not a reserved token");

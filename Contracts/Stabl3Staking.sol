@@ -62,19 +62,21 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
     bool public stakeState;
 
-    // mappings
+    // storage
 
-    // user stakings
+    /// @dev user stakings
     mapping (address => Staking[]) public getStakings;
 
-    // all users
+    /// @dev all users
     address[] public getStakers;
 
-    // user's lifetime staking records
-    // no deductions when unstaking
+    /**
+     * @dev user's lifetime staking records
+     * @dev no deductions when unstaking
+     */
     mapping (address => mapping (bool => Record)) public getRecords;
 
-    // contracts with permission to access Stabl3 Staking functions
+    /// @dev contracts with permission to access Stabl33 Staking functions
     mapping (address => bool) public permitted;
 
     // events
