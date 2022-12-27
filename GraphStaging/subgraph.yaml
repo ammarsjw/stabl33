@@ -6,7 +6,7 @@ dataSources:
     name: Treasury
     network: mumbai
     source:
-      address: "0xEFD025cB4C3E20C8ADaD275CF5008aDf40135ccF"
+      address: "0x4227a9Eb8b82b9d5DBD562D0E406bD9c0b1ED4f3"
       abi: Treasury
       startBlock: 30201724
     mapping:
