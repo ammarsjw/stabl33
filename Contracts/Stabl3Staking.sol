@@ -30,8 +30,11 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
     uint8 private constant STABL3_RESERVED_POOL = 25;
 
-    uint256 private immutable oneDayTime;
-    uint256 private immutable oneYearTime;
+    // TODO remove
+    uint256 private constant oneDayTime = 10;
+    uint256 private constant oneYearTime = 3600;
+    // uint256 private constant oneDayTime = 86400; // 1 day time in seconds
+    // uint256 private constant oneYearTime = 31536000; // 1 year time in seconds
 
     ITreasury public treasury;
     IROI public ROI;
@@ -135,14 +138,6 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
     // constructor
 
     constructor(address _treasury, address _ROI) {
-        // TODO remove
-        // oneDayTime = 8 minutes;
-        // oneYearTime = 48 hours;
-        oneDayTime = 10;
-        oneYearTime = 3600;
-        // oneDayTime = 86400; // 1 day time in seconds
-        // oneYearTime = 31104000; // 1 year time in seconds
-
         treasury = ITreasury(_treasury);
         ROI = IROI(_ROI);
         // TODO change
@@ -160,16 +155,11 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         lendingStabl3Percentage = 200;
         // TODO remove
         lendingStabl3ClaimTime = 300;
-        // lendingStabl3ClaimTime = 2592000; // 1 month time in seconds
+        // lendingStabl3ClaimTime = 2628000; // 1 month time in seconds
 
         // TODO remove
-        // lockTimes = [0, 12 hours, 24 hours, 36 hours, 48 hours];
         lockTimes = [0, 900, 1800, 2700, 3600];
-        // lockTimes = [0, 7776000, 15552000, 23328000, 31104000]; // 3, 6, 9 and 12 months time in seconds
-
-        // TODO use times like this to complete 365 days
-        // 31+28+31, 30+31+30, 31+31+30, 31+30+31
-        // 90, 91, 92, 92
+        // lockTimes = [0, 7884000, 15768000, 23652000, 31536000]; // 3, 6, 9 and 12 months time in seconds
 
         unstakeFeePercentage = 50;
     }

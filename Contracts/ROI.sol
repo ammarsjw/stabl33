@@ -26,7 +26,9 @@ contract ROI is Ownable, IStabl3StakingStruct {
 
     uint8 private constant STAKING_TYPE_POOL = 20;
 
-    uint256 private immutable oneDayTime;
+    // TODO remove
+    uint256 private constant oneDayTime = 10;
+    // uint256 private constant oneDayTime = 86400; // 1 day time in seconds
 
     ITreasury public treasury;
 
@@ -71,11 +73,6 @@ contract ROI is Ownable, IStabl3StakingStruct {
     // constructor
 
     constructor(ITreasury _treasury) {
-        // TODO remove
-        // oneDayTime = 8 minutes;
-        oneDayTime = 10;
-        // oneDayTime = 86400; // 1 day time in seconds
-
         treasury = _treasury;
 
         // TODO change

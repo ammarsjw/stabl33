@@ -11,8 +11,11 @@ import "./IStabl3StakingStruct.sol";
 contract Stabl3StakingHelper is IStabl3StakingStruct {
     using SafeMathUpgradeable for uint256;
 
-    uint256 private immutable oneDayTime;
-    uint256 private immutable oneYearTime;
+    // TODO remove
+    uint256 private constant oneDayTime = 10;
+    uint256 private constant oneYearTime = 3600;
+    // uint256 private constant oneDayTime = 86400; // 1 day time in seconds
+    // uint256 private constant oneYearTime = 31536000; // 1 year time in seconds
 
     IROI public ROI;
 
@@ -21,14 +24,6 @@ contract Stabl3StakingHelper is IStabl3StakingStruct {
     // constructor
 
     constructor(address _ROI) {
-        // TODO remove
-        // oneDayTime = 8 minutes;
-        // oneYearTime = 48 hours;
-        oneDayTime = 10;
-        oneYearTime = 3600;
-        // oneDayTime = 86400; // 1 day time in seconds
-        // oneYearTime = 31104000; // 1 year time in seconds
-
         ROI = IROI(_ROI);
 
         stabl3Staking = IStabl3Staking(msg.sender);
