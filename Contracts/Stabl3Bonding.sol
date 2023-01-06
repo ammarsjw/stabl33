@@ -3,7 +3,6 @@
 pragma solidity 0.8.17;
 
 import "./Ownable.sol";
-import "./ReentrancyGuard.sol";
 
 import "./SafeMathUpgradeable.sol";
 import "./SafeERC20.sol";
@@ -11,7 +10,7 @@ import "./SafeERC20.sol";
 import "./ITreasury.sol";
 import "./IROI.sol";
 
-contract Stabl3Bonding is Ownable, ReentrancyGuard {
+contract Stabl3Bonding is Ownable {
     using SafeMathUpgradeable for uint256;
 
     uint8 private constant BOND_POOL = 1;
@@ -34,7 +33,7 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
 
     bool public bondState;
 
-    /// @dev current bond set by the admin/owner
+    /// @dev Current bond set by the admin/owner
     BondInfo public getBondInfo;
 
     // structs
@@ -67,10 +66,10 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
 
     // storage
 
-    /// @dev user bondings
+    /// @dev User bondings
     mapping (address => Bonding[]) public getBondings;
 
-    /// @dev user lifetime bonding records
+    /// @dev User lifetime bonding records
     mapping (address => Record) public getRecords;
 
     // events
@@ -181,7 +180,7 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
      * @dev Once created the bond cannot be changed
      * @dev A new bond can only be started once the current one's time expires or the bond amount is fully consumed
      * @param _bondAmount in 18 decimals
-     * @param _discount all percentages are magnified by 10
+     * @param _discount percentage magnified by 10
      * @param _duration in seconds
      */
     function createBond(
@@ -210,7 +209,7 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
         emit CreatedBond(bondInfo.bondIndex, bondInfo.bondAmount, bondInfo.discount, bondInfo.startTime, bondInfo.expiryTime);
     }
 
-    function bond(IERC20 _token, uint256 _amountToken) external bondActive reserved(_token) nonReentrant {
+    function bond(IERC20 _token, uint256 _amountToken) external bondActive reserved(_token) {
         require(_amountToken > 0, "Stabl3Bonding: Insufficient amount");
 
         BondInfo storage bondInfo = getBondInfo;
@@ -223,14 +222,12 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
         require(bondInfo.bondAmountConsumed + amountTokenConverted <= bondInfo.bondAmount, "Stabl3Bonding: Bond limit reached");
 
         uint256 amountStabl3 = treasury.getAmountOut(_token, _amountToken);
-
         amountStabl3 = amountStabl3.mul(1000).div(1000 - bondInfo.discount);
+        treasury.checkOutputAmount(amountStabl3);
 
         {
             uint256 amountTreasury = _amountToken.mul(treasuryPercentage).div(1000);
-
             uint256 amountROI = _amountToken.mul(ROIPercentage).div(1000);
-
             uint256 amountHQ = _amountToken.mul(HQPercentage).div(1000);
 
             uint256 totalAmountDistributed = amountTreasury + amountROI + amountHQ;
@@ -313,7 +310,7 @@ contract Stabl3Bonding is Ownable, ReentrancyGuard {
         return totalClaimableBond;
     }
 
-    function claimBondSingle(uint256 _index) public bondActive nonReentrant {
+    function claimBondSingle(uint256 _index) public bondActive {
         Bonding storage bonding = getBondings[msg.sender][_index];
 
         uint256 timestampToConsider = block.timestamp;

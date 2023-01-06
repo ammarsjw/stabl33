@@ -245,6 +245,66 @@ export class Treasury extends ethereum.SmartContract {
     return new Treasury("Treasury", address);
   }
 
+  HQ(): Address {
+    let result = super.call("HQ", "HQ():(address)", []);
+
+    return result[0].toAddress();
+  }
+
+  try_HQ(): ethereum.CallResult<Address> {
+    let result = super.tryCall("HQ", "HQ():(address)", []);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+
+  ROI(): Address {
+    let result = super.call("ROI", "ROI():(address)", []);
+
+    return result[0].toAddress();
+  }
+
+  try_ROI(): ethereum.CallResult<Address> {
+    let result = super.tryCall("ROI", "ROI():(address)", []);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+
+  STABL3(): Address {
+    let result = super.call("STABL3", "STABL3():(address)", []);
+
+    return result[0].toAddress();
+  }
+
+  try_STABL3(): ethereum.CallResult<Address> {
+    let result = super.tryCall("STABL3", "STABL3():(address)", []);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+
+  UCD(): Address {
+    let result = super.call("UCD", "UCD():(address)", []);
+
+    return result[0].toAddress();
+  }
+
+  try_UCD(): ethereum.CallResult<Address> {
+    let result = super.tryCall("UCD", "UCD():(address)", []);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+
   allPools(_type: i32, _token: Address): Treasury__allPoolsResult {
     let result = super.call(
       "allPools",
@@ -515,6 +575,35 @@ export class Treasury extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
+  getROIPool(param0: i32, param1: Address): BigInt {
+    let result = super.call(
+      "getROIPool",
+      "getROIPool(uint8,address):(uint256)",
+      [
+        ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(param0)),
+        ethereum.Value.fromAddress(param1)
+      ]
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_getROIPool(param0: i32, param1: Address): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "getROIPool",
+      "getROIPool(uint8,address):(uint256)",
+      [
+        ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(param0)),
+        ethereum.Value.fromAddress(param1)
+      ]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
   getRate(): BigInt {
     let result = super.call("getRate", "getRate():(uint256)", []);
 
@@ -577,35 +666,6 @@ export class Treasury extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
-  getROIPool(param0: i32, param1: Address): BigInt {
-    let result = super.call(
-      "getROIPool",
-      "getROIPool(uint8,address):(uint256)",
-      [
-        ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(param0)),
-        ethereum.Value.fromAddress(param1)
-      ]
-    );
-
-    return result[0].toBigInt();
-  }
-
-  try_getROIPool(param0: i32, param1: Address): ethereum.CallResult<BigInt> {
-    let result = super.tryCall(
-      "getROIPool",
-      "getROIPool(uint8,address):(uint256)",
-      [
-        ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(param0)),
-        ethereum.Value.fromAddress(param1)
-      ]
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
   getTotalValueLocked(): BigInt {
     let result = super.call(
       "getTotalValueLocked",
@@ -661,21 +721,6 @@ export class Treasury extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
-  HQ(): Address {
-    let result = super.call("HQ", "HQ():(address)", []);
-
-    return result[0].toAddress();
-  }
-
-  try_HQ(): ethereum.CallResult<Address> {
-    let result = super.tryCall("HQ", "HQ():(address)", []);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toAddress());
-  }
-
   isReservedToken(param0: Address): boolean {
     let result = super.call(
       "isReservedToken",
@@ -697,6 +742,29 @@ export class Treasury extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toBoolean());
+  }
+
+  lockedStabl3Pools(param0: BigInt): i32 {
+    let result = super.call(
+      "lockedStabl3Pools",
+      "lockedStabl3Pools(uint256):(uint8)",
+      [ethereum.Value.fromUnsignedBigInt(param0)]
+    );
+
+    return result[0].toI32();
+  }
+
+  try_lockedStabl3Pools(param0: BigInt): ethereum.CallResult<i32> {
+    let result = super.tryCall(
+      "lockedStabl3Pools",
+      "lockedStabl3Pools(uint256):(uint8)",
+      [ethereum.Value.fromUnsignedBigInt(param0)]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toI32());
   }
 
   owner(): Address {
@@ -733,29 +801,6 @@ export class Treasury extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBoolean());
   }
 
-  rateImpactSlope(): BigInt {
-    let result = super.call(
-      "rateImpactSlope",
-      "rateImpactSlope():(uint256)",
-      []
-    );
-
-    return result[0].toBigInt();
-  }
-
-  try_rateImpactSlope(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall(
-      "rateImpactSlope",
-      "rateImpactSlope():(uint256)",
-      []
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
   rateInfo(): Treasury__rateInfoResult {
     let result = super.call(
       "rateInfo",
@@ -789,29 +834,22 @@ export class Treasury extends ethereum.SmartContract {
     );
   }
 
-  ROI(): Address {
-    let result = super.call("ROI", "ROI():(address)", []);
+  reservedTokenSelector(): Address {
+    let result = super.call(
+      "reservedTokenSelector",
+      "reservedTokenSelector():(address)",
+      []
+    );
 
     return result[0].toAddress();
   }
 
-  try_ROI(): ethereum.CallResult<Address> {
-    let result = super.tryCall("ROI", "ROI():(address)", []);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toAddress());
-  }
-
-  STABL3(): Address {
-    let result = super.call("STABL3", "STABL3():(address)", []);
-
-    return result[0].toAddress();
-  }
-
-  try_STABL3(): ethereum.CallResult<Address> {
-    let result = super.tryCall("STABL3", "STABL3():(address)", []);
+  try_reservedTokenSelector(): ethereum.CallResult<Address> {
+    let result = super.tryCall(
+      "reservedTokenSelector",
+      "reservedTokenSelector():(address)",
+      []
+    );
     if (result.reverted) {
       return new ethereum.CallResult();
     }
@@ -871,21 +909,6 @@ export class Treasury extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
-  UCD(): Address {
-    let result = super.call("UCD", "UCD():(address)", []);
-
-    return result[0].toAddress();
-  }
-
-  try_UCD(): ethereum.CallResult<Address> {
-    let result = super.tryCall("UCD", "UCD():(address)", []);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toAddress());
-  }
-
   uniswapFactory(): Address {
     let result = super.call("uniswapFactory", "uniswapFactory():(address)", []);
 
@@ -925,6 +948,32 @@ export class Treasury extends ethereum.SmartContract {
   }
 }
 
+export class ConstructorCall extends ethereum.Call {
+  get inputs(): ConstructorCall__Inputs {
+    return new ConstructorCall__Inputs(this);
+  }
+
+  get outputs(): ConstructorCall__Outputs {
+    return new ConstructorCall__Outputs(this);
+  }
+}
+
+export class ConstructorCall__Inputs {
+  _call: ConstructorCall;
+
+  constructor(call: ConstructorCall) {
+    this._call = call;
+  }
+}
+
+export class ConstructorCall__Outputs {
+  _call: ConstructorCall;
+
+  constructor(call: ConstructorCall) {
+    this._call = call;
+  }
+}
+
 export class DelegateApproveCall extends ethereum.Call {
   get inputs(): DelegateApproveCall__Inputs {
     return new DelegateApproveCall__Inputs(this);
@@ -959,32 +1008,6 @@ export class DelegateApproveCall__Outputs {
   _call: DelegateApproveCall;
 
   constructor(call: DelegateApproveCall) {
-    this._call = call;
-  }
-}
-
-export class ConstructorCall extends ethereum.Call {
-  get inputs(): ConstructorCall__Inputs {
-    return new ConstructorCall__Inputs(this);
-  }
-
-  get outputs(): ConstructorCall__Outputs {
-    return new ConstructorCall__Outputs(this);
-  }
-}
-
-export class ConstructorCall__Inputs {
-  _call: ConstructorCall;
-
-  constructor(call: ConstructorCall) {
-    this._call = call;
-  }
-}
-
-export class ConstructorCall__Outputs {
-  _call: ConstructorCall;
-
-  constructor(call: ConstructorCall) {
     this._call = call;
   }
 }
@@ -1165,6 +1188,36 @@ export class UpdateHQCall__Outputs {
   }
 }
 
+export class UpdateLockedStabl3PoolsCall extends ethereum.Call {
+  get inputs(): UpdateLockedStabl3PoolsCall__Inputs {
+    return new UpdateLockedStabl3PoolsCall__Inputs(this);
+  }
+
+  get outputs(): UpdateLockedStabl3PoolsCall__Outputs {
+    return new UpdateLockedStabl3PoolsCall__Outputs(this);
+  }
+}
+
+export class UpdateLockedStabl3PoolsCall__Inputs {
+  _call: UpdateLockedStabl3PoolsCall;
+
+  constructor(call: UpdateLockedStabl3PoolsCall) {
+    this._call = call;
+  }
+
+  get _lockedStabl3Pools(): Array<i32> {
+    return this._call.inputValues[0].value.toI32Array();
+  }
+}
+
+export class UpdateLockedStabl3PoolsCall__Outputs {
+  _call: UpdateLockedStabl3PoolsCall;
+
+  constructor(call: UpdateLockedStabl3PoolsCall) {
+    this._call = call;
+  }
+}
+
 export class UpdatePermissionCall extends ethereum.Call {
   get inputs(): UpdatePermissionCall__Inputs {
     return new UpdatePermissionCall__Inputs(this);
@@ -1283,6 +1336,36 @@ export class UpdatePoolCall__Outputs {
   }
 }
 
+export class UpdateROICall extends ethereum.Call {
+  get inputs(): UpdateROICall__Inputs {
+    return new UpdateROICall__Inputs(this);
+  }
+
+  get outputs(): UpdateROICall__Outputs {
+    return new UpdateROICall__Outputs(this);
+  }
+}
+
+export class UpdateROICall__Inputs {
+  _call: UpdateROICall;
+
+  constructor(call: UpdateROICall) {
+    this._call = call;
+  }
+
+  get _ROI(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+}
+
+export class UpdateROICall__Outputs {
+  _call: UpdateROICall;
+
+  constructor(call: UpdateROICall) {
+    this._call = call;
+  }
+}
+
 export class UpdateRateCall extends ethereum.Call {
   get inputs(): UpdateRateCall__Inputs {
     return new UpdateRateCall__Inputs(this);
@@ -1347,36 +1430,6 @@ export class UpdateReservedTokenCall__Outputs {
   _call: UpdateReservedTokenCall;
 
   constructor(call: UpdateReservedTokenCall) {
-    this._call = call;
-  }
-}
-
-export class UpdateROICall extends ethereum.Call {
-  get inputs(): UpdateROICall__Inputs {
-    return new UpdateROICall__Inputs(this);
-  }
-
-  get outputs(): UpdateROICall__Outputs {
-    return new UpdateROICall__Outputs(this);
-  }
-}
-
-export class UpdateROICall__Inputs {
-  _call: UpdateROICall;
-
-  constructor(call: UpdateROICall) {
-    this._call = call;
-  }
-
-  get _ROI(): Address {
-    return this._call.inputValues[0].value.toAddress();
-  }
-}
-
-export class UpdateROICall__Outputs {
-  _call: UpdateROICall;
-
-  constructor(call: UpdateROICall) {
     this._call = call;
   }
 }

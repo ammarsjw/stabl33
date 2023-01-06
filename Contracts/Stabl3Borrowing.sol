@@ -3,7 +3,6 @@
 pragma solidity 0.8.17;
 
 import "./Ownable.sol";
-import "./ReentrancyGuard.sol";
 
 import "./SafeMathUpgradeable.sol";
 import "./SafeERC20.sol";
@@ -12,7 +11,7 @@ import "./ITreasury.sol";
 import "./IROI.sol";
 import "./IUCD.sol";
 
-contract Stabl3Borrowing is Ownable, ReentrancyGuard {
+contract Stabl3Borrowing is Ownable {
     using SafeMathUpgradeable for uint256;
 
     uint8 private constant UCD_BORROW_POOL = 8;
@@ -20,22 +19,24 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
     uint8 private constant UCD_TO_TOKEN_EXCHANGE_POOL = 10;
     uint8 private constant STABL3_COLLATERAL_POOL = 11;
 
-    uint8 private constant UNCONSOLIDATED_FEE_POOL = 26;
+    address public donationWallet;
 
     ITreasury public treasury;
     IROI public ROI;
-    address public HQ;
 
     IERC20 public immutable STABL3;
 
     IUCD public UCD;
 
-    uint256 private burnedUCD;
+    uint256 public buybackPercentage;
+    uint256 public donationPercentage;
 
     uint256 public borrowFee;
     uint256 public exchangeFeeUCD;
 
     uint8[] public returnBorrowingPools;
+
+    uint256 private burnedUCD;
 
     bool public borrowState;
 
@@ -52,11 +53,11 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
 
     // events
 
+    event UpdatedDonationWallet(address newDonationWallet, address oldDonationWallet);
+
     event UpdatedTreasury(address newTreasury, address oldTreasury);
 
     event UpdatedROI(address newROI, address oldROI);
-
-    event UpdatedHQ(address newHQ, address oldHQ);
 
     event UpdatedBorrowFee(uint256 newBorrowFee, uint256 oldBorrowFee);
 
@@ -90,10 +91,11 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
     // constructor
 
     constructor(address _treasury, address _ROI) {
+        // TODO change
+        donationWallet = 0x3edCe801a3f1851675e68589844B1b412EAc6B07;
+
         treasury = ITreasury(_treasury);
         ROI = IROI(_ROI);
-        // TODO change
-        HQ = 0x294d0487fdf7acecf342ae70AFc5549A6E90f3e0;
 
         // TODO change
         STABL3 = IERC20(0xc3Bf0c0172E3638d383361801e9BF63B4FfE0d6e);
@@ -101,10 +103,19 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
         // TODO change
         UCD = IUCD(0xB0124F5d0e906d3652d0b58F03E315eC42A57E9a);
 
+        buybackPercentage = 500;
+        donationPercentage = 500;
+
         borrowFee = 50;
         exchangeFeeUCD = 25;
 
         returnBorrowingPools = [0, 1, 2, 5];
+    }
+
+    function updateDonationWallet(address _donationWallet) external onlyOwner {
+        require(donationWallet != _donationWallet, "Stabl3Borrowing: Donation Wallet is already this address");
+        emit UpdatedDonationWallet(_donationWallet, donationWallet);
+        donationWallet = _donationWallet;
     }
 
     function updateTreasury(address _treasury) external onlyOwner {
@@ -119,15 +130,20 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
         ROI = IROI(_ROI);
     }
 
-    function updateHQ(address _HQ) external onlyOwner {
-        require(HQ != _HQ, "Stabl3Borrowing: HQ is already this address");
-        emit UpdatedHQ(_HQ, HQ);
-        HQ = _HQ;
-    }
-
     function updateUCD(address _ucd) external onlyOwner {
         require(address(UCD) != _ucd, "Stabl3Borrowing: UCD is already this address");
         UCD = IUCD(_ucd);
+    }
+
+    function updateDistributionPercentages(
+        uint256 _buybackPercentage,
+        uint256 _donationPercentage
+    ) external onlyOwner {
+        require(_buybackPercentage + _donationPercentage == 1000,
+            "Stabl3PublicSale: Sum of magnified percentages should equal 1000");
+
+        buybackPercentage = _buybackPercentage;
+        donationPercentage = _donationPercentage;
     }
 
     function updateBorrowFee(uint256 _borrowFee) external onlyOwner {
@@ -152,52 +168,25 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
     }
 
     function getReservesUCD() public view returns (uint256 availableUCD, uint256 borrowedUCD, uint256 returnedUCD) {
+        (, uint256 marketCap, ) = treasury.rateInfo();
+
+        uint256 marketCapToConsider = marketCap / (10 ** (18 - UCD.decimals()));
+
         return (
-            ((treasury.getReserves() + ROI.getReserves()) / (10 ** 12)).safeSub(UCD.totalSupply()),
+            marketCapToConsider.safeSub(UCD.totalSupply()),
             UCD.totalSupply(),
             burnedUCD
         );
     }
 
-    function _reservedTokenSelector() internal view returns (IERC20) {
-        IERC20 selectedReservedToken;
-
-        uint256 maxAmountReservedToken;
-
-        for (uint256 i = 0 ; i < treasury.allReservedTokensLength() ; i++) {
-            IERC20 reservedToken = treasury.allReservedTokens(i);
-
-            if (treasury.isReservedToken(reservedToken)) {
-                uint256 amountReservedToken = reservedToken.balanceOf(address(treasury));
-
-                uint256 decimals = reservedToken.decimals();
-
-                uint256 amountReservedTokenConverted =
-                    decimals < 18 ?
-                    (amountReservedToken * (10 ** (18 - decimals))) :
-                    amountReservedToken;
-
-                if (amountReservedTokenConverted > maxAmountReservedToken) {
-                    selectedReservedToken = reservedToken;
-
-                    maxAmountReservedToken = amountReservedTokenConverted;
-                }
-            }
-        }
-
-        return selectedReservedToken;
-    }
-
     /**
      * @dev This function allows users to deposit STABL3 and to receive UCD at current protocol rates
-     * @dev fees in borrow
+     * @dev Fees are cut in the form of stablecoins by reducing amount of UCD
      */
-    function borrow(uint256 _amountStabl3) external borrowActive nonReentrant {
+    function borrow(uint256 _amountStabl3) external borrowActive {
         require(_amountStabl3 > 0, "Stabl3Borrowing: Insufficient amount");
 
-        uint256 rate = treasury.getRate();
-
-        uint256 amountUCD = (_amountStabl3 * rate) / (10 ** 18);
+        uint256 amountUCD = treasury.getAmountIn(_amountStabl3, UCD);
 
         uint256 fee = amountUCD.mul(borrowFee).div(1000);
         uint256 amountUCDWithFee = amountUCD - fee;
@@ -205,7 +194,12 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
         (uint256 availableUCD, , ) = getReservesUCD();
         require(amountUCDWithFee <= availableUCD, "Stabl3Borrowing: Insufficient available UCD");
 
-        IERC20 reservedToken = _reservedTokenSelector();
+        Borrowing storage borrowing = getBorrowings[msg.sender];
+
+        borrowing.amountUCD += amountUCDWithFee;
+        borrowing.amountStabl3 += _amountStabl3;
+
+        IERC20 reservedToken = treasury.reservedTokenSelector();
 
         uint256 decimalsReservedToken = reservedToken.decimals();
         uint256 decimalsUCD = UCD.decimals();
@@ -221,13 +215,6 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
 
         SafeERC20.safeTransferFrom(reservedToken, address(treasury), address(ROI), fee);
 
-        treasury.updatePool(UNCONSOLIDATED_FEE_POOL, reservedToken, 0, fee, 0, true);
-
-        Borrowing storage borrowing = getBorrowings[msg.sender];
-
-        borrowing.amountUCD += amountUCDWithFee;
-        borrowing.amountStabl3 += _amountStabl3;
-
         STABL3.transferFrom(msg.sender, address(treasury), _amountStabl3);
 
         UCD.mintWithPermit(msg.sender, amountUCDWithFee);
@@ -237,30 +224,22 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
 
         treasury.updateStabl3CirculatingSupply(_amountStabl3, false);
 
-        emit Borrow(msg.sender, amountUCDWithFee, _amountStabl3, rate, block.timestamp);
+        emit Borrow(msg.sender, amountUCDWithFee, _amountStabl3, treasury.getRate(), block.timestamp);
     }
 
-    // TODO
-    // DONE when a user has fully returned his UCD do we uncollateralize the rest of his collateralized Stabl3
-    // DONE consider current price when borrowing/paying back
-    // flashloan protection (how to add?)
-    // frontrunning bots -> Slippage (where to add? Stabl3 Purchase and UCD Exchange?)
-    // handle limit in UCD Exchange (ask if this is needed)
-
     /**
-     * @dev This function allows users to repay their borrowed UCD in return for Stabl3 Token at current protocol rates
-     * @dev no fees in payback
+     * @dev This function allows users to repay their borrowed UCD in return for STABL3 at current protocol rates
+     * @dev No fees are cut in this function
      */
-    function payback(uint256 _amountUCD) external borrowActive nonReentrant {
+    function payback(uint256 _amountUCD) external borrowActive {
         require(_amountUCD > 0, "Stabl3Borrowing: Insufficient amount");
 
         Borrowing storage borrowing = getBorrowings[msg.sender];
 
         require(borrowing.amountUCD > 0, "Stabl3Borrowing: No UCD to payback");
 
-        uint256 rate = treasury.getRate();
-
-        uint256 amountStabl3 = (_amountUCD * (10 ** 18)) / rate;
+        uint256 amountStabl3 = treasury.getAmountOut(UCD, _amountUCD);
+        treasury.checkOutputAmount(amountStabl3);
 
         borrowing.amountUCD = borrowing.amountUCD.safeSub(_amountUCD);
         borrowing.amountStabl3 = borrowing.amountStabl3.safeSub(amountStabl3);
@@ -270,26 +249,40 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
 
         STABL3.transferFrom(address(treasury), msg.sender, amountStabl3);
 
-        uint256 amountStabl3ToConsider = amountStabl3;
-
-        if (borrowing.amountUCD == 0) {
-            amountStabl3ToConsider += borrowing.amountStabl3;
-            borrowing.amountStabl3 = 0;
-        }
-
         treasury.updatePool(UCD_PAYBACK_POOL, UCD, _amountUCD, 0, 0, true);
-        treasury.updatePool(STABL3_COLLATERAL_POOL, STABL3, amountStabl3ToConsider, 0, 0, false);
+        treasury.updatePool(STABL3_COLLATERAL_POOL, STABL3, amountStabl3, 0, 0, false);
+        /// @dev Calculating and processing STABL3 amount that is "leftover" after price changes
+        _processLeftoverCollateral(borrowing, _amountUCD, amountStabl3);
 
         treasury.updateStabl3CirculatingSupply(amountStabl3, true);
 
-        emit Payback(msg.sender, _amountUCD, amountStabl3, rate, block.timestamp);
+        emit Payback(msg.sender, _amountUCD, amountStabl3, treasury.getRate(), block.timestamp);
     }
 
-    function exchangeUCD(IERC20 _exchangingToken, uint256 _amountUCD) external borrowActive reserved(_exchangingToken) nonReentrant {
+    /**
+     * @dev Fees are cut from amount of exchanging token
+     */
+    function exchangeUCD(IERC20 _exchangingToken, uint256 _amountUCD) external borrowActive reserved(_exchangingToken) {
         require(_amountUCD > 0, "Stabl3Borrowing: Insufficient amount");
 
-        // TODO
-        // handleLimit?
+        /// @dev Payback the user's debt if they owe any
+        /// @dev If they don't owe any debt, the user is a third-party
+        if (getBorrowings[msg.sender].amountUCD > 0) {
+            Borrowing storage borrowing = getBorrowings[msg.sender];
+
+            uint256 amountStabl3 = treasury.getAmountOut(UCD, _amountUCD);
+            treasury.checkOutputAmount(amountStabl3);
+
+            borrowing.amountUCD = borrowing.amountUCD.safeSub(_amountUCD);
+            borrowing.amountStabl3 = borrowing.amountStabl3.safeSub(amountStabl3);
+
+            UCD.burnWithPermit(msg.sender, _amountUCD);
+            burnedUCD += _amountUCD;
+
+            treasury.updatePool(STABL3_COLLATERAL_POOL, STABL3, amountStabl3, 0, 0, false);
+            /// @dev Calculating and processing collateral STABL3 amount that is "leftover" after price changes
+            _processLeftoverCollateral(borrowing, _amountUCD, amountStabl3);
+        }
 
         uint256 amountExchangingToken = _amountUCD;
 
@@ -313,13 +306,7 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
         _returnBorrowingFunds(_exchangingToken, amountExchangingToken);
 
         SafeERC20.safeTransferFrom(_exchangingToken, address(treasury), address(ROI), fee);
-
-        treasury.updatePool(UNCONSOLIDATED_FEE_POOL, _exchangingToken, 0, fee, 0, true);
-
         SafeERC20.safeTransferFrom(_exchangingToken, address(treasury), msg.sender, amountExchangingTokenWithFee);
-
-        UCD.burnWithPermit(msg.sender, _amountUCD);
-        burnedUCD += _amountUCD;
 
         treasury.updatePool(UCD_TO_TOKEN_EXCHANGE_POOL, _exchangingToken, amountExchangingTokenWithFee, 0, 0, true);
         treasury.updatePool(UCD_TO_TOKEN_EXCHANGE_POOL, UCD, _amountUCD, 0, 0, true);
@@ -327,6 +314,52 @@ contract Stabl3Borrowing is Ownable, ReentrancyGuard {
         emit ExchangeUCD(msg.sender, _exchangingToken, amountExchangingTokenWithFee, _amountUCD, fee, block.timestamp);
     }
 
+    /**
+     * @dev Handling "leftover" collateral STABL3 amount
+     */
+    function _processLeftoverCollateral(Borrowing storage _borrowing, uint256 _paybackUCD, uint256 _paybackStabl3) internal {
+        /// @dev calculating "leftover" collateral STABL3 amount
+        uint256 borrowingRate = _borrowing.amountUCD * (10 ** 18) / _borrowing.amountStabl3;
+
+        uint256 amountStabl3ToConsider = _paybackUCD * (10 ** 18) / borrowingRate;
+
+        uint256 leftoverStabl3 = amountStabl3ToConsider.safeSub(_paybackStabl3);
+
+        /// @dev processing "leftover" collateral STABL3 amount
+        if (leftoverStabl3 > 0) {
+            uint256 buybackStabl3 = leftoverStabl3.mul(buybackPercentage).div(1000);
+            uint256 donationStabl3 = leftoverStabl3.mul(donationPercentage).div(1000);
+
+            uint256 totalAmountStabl3Distributed = buybackStabl3 + donationStabl3;
+            if (leftoverStabl3 > totalAmountStabl3Distributed) {
+                buybackStabl3 += leftoverStabl3 - totalAmountStabl3Distributed;
+            }
+
+            // buyback
+            IERC20 reservedToken = treasury.reservedTokenSelector();
+
+            uint256 amountTokenBuyback = treasury.getAmountIn(buybackStabl3, reservedToken);
+
+            SafeERC20.safeTransferFrom(reservedToken, address(treasury), address(ROI), amountTokenBuyback);
+
+            // donation
+            STABL3.transferFrom(address(treasury), donationWallet, donationStabl3);
+
+            /// @dev Removing "leftover" collateral STABL3 amount from the STABL3 collateral pool
+            treasury.updatePool(STABL3_COLLATERAL_POOL, STABL3, buybackStabl3 + donationStabl3, 0, 0, false);
+
+            /// @dev Buyback STABL3 amount is part of the treasury and hence isn't considered into the circulating supply
+            /// @dev Donation STABL3 amount is not part of the treasury and hence is considered into the circulating supply
+            treasury.updateStabl3CirculatingSupply(donationStabl3, true);
+
+            /// @dev removing "leftover" collateral STABL3 amount from the debt
+            _borrowing.amountStabl3 = _borrowing.amountStabl3.safeSub(buybackStabl3 + donationStabl3);
+        }
+    }
+
+    /**
+     * @dev Calls treasury's updatePool to reduce the treasury amounts
+     */
     function _returnBorrowingFunds(IERC20 _token, uint256 _amountToken) internal {
         uint256 amountToUpdate = _amountToken;
 

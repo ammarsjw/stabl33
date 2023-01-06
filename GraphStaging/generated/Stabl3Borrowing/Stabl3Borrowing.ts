@@ -160,6 +160,28 @@ export class UpdatedBorrowFee__Params {
   }
 }
 
+export class UpdatedDonationWallet extends ethereum.Event {
+  get params(): UpdatedDonationWallet__Params {
+    return new UpdatedDonationWallet__Params(this);
+  }
+}
+
+export class UpdatedDonationWallet__Params {
+  _event: UpdatedDonationWallet;
+
+  constructor(event: UpdatedDonationWallet) {
+    this._event = event;
+  }
+
+  get newDonationWallet(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+
+  get oldDonationWallet(): Address {
+    return this._event.parameters[1].value.toAddress();
+  }
+}
+
 export class UpdatedExchangeFeeUCD extends ethereum.Event {
   get params(): UpdatedExchangeFeeUCD__Params {
     return new UpdatedExchangeFeeUCD__Params(this);
@@ -179,28 +201,6 @@ export class UpdatedExchangeFeeUCD__Params {
 
   get oldExchangeFeeUCD(): BigInt {
     return this._event.parameters[1].value.toBigInt();
-  }
-}
-
-export class UpdatedHQ extends ethereum.Event {
-  get params(): UpdatedHQ__Params {
-    return new UpdatedHQ__Params(this);
-  }
-}
-
-export class UpdatedHQ__Params {
-  _event: UpdatedHQ;
-
-  constructor(event: UpdatedHQ) {
-    this._event = event;
-  }
-
-  get newHQ(): Address {
-    return this._event.parameters[0].value.toAddress();
-  }
-
-  get oldHQ(): Address {
-    return this._event.parameters[1].value.toAddress();
   }
 }
 
@@ -310,21 +310,6 @@ export class Stabl3Borrowing extends ethereum.SmartContract {
     return new Stabl3Borrowing("Stabl3Borrowing", address);
   }
 
-  HQ(): Address {
-    let result = super.call("HQ", "HQ():(address)", []);
-
-    return result[0].toAddress();
-  }
-
-  try_HQ(): ethereum.CallResult<Address> {
-    let result = super.tryCall("HQ", "HQ():(address)", []);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toAddress());
-  }
-
   ROI(): Address {
     let result = super.call("ROI", "ROI():(address)", []);
 
@@ -398,6 +383,71 @@ export class Stabl3Borrowing extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toBoolean());
+  }
+
+  buybackPercentage(): BigInt {
+    let result = super.call(
+      "buybackPercentage",
+      "buybackPercentage():(uint256)",
+      []
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_buybackPercentage(): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "buybackPercentage",
+      "buybackPercentage():(uint256)",
+      []
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
+  donationPercentage(): BigInt {
+    let result = super.call(
+      "donationPercentage",
+      "donationPercentage():(uint256)",
+      []
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_donationPercentage(): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "donationPercentage",
+      "donationPercentage():(uint256)",
+      []
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
+  donationWallet(): Address {
+    let result = super.call("donationWallet", "donationWallet():(address)", []);
+
+    return result[0].toAddress();
+  }
+
+  try_donationWallet(): ethereum.CallResult<Address> {
+    let result = super.tryCall(
+      "donationWallet",
+      "donationWallet():(address)",
+      []
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddress());
   }
 
   exchangeFeeUCD(): BigInt {
@@ -755,6 +805,70 @@ export class UpdateBorrowFeeCall__Outputs {
   }
 }
 
+export class UpdateDistributionPercentagesCall extends ethereum.Call {
+  get inputs(): UpdateDistributionPercentagesCall__Inputs {
+    return new UpdateDistributionPercentagesCall__Inputs(this);
+  }
+
+  get outputs(): UpdateDistributionPercentagesCall__Outputs {
+    return new UpdateDistributionPercentagesCall__Outputs(this);
+  }
+}
+
+export class UpdateDistributionPercentagesCall__Inputs {
+  _call: UpdateDistributionPercentagesCall;
+
+  constructor(call: UpdateDistributionPercentagesCall) {
+    this._call = call;
+  }
+
+  get _buybackPercentage(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
+  }
+
+  get _donationPercentage(): BigInt {
+    return this._call.inputValues[1].value.toBigInt();
+  }
+}
+
+export class UpdateDistributionPercentagesCall__Outputs {
+  _call: UpdateDistributionPercentagesCall;
+
+  constructor(call: UpdateDistributionPercentagesCall) {
+    this._call = call;
+  }
+}
+
+export class UpdateDonationWalletCall extends ethereum.Call {
+  get inputs(): UpdateDonationWalletCall__Inputs {
+    return new UpdateDonationWalletCall__Inputs(this);
+  }
+
+  get outputs(): UpdateDonationWalletCall__Outputs {
+    return new UpdateDonationWalletCall__Outputs(this);
+  }
+}
+
+export class UpdateDonationWalletCall__Inputs {
+  _call: UpdateDonationWalletCall;
+
+  constructor(call: UpdateDonationWalletCall) {
+    this._call = call;
+  }
+
+  get _donationWallet(): Address {
+    return this._call.inputValues[0].value.toAddress();
+  }
+}
+
+export class UpdateDonationWalletCall__Outputs {
+  _call: UpdateDonationWalletCall;
+
+  constructor(call: UpdateDonationWalletCall) {
+    this._call = call;
+  }
+}
+
 export class UpdateExchangeFeeUCDCall extends ethereum.Call {
   get inputs(): UpdateExchangeFeeUCDCall__Inputs {
     return new UpdateExchangeFeeUCDCall__Inputs(this);
@@ -781,36 +895,6 @@ export class UpdateExchangeFeeUCDCall__Outputs {
   _call: UpdateExchangeFeeUCDCall;
 
   constructor(call: UpdateExchangeFeeUCDCall) {
-    this._call = call;
-  }
-}
-
-export class UpdateHQCall extends ethereum.Call {
-  get inputs(): UpdateHQCall__Inputs {
-    return new UpdateHQCall__Inputs(this);
-  }
-
-  get outputs(): UpdateHQCall__Outputs {
-    return new UpdateHQCall__Outputs(this);
-  }
-}
-
-export class UpdateHQCall__Inputs {
-  _call: UpdateHQCall;
-
-  constructor(call: UpdateHQCall) {
-    this._call = call;
-  }
-
-  get _HQ(): Address {
-    return this._call.inputValues[0].value.toAddress();
-  }
-}
-
-export class UpdateHQCall__Outputs {
-  _call: UpdateHQCall;
-
-  constructor(call: UpdateHQCall) {
     this._call = call;
   }
 }

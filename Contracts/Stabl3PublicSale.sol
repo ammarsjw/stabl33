@@ -3,7 +3,6 @@
 pragma solidity 0.8.17;
 
 import "./Ownable.sol";
-import "./ReentrancyGuard.sol";
 
 import "./SafeMathUpgradeable.sol";
 import "./SafeERC20.sol";
@@ -11,7 +10,7 @@ import "./SafeERC20.sol";
 import "./ITreasury.sol";
 import "./IROI.sol";
 
-contract Stabl3PublicSale is Ownable, ReentrancyGuard {
+contract Stabl3PublicSale is Ownable {
     using SafeMathUpgradeable for uint256;
 
     uint8 private constant BUY_POOL = 0;
@@ -145,15 +144,14 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
         saleState = _state;
     }
 
-    function buy(IERC20 _token, uint256 _amountToken) external saleActive reserved(_token) nonReentrant {
+    function buy(IERC20 _token, uint256 _amountToken) external saleActive reserved(_token) {
         require(_amountToken > 0, "Stabl3PublicSale: Insufficient amount");
 
         uint256 amountStabl3 = treasury.getAmountOut(_token, _amountToken);
+        treasury.checkOutputAmount(amountStabl3);
 
         uint256 amountTreasury = _amountToken.mul(treasuryPercentage).div(1000);
-
         uint256 amountROI = _amountToken.mul(ROIPercentage).div(1000);
-
         uint256 amountHQ = _amountToken.mul(HQPercentage).div(1000);
 
         uint256 totalAmountDistributed = amountTreasury + amountROI + amountHQ;
@@ -232,7 +230,7 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
         uint256 _amountExchangingTokenMin,
         IERC20 _token,
         uint256 _amountToken
-    ) external saleActive reserved(_exchangingToken) reserved(_token) nonReentrant {
+    ) external saleActive reserved(_exchangingToken) reserved(_token) {
         require(_exchangingToken != _token, "Stabl3PublicSale: Invalid exchange");
         require(_amountToken > 0, "Stabl3PublicSale: Insufficient amount");
 
@@ -247,6 +245,7 @@ contract Stabl3PublicSale is Ownable, ReentrancyGuard {
 
         // buy
         uint256 amountStabl3 = treasury.getAmountOut(_token, fee);
+        treasury.checkOutputAmount(amountStabl3);
 
         SafeERC20.safeTransferFrom(_token, msg.sender, address(ROI), fee);
 

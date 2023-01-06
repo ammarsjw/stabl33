@@ -8,6 +8,8 @@ interface ITreasury {
 
     function exchangeFee() external view returns (uint256);
 
+    function rateInfo() external view returns (uint256 rate, uint256 totalValueLocked, uint256 stabl3CirculatingSupply);
+
     function isReservedToken(IERC20) external view returns (bool);
 
     function allReservedTokens(uint) external view returns (IERC20);
@@ -27,6 +29,10 @@ interface ITreasury {
     function getReserves() external view returns (uint256);
 
     function getTotalValueLocked() external view returns (uint256);
+
+    function reservedTokenSelector() external view returns (IERC20);
+
+    function checkOutputAmount(uint256 _amountStabl3) external view;
 
     function getRate() external view returns (uint256);
 

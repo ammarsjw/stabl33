@@ -22,7 +22,5 @@
     uint8 private constant STAKING_TYPE_POOL = 20;
     // 21, 22, 23, 24
 
-    uint8 private constant STABL3_RESERVED_POOL = 25;
-
-    uint8 private constant UNCONSOLIDATED_FEE_POOL = 26;
+    uint8 private constant STABL3_LOCKED_POOL = 25;
 }

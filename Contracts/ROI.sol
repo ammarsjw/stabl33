@@ -50,11 +50,11 @@ contract ROI is Ownable, IStabl3StakingStruct {
 
     // storage
 
-    /// @dev saves all Time Weighted and current APRs corresponsing to their Time Weight
+    /// @dev Saves all Time Weighted and current APRs corresponsing to their Time Weight
     mapping (uint256 => TimeWeightedAPR) public getTimeWeightedAPRs;
     mapping (uint256 => uint256) public getAPRs;
 
-    /// @dev contracts with permission to access ROI pool funds
+    /// @dev Contracts with permission to access ROI pool funds
     mapping (address => bool) public permitted;
 
     // events

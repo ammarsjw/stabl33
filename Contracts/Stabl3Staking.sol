@@ -5,7 +5,6 @@ pragma solidity 0.8.17;
 import "./Stabl3StakingHelper.sol";
 
 import "./Ownable.sol";
-import "./ReentrancyGuard.sol";
 
 import "./SafeMathUpgradeable.sol";
 import "./SafeERC20.sol";
@@ -14,7 +13,7 @@ import "./IStabl3StakingStruct.sol";
 import "./ITreasury.sol";
 import "./IROI.sol";
 
-contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
+contract Stabl3Staking is Ownable, IStabl3StakingStruct {
     using SafeMathUpgradeable for uint256;
 
     uint8 private constant BUY_POOL = 0;
@@ -67,19 +66,17 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
     // storage
 
-    /// @dev user stakings
+    /// @dev User stakings
     mapping (address => Staking[]) public getStakings;
 
-    /// @dev all users
+    /// @dev All users
     address[] public getStakers;
 
-    /**
-     * @dev user's lifetime staking records
-     * @dev no deductions when unstaking
-     */
+    /// @dev User's lifetime staking records
+    /// @dev No deductions when unstaking
     mapping (address => mapping (bool => Record)) public getRecords;
 
-    /// @dev contracts with permission to access Stabl33 Staking functions
+    /// @dev Contracts with permission to access Stabl33 Staking functions
     mapping (address => bool) public permitted;
 
     // events
@@ -277,7 +274,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         uint256 _amountToken,
         uint8 _stakingType,
         bool _isLending
-    ) public stakeActive reserved(_token) nonReentrant {
+    ) public stakeActive reserved(_token) {
         require(!emergencyState, "Stabl3Staking: Cannot stake right now");
         require(ROI.getAPR() > 0, "Stabl3Staking: No APR to give");
         require(1 <= _stakingType && _stakingType <= 4, "Stabl3Staking: Incorrect staking type");
@@ -289,13 +286,12 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
 
         if (_isLending) {
             uint256 amountTreasury = _amountToken.mul(treasuryPercentages[1]).div(1000);
-
             uint256 amountROI = _amountToken.mul(ROIPercentages[1]).div(1000);
-
             uint256 amountHQ = _amountToken.mul(HQPercentages[1]).div(1000);
-
             uint256 amountTokenLending = _amountToken.mul(lendingStabl3Percentage).div(1000);
+
             amountStabl3Lending = treasury.getAmountOut(_token, amountTokenLending);
+            treasury.checkOutputAmount(amountStabl3Lending);
 
             uint256 totalAmountDistributed = amountTreasury + amountROI + amountHQ + amountTokenLending;
             if (_amountToken > totalAmountDistributed) {
@@ -317,9 +313,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         }
         else {
             uint256 amountTreasury = _amountToken.mul(treasuryPercentages[0]).div(1000);
-
             uint256 amountROI = _amountToken.mul(ROIPercentages[0]).div(1000);
-
             uint256 amountHQ = _amountToken.mul(HQPercentages[0]).div(1000);
 
             uint256 totalAmountDistributed = amountTreasury + amountROI + amountHQ;
@@ -423,7 +417,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         return stabl3StakingHelper.getAmountRewardAll(_user, _isLending, _isRealEstate);
     }
 
-    function _withdrawAmountRewardSingle(uint256 _index, bool _isLending, uint256 _timestamp) internal nonReentrant {
+    function _withdrawAmountRewardSingle(uint256 _index, bool _isLending, uint256 _timestamp) internal {
         Staking storage staking = getStakings[msg.sender][_index];
 
         uint256 reward = getAmountRewardSingle(msg.sender, _index, _isLending, false, _timestamp);
@@ -497,7 +491,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         return stabl3StakingHelper.getClaimableStabl3LendingAll(_user);
     }
 
-    function _claimStabl3LendingSingle(uint256 _index, uint256 _timestamp) internal nonReentrant {
+    function _claimStabl3LendingSingle(uint256 _index, uint256 _timestamp) internal {
         Staking storage staking = getStakings[msg.sender][_index];
 
         Record storage record = getRecords[msg.sender][true];
@@ -541,7 +535,7 @@ contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
         (totalAmountStakedUnlocked, totalAmountStakedLocked) = stabl3StakingHelper.getAmountStakedAll(_user, _isLending, _isRealEstate);
     }
 
-    function _unstakeSingle(uint256 _index, uint256 _amountToUnstake) internal nonReentrant {
+    function _unstakeSingle(uint256 _index, uint256 _amountToUnstake) internal {
         Staking storage staking = getStakings[msg.sender][_index];
 
         if (staking.amountTokenStaked > staking.token.balanceOf(address(treasury))) {

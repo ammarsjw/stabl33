@@ -175,6 +175,25 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "address",
+        "name": "newDonationWallet",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "oldDonationWallet",
+        "type": "address"
+      }
+    ],
+    "name": "UpdatedDonationWallet",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "uint256",
         "name": "newExchangeFeeUCD",
         "type": "uint256"
@@ -187,25 +206,6 @@
       }
     ],
     "name": "UpdatedExchangeFeeUCD",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "newHQ",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "oldHQ",
-        "type": "address"
-      }
-    ],
-    "name": "UpdatedHQ",
     "type": "event"
   },
   {
@@ -245,19 +245,6 @@
     ],
     "name": "UpdatedTreasury",
     "type": "event"
-  },
-  {
-    "inputs": [],
-    "name": "HQ",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
   },
   {
     "inputs": [],
@@ -332,6 +319,45 @@
         "internalType": "bool",
         "name": "",
         "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "buybackPercentage",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "donationPercentage",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "donationWallet",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -510,11 +536,16 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_exchangeFeeUCD",
+        "name": "_buybackPercentage",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_donationPercentage",
         "type": "uint256"
       }
     ],
-    "name": "updateExchangeFeeUCD",
+    "name": "updateDistributionPercentages",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -523,11 +554,24 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_HQ",
+        "name": "_donationWallet",
         "type": "address"
       }
     ],
-    "name": "updateHQ",
+    "name": "updateDonationWallet",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_exchangeFeeUCD",
+        "type": "uint256"
+      }
+    ],
+    "name": "updateExchangeFeeUCD",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

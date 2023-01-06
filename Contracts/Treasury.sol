@@ -16,10 +16,6 @@ contract Treasury is Ownable {
 
     uint256 private constant MAX_INT = 2 ** 256 - 1;
 
-    uint8 private constant STABL3_COLLATERAL_POOL = 11;
-
-    uint8 private constant STABL3_RESERVED_POOL = 25;
-
     IUniswapV2Router02 public uniswapRouter;
     IUniswapV2Factory public uniswapFactory;
 
@@ -33,13 +29,14 @@ contract Treasury is Ownable {
 
     uint256 public exchangeFee;
 
-    // TODO edit visibility
-    uint256 public rateImpactSlope;
+    uint256 private immutable rateImpactSlope;
     RateInfo public rateInfo;
+
+    uint8[] public lockedStabl3Pools;
 
     // structs
 
-    /// @dev rate is in 18 decimals
+    /// @dev Rate is in 18 decimals
     struct RateInfo {
         uint256 rate;
         uint256 totalValueLocked;
@@ -48,18 +45,18 @@ contract Treasury is Ownable {
 
     // storage
 
-    /// @dev reserved tokens that interact with the protocol
+    /// @dev Reserved tokens that interact with the protocol
     mapping (IERC20 => bool) public isReservedToken;
 
-    /// @dev array for iteration of reserved tokens
+    /// @dev Array for iteration of reserved tokens
     IERC20[] public allReservedTokens;
 
-    /// @dev record for funds pooled
+    /// @dev Record for funds pooled
     mapping (uint8 => mapping(IERC20 => uint256)) public getTreasuryPool;
     mapping (uint8 => mapping(IERC20 => uint256)) public getROIPool;
     mapping (uint8 => mapping(IERC20 => uint256)) public getHQPool;
 
-    /// @dev contracts with permission to access treasury funds
+    /// @dev Contracts with permission to access treasury funds
     mapping (address => bool) public permitted;
 
     // events
@@ -105,6 +102,8 @@ contract Treasury is Ownable {
         // rateInfo.stabl3CirculatingSupply = 0;
         // rateInfo.totalValueLocked = 0;
 
+        lockedStabl3Pools = [11, 25];
+
         // TODO change
         IERC20 USDC = IERC20(0x16c1038a989E7c52c7B0FBDE889249C02d7e205D);
         IERC20 DAI = IERC20(0x63720e1a9E780865B9FbDb148c25AEa0B59170F1);
@@ -144,6 +143,33 @@ contract Treasury is Ownable {
         exchangeFee = _exchangeFee;
     }
 
+    function updateLockedStabl3Pools(uint8[] memory _lockedStabl3Pools) external onlyOwner {
+        lockedStabl3Pools = _lockedStabl3Pools;
+    }
+
+    function updateReservedToken(IERC20 _token, bool _state) public onlyOwner {
+        require(isReservedToken[_token] != _state, "Treasury: Reserved token is already this state");
+        isReservedToken[_token] = _state;
+        allReservedTokens.push(_token);
+        emit UpdatedReservedToken(_token, _state);
+    }
+
+    function allReservedTokensLength() external view returns (uint256) {
+        return allReservedTokens.length;
+    }
+
+    function allPools(uint8 _type, IERC20 _token) external view returns (uint256, uint256, uint256) {
+        return (
+            getTreasuryPool[_type][_token],
+            getROIPool[_type][_token],
+            getHQPool[_type][_token]
+        );
+    }
+
+    function sumOfAllPools(uint8 _type, IERC20 _token) external view returns (uint256) {
+        return getTreasuryPool[_type][_token] + getROIPool[_type][_token] + getHQPool[_type][_token];
+    }
+
     function updatePermission(address _contractAddress, bool _state) public onlyOwner {
         require(permitted[_contractAddress] != _state, "Treasury: Contract Address is already this state");
 
@@ -175,29 +201,6 @@ contract Treasury is Ownable {
         for (uint256 i = 0 ; i < _contractAddresses.length ; i++) {
             updatePermission(_contractAddresses[i], _state);
         }
-    }
-
-    function updateReservedToken(IERC20 _token, bool _state) public onlyOwner {
-        require(isReservedToken[_token] != _state, "Treasury: Reserved token is already this state");
-        isReservedToken[_token] = _state;
-        allReservedTokens.push(_token);
-        emit UpdatedReservedToken(_token, _state);
-    }
-
-    function allReservedTokensLength() external view returns (uint256) {
-        return allReservedTokens.length;
-    }
-
-    function allPools(uint8 _type, IERC20 _token) external view returns (uint256, uint256, uint256) {
-        return (
-            getTreasuryPool[_type][_token],
-            getROIPool[_type][_token],
-            getHQPool[_type][_token]
-        );
-    }
-
-    function sumOfAllPools(uint8 _type, IERC20 _token) external view returns (uint256) {
-        return getTreasuryPool[_type][_token] + getROIPool[_type][_token] + getHQPool[_type][_token];
     }
 
     function getReserves() public view returns (uint256) {
@@ -235,11 +238,48 @@ contract Treasury is Ownable {
         return totalValueLocked;
     }
 
+    function reservedTokenSelector() external view returns (IERC20) {
+        IERC20 selectedReservedToken;
+
+        uint256 maxAmountReservedToken;
+
+        for (uint256 i = 0 ; i < allReservedTokens.length ; i++) {
+            if (isReservedToken[allReservedTokens[i]]) {
+                uint256 amountReservedToken = allReservedTokens[i].balanceOf(address(this));
+
+                uint256 decimals = allReservedTokens[i].decimals();
+
+                uint256 amountReservedTokenConverted =
+                    decimals < 18 ?
+                    (amountReservedToken * (10 ** (18 - decimals))) :
+                    amountReservedToken;
+
+                if (amountReservedTokenConverted > maxAmountReservedToken) {
+                    selectedReservedToken = allReservedTokens[i];
+
+                    maxAmountReservedToken = amountReservedTokenConverted;
+                }
+            }
+        }
+
+        return selectedReservedToken;
+    }
+
+    function checkOutputAmount(uint256 _amountStabl3) external view {
+        uint256 amountStabl3Locked;
+
+        for (uint256 i = 0 ; i < lockedStabl3Pools.length ; i++) {
+            amountStabl3Locked += getTreasuryPool[lockedStabl3Pools[i]][STABL3];
+        }
+
+        require(STABL3.balanceOf(address(this)) >= _amountStabl3 + amountStabl3Locked, "Treasury: Insufficient output amount");
+    }
+
     function getRate() external view returns (uint256) {
         return rateInfo.rate;
     }
 
-    function getRateImpact(IERC20 _token, uint256 _amountToken) public view reserved(_token) returns (uint256) {
+    function getRateImpact(IERC20 _token, uint256 _amountToken) public view returns (uint256) {
         if (_amountToken == 0) {
             return rateInfo.rate;
         }
@@ -252,7 +292,7 @@ contract Treasury is Ownable {
     }
 
     function getAmountOut(IERC20 _token, uint256 _amountToken) public view returns (uint256) {
-        if (_amountToken == 0 || STABL3.balanceOf(address(this)) == 0) {
+        if (_amountToken == 0) {
             return 0;
         }
 
@@ -268,7 +308,7 @@ contract Treasury is Ownable {
     }
 
     function getAmountIn(uint256 _amountStabl3, IERC20 _token) external view returns (uint256) {
-        if (_amountStabl3 == 0 || STABL3.balanceOf(address(this)) == 0) {
+        if (_amountStabl3 == 0) {
             return 0;
         }
 
@@ -283,11 +323,7 @@ contract Treasury is Ownable {
         return amountToken;
     }
 
-    function getExchangeAmountOut(
-        IERC20 _exchangingToken,
-        IERC20 _token,
-        uint256 _amountToken
-    ) external view reserved(_token) returns (uint256) {
+    function getExchangeAmountOut(IERC20 _exchangingToken, IERC20 _token, uint256 _amountToken) external view returns (uint256) {
         if (_amountToken == 0) {
             return 0;
         }
@@ -307,11 +343,7 @@ contract Treasury is Ownable {
         return amountExchangingToken;
     }
 
-    function getExchangeAmountIn(
-        IERC20 _exchangingToken,
-        uint256 _amountExchangingToken,
-        IERC20 _token
-    ) external view reserved(_token) returns (uint256) {
+    function getExchangeAmountIn(IERC20 _exchangingToken, uint256 _amountExchangingToken, IERC20 _token) external view returns (uint256) {
         if (_amountExchangingToken == 0) {
             return 0;
         }

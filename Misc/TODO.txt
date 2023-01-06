@@ -56,3 +56,14 @@ METHOD 1 (DORMANT STAKES):
 - Remove their staked amount from current pool
 - Remove their reward amount from ROI pool
 - Update APR at the end of the whole loop
+
+Clarification needed:
+Borrowing:
+- A user can't payback/exchange more than the UCD they themselves have explicitly borrowed.
+- "Leftover" Stabl3 is calculated at the end of their borrowing, e.g. given a user borrows 1 UCD each day for 100 days, until and unless they payback/exchange all 100 of their UCD the "leftover" Stabl3 will be unknown.
+   ~ The logic here being that it is too computationally expensive to keep track of all rates that they borrowed at and then try and find the rate difference.
+   ~ e.g. if said user tries to payback 76 UCD, I would then have to compare and consider the rate at which the user borrowed for each UCD individually.
+   ~ Trying to find a methodology to somehow maintain an average of rates borrowed at would also be near impossible
+Staking:
+- Should staking only tokens such as LP tokens be available to stakers (if any are in the ROI Pool) as a form of reward
+- If not, then I would prefer to send all the LP tokens in 1 place (preferably the treasury) and not cut any fees, and if fees are cut than all fees should go to the HQ Wallet.
