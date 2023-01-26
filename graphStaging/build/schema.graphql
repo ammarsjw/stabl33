@@ -1,0 +1,158 @@
+type Transaction @entity {
+  id : ID!
+  timestamp : BigInt!
+  blockNumber : BigInt!
+  blockHash : Bytes!
+  from : Bytes!
+  to : Bytes
+  value : BigInt!
+  gasPrice : BigInt!
+}
+
+type UpdatedReservedToken @entity {
+  id : ID!
+  transaction : Transaction!
+  token : Bytes!
+  state : Boolean!
+}
+
+type Rate @entity {
+  id : ID!
+  transaction : Transaction!
+  rate : BigInt!
+  reserves : BigInt!
+  totalValueLocked : BigInt!
+  stabl3CirculatingSupply : BigInt!
+  timestamp : BigInt!
+}
+
+type APR @entity {
+  id : ID!
+  transaction : Transaction!
+  APR : BigInt!
+  reserves : BigInt!
+  totalRewardDistributed : BigInt!
+  timestamp : BigInt!
+}
+
+type Stake @entity {
+  id : ID!
+  transaction : Transaction!
+  user : Bytes
+  index : BigInt
+  status : Boolean
+  stakingType : Int
+  token : Bytes
+  amountToken : BigInt
+  totalAmountToken : BigInt
+  endTime : BigInt
+  isLend : Boolean
+  amountStabl3Lending : BigInt
+  timestamp : BigInt
+}
+
+type WithdrewReward @entity {
+  id : ID!
+  transaction : Transaction!
+  user : Bytes
+  index : BigInt
+  token : Bytes
+  rewardWithdrawn : BigInt
+  totalRewardWithdrawn : BigInt
+  isLend : Boolean
+  timestamp : BigInt
+}
+
+type ClaimedLendingStabl3 @entity {
+  id : ID!
+  transaction : Transaction!
+  user : Bytes
+  index : BigInt
+  token : Bytes
+  amountStabl3Lending : BigInt
+  totalAmountStabl3Withdrawn : BigInt
+  timestamp : BigInt
+}
+
+type Unstake @entity {
+  id : ID!
+  transaction : Transaction!
+  user : Bytes
+  index : BigInt
+  token : Bytes
+  amountToken : BigInt
+  reward : BigInt
+  stakingType : Int
+  isLend : Boolean
+}
+
+type Borrow @entity {
+  id : ID!
+  transaction : Transaction!
+  user : Bytes!
+  amountUCD : BigInt!
+  amountStabl3 : BigInt!
+  rate : BigInt!
+  timestamp : BigInt!
+}
+
+type Payback @entity {
+  id : ID!
+  transaction : Transaction!
+  user : Bytes!
+  amountUCD : BigInt!
+  amountStabl3 : BigInt!
+  rate : BigInt!
+  timestamp : BigInt!
+}
+
+type ExchangeUCD @entity {
+  id : ID!
+  transaction : Transaction!
+  user : Bytes!
+  exchangingToken : Bytes!
+  amountExchangingToken : BigInt!
+  amountUCD : BigInt!
+  fee : BigInt!
+  timestamp : BigInt!
+}
+
+type CreatedBond @entity {
+  id : ID!
+  transaction : Transaction!
+  bondIndex : BigInt!
+  bondAmount : BigInt!
+  discount : BigInt!
+  startTime : BigInt!
+  expiryTime : BigInt!
+}
+
+type Bond @entity {
+  id : ID!
+  transaction : Transaction!
+  user : Bytes!
+  index : BigInt!
+  bondIndex : BigInt!
+  status : Boolean!
+  amountStabl3 : BigInt!
+  token : Bytes!
+  amountToken : BigInt!
+  totalAmountToken : BigInt!
+  startTime : BigInt!
+  endTime : BigInt!
+  discount : BigInt!
+}
+
+type ClaimedBond @entity {
+  id : ID!
+  transaction : Transaction!
+  user : Bytes!
+  index : BigInt!
+  bondIndex : BigInt!
+  amountStabl3 : BigInt!
+  token : Bytes!
+  amountToken : BigInt!
+  totalAmountStabl3 : BigInt!
+  startTime : BigInt!
+  endTime : BigInt!
+}
