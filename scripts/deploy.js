@@ -1,5 +1,5 @@
 // let HDWalletProvider = require('@truffle/hdwallet-provider');
-
+// require("dotenv").config();
 
 // goerli provider
 // const provider = new HDWalletProvider(
@@ -12,14 +12,12 @@
 //   process.env.PRIVATE_KEY_MAIN,
 //   process.env.URL_MAIN
 // );
-const { ethers } = require("hardhat");
 
+const { ethers } = require("hardhat");
 const { network, run } = require("hardhat");
 
 // const {hre} = require("hardhat");
 // const Web3 = require('web3');
-require("dotenv").config();
-
 // const web3 = new Web3(provider);
 
 async function main() {
