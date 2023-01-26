@@ -36,7 +36,6 @@ contract Treasury is Ownable {
 
     // structs
 
-    /// @dev Rate is in 18 decimals
     struct RateInfo {
         uint256 rate;
         uint256 totalValueLocked;
@@ -275,10 +274,12 @@ contract Treasury is Ownable {
         require(STABL3.balanceOf(address(this)) >= _amountStabl3 + amountStabl3Locked, "Treasury: Insufficient output amount");
     }
 
+    /// @notice Rate is in 18 decimals
     function getRate() external view returns (uint256) {
         return rateInfo.rate;
     }
 
+    /// @notice Rate is in 18 decimals
     function getRateImpact(IERC20 _token, uint256 _amountToken) public view returns (uint256) {
         if (_amountToken == 0) {
             return rateInfo.rate;

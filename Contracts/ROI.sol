@@ -221,7 +221,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
         return totalReserves;
     }
 
-    // APR is in 18 decimals
+    /// @notice APR is in 18 decimals
     function getAPR() public view returns (uint256) {
         uint256 maxPool;
 
