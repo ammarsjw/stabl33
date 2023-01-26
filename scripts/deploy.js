@@ -1,11 +1,11 @@
-// let HDWalletProvider = require('@truffle/hdwallet-provider');
-// require("dotenv").config();
+let HDWalletProvider = require('@truffle/hdwallet-provider');
+require("dotenv").config();
 
 // goerli provider
-// const provider = new HDWalletProvider(
-//   process.env.PRIVATE_KEY,
-//   process.env.URL
-// );
+const provider = new HDWalletProvider(
+  process.env.PRIVATE_KEY,
+  process.env.URL
+);
 
 // mainnet provider
 // const provider = new HDWalletProvider(
@@ -13,21 +13,18 @@
 //   process.env.URL_MAIN
 // );
 
-const { ethers } = require("hardhat");
-const { network, run } = require("hardhat");
-
-// const {hre} = require("hardhat");
-// const Web3 = require('web3');
-// const web3 = new Web3(provider);
+const hre = require("hardhat");
+const Web3 = require('web3');
+const web3 = new Web3(provider);
 
 async function main() {
-  // Deploying Treasury
-  const treasury = await ethers.getContractFactory("  ");
-  const treasuryContract = await treasury.deploy();
-  await treasuryContract.deployed();
-  console.log("Treasury deployed to:", treasuryContract.address);
+  // // Deploying Treasury
+  // const treasury = await hre.ethers.getContractFactory("Treasury");
+  // const treasuryContract = await treasury.deploy();
+  // await treasuryContract.deployed();
+  // console.log("Treasury deployed to:", treasuryContract.address);
 
-  // Deploying ROI
+  // // Deploying ROI
   // const roi = await hre.ethers.getContractFactory("ROI");
   // const roiContract = await roi.deploy(treasuryContract.address);
   // await roiContract.deployed();
@@ -58,79 +55,88 @@ async function main() {
   // console.log("Stabl3Bonding deployed to:", stabl3BondingContract.address);
 
 
-  // let account = web3.eth.accounts.privateKeyToAccount(privatekey);
-  // let gasPrice = await web3.eth.getGasPrice();
-  // let gas;
+  // let treasuryContractAddress = treasuryContract.address;
+  // let roiContractAddress = roiContract.address;
+  // let stabl3PublicSaleContractAddress = stabl3PublicSaleContract.address;
+  // let stabl3StakingContractAddress = stabl3StakingContract.address;
+  // let stabl3BorrowingContractAddress = stabl3BorrowingContract.address;
+  // let stabl3BondingContractAddress = stabl3BondingContract.address;
+  let treasuryContractAddress = "0x8dD7aa7615A2811c754b7e3185eD21CDdF2d11B5";
+  let roiContractAddress = "0x174495aceB0a92394eB430D35A6480A7584A6DfE";
+  let stabl3PublicSaleContractAddress = "0x759AEBcc859BaC14133b6971C31e7e699c7BA1DC";
+  let stabl3StakingContractAddress = "0x2Da9147F9449a369384e62b3FB0E9853DC8B983B";
+  let stabl3BorrowingContractAddress = "0x82b80F6d5876e8805431828E3Dd8332C56f5c969";
+  let stabl3BondingContractAddress = "0xD8F0b5A6f397fb86acF01bd60dB5964461Cc8Cd6";
 
 
-  // // Initializing Treasury
-  // const treasuryInstance = await hre.ethers.getContractAt("Treasury", treasuryContract.address);
-  // gas = await treasuryInstance.methods.updateROI(treasuryContract.address).estimateGas({ from: account.address, gasPrice });
-  // await treasuryInstance.methods.updateROI(treasuryContract.address).send({ from: account.address, gasPrice, gas });
-  // let initArrayTreasury = [
-  //   stabl3PublicSaleContract.address,
-  //   stabl3StakingContract.address,
-  //   stabl3BorrowingContract.address,
-  //   stabl3BondingContract.address,
-  // ];
-  // gas = await treasuryInstance.methods.updatePermissionMultiple(initArrayTreasury, true).estimateGas({ from: account.address, gasPrice });
-  // await treasuryInstance.methods.updatePermissionMultiple(initArrayTreasury, true).send({ from: account.address, gasPrice, gas });
+  // Initializing Treasury
+  const treasuryInstance = await hre.ethers.getContractAt("Treasury", treasuryContractAddress);
+  await treasuryInstance.updateROI(roiContractAddress);
+  let initArrayTreasury = [
+    stabl3PublicSaleContractAddress,
+    stabl3StakingContractAddress,
+    stabl3BorrowingContractAddress,
+    stabl3BondingContractAddress,
+  ];
+  await treasuryInstance.updatePermissionMultiple(initArrayTreasury, true);
+  console.log("Treasury Initialized")
 
-  // // Initializing ROI
-  // const roiInstance = await hre.ethers.getContractAt("ROI", roiContract.address);
-  // gas = await roiInstance.methods.updateStabl3Staking(stabl3StakingContract.address).estimateGas({ from: account.address, gasPrice });
-  // await roiInstance.methods.updateStabl3Staking(stabl3StakingContract.address).send({ from: account.address, gasPrice, gas });
-  // let initArrayROI = [
-  //   stabl3PublicSaleContract.address,
-  //   stabl3BorrowingContract.address,
-  //   stabl3BondingContract.address,
-  // ];
-  // gas = await roiInstance.methods.updatePermissionMultiple(initArrayROI, true).estimateGas({ from: account.address, gasPrice });
-  // await roiInstance.methods.updatePermissionMultiple(initArrayROI, true).send({ from: account.address, gasPrice, gas });
+  // Initializing ROI
+  const roiInstance = await hre.ethers.getContractAt("ROI", roiContractAddress);
+  await roiInstance.updateStabl3Staking(stabl3StakingContractAddress);
+  let initArrayROI = [
+    stabl3PublicSaleContractAddress,
+    stabl3BorrowingContractAddress,
+    stabl3BondingContractAddress,
+  ];
+  await roiInstance.updatePermissionMultiple(initArrayROI, true);
+  console.log("ROI Initialized")
 
-  // // Initializing Stabl3PublicSale
-  // const stabl3PublicSaleInstance = await hre.ethers.getContractAt("Stabl3PublicSale", stabl3PublicSaleContract.address);
-  // gas = await stabl3PublicSaleInstance.methods.updateState(true).estimateGas({ from: account.address, gasPrice });
-  // await stabl3PublicSaleInstance.methods.updateState(true).send({ from: account.address, gasPrice, gas });
+  // Initializing Stabl3PublicSale
+  const stabl3PublicSaleInstance = await hre.ethers.getContractAt("Stabl3PublicSale", stabl3PublicSaleContractAddress);
+  await stabl3PublicSaleInstance.updateState(true);
+  console.log("Stabl3PublicSale Initialized")
 
-  // // Initializing Stabl3Staking
-  // const stabl3StakingInstance = await hre.ethers.getContractAt("Stabl3Staking", stabl3StakingContract.address);
-  // gas = await stabl3StakingInstance.methods.updateState(true).estimateGas({ from: account.address, gasPrice });
-  // await stabl3StakingInstance.methods.updateState(true).send({ from: account.address, gasPrice, gas });
+  // Initializing Stabl3Staking
+  const stabl3StakingInstance = await hre.ethers.getContractAt("Stabl3Staking", stabl3StakingContractAddress);
+  await stabl3StakingInstance.updateState(true);
+  console.log("Stabl3Staking Initialized")
 
-  // // Initializing Stabl3Borrowing
-  // const stabl3BorrowingInstance = await hre.ethers.getContractAt("Stabl3Borrowing", stabl3BorrowingContract.address);
-  // gas = await stabl3BorrowingInstance.methods.updateState(true).estimateGas({ from: account.address, gasPrice });
-  // await stabl3BorrowingInstance.methods.updateState(true).send({ from: account.address, gasPrice, gas });
+  // Initializing Stabl3Borrowing
+  const stabl3BorrowingInstance = await hre.ethers.getContractAt("Stabl3Borrowing", stabl3BorrowingContractAddress);
+  await stabl3BorrowingInstance.updateState(true);
 
-  // const ucdAddress = await stabl3BorrowingInstance.methods.UCD().call();
-  // const ucdInstance = await hre.ethers.getContractAt("contracts/tokens/UCD.sol:UCD", ucdAddress);
-  // gas = await ucdInstance.methods.updatePermission(stabl3BorrowingContract.address, true).estimateGas({ from: account.address, gasPrice });
-  // await ucdInstance.methods.updatePermission(stabl3BorrowingContract.address, true).send({ from: account.address, gasPrice });
+  const ucdAddress = await stabl3BorrowingInstance.UCD().call();
+  const ucdInstance = await hre.ethers.getContractAt("contracts/tokens/UCD.sol:UCD", ucdAddress);
+  await ucdInstance.updatePermission(stabl3BorrowingContractAddress, true);
+  console.log("Stabl3Borrowing Initialized")
 
-  // // Initializing Stabl3Bonding
-  // const stabl3BondingInstance = await hre.ethers.getContractAt("Stabl3Bonding", stabl3BondingContract.address);
-  // gas = await stabl3BondingInstance.methods.updateState(true).estimateGas({ from: account.address, gasPrice });
-  // await stabl3BondingInstance.methods.updateState(true).send({ from: account.address, gasPrice, gas });
+  // Initializing Stabl3Bonding
+  const stabl3BondingInstance = await hre.ethers.getContractAt("Stabl3Bonding", stabl3BondingContractAddress);
+  await stabl3BondingInstance.updateState(true);
+  console.log("Stabl3Bonding Initialized")
 
-  // // Verifying contracts
-  // await new Promise(resolve => setTimeout(resolve, 20000));
+  // Verifying contracts
+  await new Promise(resolve => setTimeout(resolve, 20000));
+  verify(treasuryContractAddress, []);
+  verify(roiContractAddress, [treasuryContractAddress]);
+  verify(stabl3PublicSaleContractAddress, [treasuryContractAddress, roiContractAddress]);
+  verify(stabl3StakingContractAddress, [treasuryContractAddress, roiContractAddress]);
+  verify(stabl3BorrowingContractAddress, [treasuryContractAddress, roiContractAddress]);
+  verify(stabl3BondingContractAddress, [treasuryContractAddress, roiContractAddress]);
 
-  // verify(treasuryContract.address, []);
-  // verify(roi.address, [treasuryContract.address]);
-  // verify(stabl3PublicSale.address, [treasuryContract.address, roiContract.address]);
-  // verify(stabl3Staking.address, [treasuryContract.address, roiContract.address]);
-  // verify(stabl3Borrowing.address, [treasuryContract.address, roiContract.address]);
-  // verify(stabl3Bonding.address, [treasuryContract.address, roiContract.address]);
+  console.log("batch job complete");
+
+  process.exit();
 }
 
 
 async function verify(address, constructorArguments) {
-  console.log(`verify ${address} with arguments ${constructorArguments.join(',')}`)
   await hre.run("verify:verify", {
     address,
     constructorArguments
   })
+  console.log(`verified ${address} with arguments ${constructorArguments.join(',')}`)
 }
 
 

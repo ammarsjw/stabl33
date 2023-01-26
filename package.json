@@ -4,6 +4,7 @@
     "hardhat": "^2.12.6"
   },
   "dependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.2.2",
     "@truffle/hdwallet-provider": "^2.1.5",
     "dotenv": "^16.0.3"
   }
