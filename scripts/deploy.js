@@ -125,7 +125,7 @@ async function main() {
   verify(stabl3BorrowingContractAddress, [treasuryContractAddress, roiContractAddress]);
   verify(stabl3BondingContractAddress, [treasuryContractAddress, roiContractAddress]);
 
-  console.log("batch job complete");
+  console.log("Batch Job Complete");
 
   process.exit();
 }
