@@ -1,0 +1,134 @@
+specVersion: 0.0.4
+schema:
+  file: schema.graphql
+dataSources:
+  - kind: ethereum
+    name: Treasury
+    network: mumbai
+    source:
+      address: "0xD1e692A0855a86DBd9a0C318C68bac5e12c3831B"
+      abi: Treasury
+      startBlock: 30612965
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - Rate
+        - UpdatedExchangeFee
+        - UpdatedReservedToken
+      abis:
+        - name: Treasury
+          file: Treasury\abis\Treasury.json
+      eventHandlers:
+        - event: Rate(uint256,uint256,uint256,uint256,uint256)
+          handler: handleRate
+        - event: UpdatedExchangeFee(uint256,uint256)
+          handler: handleUpdatedExchangeFee
+        - event: UpdatedReservedToken(address,bool)
+          handler: handleUpdatedReservedToken
+      file: Treasury\Treasury.wasm
+  - kind: ethereum
+    name: ROI
+    network: mumbai
+    source:
+      address: "0x65229779A64d858c87EF333b3c7a25c5b6AA7231"
+      abi: ROI
+      startBlock: 30612977
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - APR
+      abis:
+        - name: ROI
+          file: ROI\abis\ROI.json
+      eventHandlers:
+        - event: APR(uint256,uint256,uint256,uint256)
+          handler: handleAPR
+      file: ROI\ROI.wasm
+  - kind: ethereum
+    name: Stabl3Staking
+    network: mumbai
+    source:
+      address: "0xe082514eA4249D31323D020E5a97212A7061672e"
+      abi: Stabl3Staking
+      startBlock: 30613016
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - ClaimedLendingStabl3
+        - Stake
+        - Unstake
+        - WithdrewReward
+      abis:
+        - name: Stabl3Staking
+          file: Stabl3Staking\abis\Stabl3Staking.json
+      eventHandlers:
+        - event: ClaimedLendingStabl3(indexed address,uint256,address,uint256,uint256,uint256)
+          handler: handleClaimedLendingStabl3
+        - event: Stake(indexed
+            address,uint256,bool,uint8,address,uint256,uint256,uint256,bool,uint256,uint256)
+          handler: handleStake
+        - event: Unstake(indexed address,uint256,address,uint256,uint256,uint8,bool)
+          handler: handleUnstake
+        - event: WithdrewReward(indexed address,uint256,address,uint256,uint256,bool,uint256)
+          handler: handleWithdrewReward
+      file: Stabl3Staking\Stabl3Staking.wasm
+  - kind: ethereum
+    name: Stabl3Borrowing
+    network: mumbai
+    source:
+      address: "0x81B529b95f9e94620150752F3c26116F67083Eb0"
+      abi: Stabl3Borrowing
+      startBlock: 30620045
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - Borrow
+        - Payback
+        - ExchangeUCD
+      abis:
+        - name: Stabl3Borrowing
+          file: Stabl3Borrowing\abis\Stabl3Borrowing.json
+      eventHandlers:
+        - event: Borrow(indexed address,uint256,uint256,uint256,uint256)
+          handler: handleBorrow
+        - event: Payback(indexed address,uint256,uint256,uint256,uint256)
+          handler: handlePayback
+        - event: ExchangeUCD(indexed address,address,uint256,uint256,uint256,uint256)
+          handler: handleExchangeUCD
+      file: Stabl3Borrowing\Stabl3Borrowing.wasm
+  - kind: ethereum
+    name: Stabl3Bonding
+    network: mumbai
+    source:
+      address: "0x17f6BFAc1676026c601292De668002Dd90A27472"
+      abi: Stabl3Bonding
+      startBlock: 30613047
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - CreatedBond
+        - Bond
+        - ClaimedBond
+      abis:
+        - name: Stabl3Bonding
+          file: Stabl3Bonding\abis\Stabl3Bonding.json
+      eventHandlers:
+        - event: CreatedBond(uint256,uint256,uint256,uint256,uint256)
+          handler: handleCreatedBond
+        - event: Bond(indexed
+            address,uint256,uint256,uint256,address,uint256,uint256,uint256,uint256)
+          handler: handleBond
+        - event: ClaimedBond(indexed
+            address,uint256,uint256,uint256,address,uint256,uint256,uint256,uint256)
+          handler: handleClaimedBond
+      file: Stabl3Bonding\Stabl3Bonding.wasm
