@@ -224,6 +224,8 @@ contract Stabl3Borrowing is Ownable {
 
         treasury.updateStabl3CirculatingSupply(_amountStabl3, false);
 
+        ROI.updateAPR();
+
         emit Borrow(msg.sender, amountUCDWithFee, _amountStabl3, treasury.getRate(), block.timestamp);
     }
 
@@ -251,7 +253,7 @@ contract Stabl3Borrowing is Ownable {
 
         treasury.updatePool(UCD_PAYBACK_POOL, UCD, _amountUCD, 0, 0, true);
         treasury.updatePool(STABL3_COLLATERAL_POOL, STABL3, amountStabl3, 0, 0, false);
-        // Calculating and processing STABL3 amount that is `leftover` after price changes
+        // calculating and processing STABL3 amount that is `leftover` after price changes
         _processLeftoverCollateral(borrowing, _amountUCD, amountStabl3);
 
         treasury.updateStabl3CirculatingSupply(amountStabl3, true);
@@ -265,8 +267,8 @@ contract Stabl3Borrowing is Ownable {
     function exchangeUCD(IERC20 _exchangingToken, uint256 _amountUCD) external borrowActive reserved(_exchangingToken) {
         require(_amountUCD > 0, "Stabl3Borrowing: Insufficient amount");
 
-        // Payback the user's debt if they owe any
-        // If they don't owe any debt, the user is a third-party
+        // payback the user's debt if they owe any
+        // if they don't owe any debt, the user is a third-party
         if (getBorrowings[msg.sender].amountUCD > 0) {
             Borrowing storage borrowing = getBorrowings[msg.sender];
 
@@ -280,7 +282,7 @@ contract Stabl3Borrowing is Ownable {
             burnedUCD += _amountUCD;
 
             treasury.updatePool(STABL3_COLLATERAL_POOL, STABL3, amountStabl3, 0, 0, false);
-            // Calculating and processing collateral STABL3 amount that is `leftover` after price changes
+            // calculating and processing collateral STABL3 amount that is `leftover` after price changes
             _processLeftoverCollateral(borrowing, _amountUCD, amountStabl3);
         }
 
@@ -310,6 +312,8 @@ contract Stabl3Borrowing is Ownable {
 
         treasury.updatePool(UCD_TO_TOKEN_EXCHANGE_POOL, _exchangingToken, amountExchangingTokenWithFee, 0, 0, true);
         treasury.updatePool(UCD_TO_TOKEN_EXCHANGE_POOL, UCD, _amountUCD, 0, 0, true);
+
+        ROI.updateAPR();
 
         emit ExchangeUCD(msg.sender, _exchangingToken, amountExchangingTokenWithFee, _amountUCD, fee, block.timestamp);
     }
@@ -345,12 +349,15 @@ contract Stabl3Borrowing is Ownable {
             // donation
             STABL3.transferFrom(address(treasury), donationWallet, donationStabl3);
 
-            // Removing `leftover` collateral STABL3 amount from the STABL3 collateral pool
+            // removing `leftover` collateral STABL3 amount from the STABL3 collateral pool
             treasury.updatePool(STABL3_COLLATERAL_POOL, STABL3, buybackStabl3 + donationStabl3, 0, 0, false);
 
-            // Buyback STABL3 amount is part of the treasury and hence isn't considered into the circulating supply
-            // Donation STABL3 amount is not part of the treasury and hence is considered into the circulating supply
+            // buyback STABL3 amount is part of the treasury and hence isn't considered into the circulating supply
+            // donation STABL3 amount is not part of the treasury and hence is considered into the circulating supply
             treasury.updateStabl3CirculatingSupply(donationStabl3, true);
+
+            // updating APR
+            ROI.updateAPR();
 
             // removing `leftover` collateral STABL3 amount from the debt
             _borrowing.amountStabl3 = _borrowing.amountStabl3.safeSub(buybackStabl3 + donationStabl3);
