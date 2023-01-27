@@ -22,37 +22,55 @@ async function main() {
   const treasury = await hre.ethers.getContractFactory("Treasury")
   const treasuryContract = await treasury.deploy()
   await treasuryContract.deployed()
+  const treasuryTxHash = treasuryContract.deployTransaction.hash
+  let treasuryTxReceipt = await treasuryContract.provider.getTransactionReceipt(treasuryTxHash)
   console.log("Treasury deployed to:", treasuryContract.address)
+  console.log("at block number:", treasuryTxReceipt.blockNumber)
 
   // Deploying ROI
   const roi = await hre.ethers.getContractFactory("ROI")
   const roiContract = await roi.deploy(treasuryContract.address)
   await roiContract.deployed()
+  const roiTxHash = roiContract.deployTransaction.hash
+  let roiTxReceipt = await roiContract.provider.getTransactionReceipt(roiTxHash)
   console.log("ROI deployed to:", roiContract.address)
+  console.log("at block number:", roiTxReceipt.blockNumber)
 
   // Deploying Stabl3PublicSale
   const stabl3PublicSale = await hre.ethers.getContractFactory("Stabl3PublicSale")
   const stabl3PublicSaleContract = await stabl3PublicSale.deploy(treasuryContract.address, roiContract.address)
   await stabl3PublicSaleContract.deployed()
+  const stabl3PublicSaleTxHash = stabl3PublicSaleContract.deployTransaction.hash
+  let stabl3PublicSaleTxReceipt = await stabl3PublicSaleContract.provider.getTransactionReceipt(stabl3PublicSaleTxHash)
   console.log("Stabl3PublicSale deployed to:", stabl3PublicSaleContract.address)
+  console.log("at block number:", stabl3PublicSaleTxReceipt.blockNumber)
 
   // Deploying Stabl3Staking
   const stabl3Staking = await hre.ethers.getContractFactory("Stabl3Staking")
   const stabl3StakingContract = await stabl3Staking.deploy(treasuryContract.address, roiContract.address)
   await stabl3StakingContract.deployed()
+  const stabl3StakingTxHash = stabl3StakingContract.deployTransaction.hash
+  let stabl3StakingTxReceipt = await stabl3StakingContract.provider.getTransactionReceipt(stabl3StakingTxHash)
   console.log("Stabl3Staking deployed to:", stabl3StakingContract.address)
+  console.log("at block number:", stabl3StakingTxReceipt.blockNumber)
 
   // Deploying Stabl3Borrowing
   const stabl3Borrowing = await hre.ethers.getContractFactory("Stabl3Borrowing")
   const stabl3BorrowingContract = await stabl3Borrowing.deploy(treasuryContract.address, roiContract.address)
   await stabl3BorrowingContract.deployed()
+  const stabl3BorrowingTxHash = stabl3BorrowingContract.deployTransaction.hash
+  let stabl3BorrowingTxReceipt = await stabl3BorrowingContract.provider.getTransactionReceipt(stabl3BorrowingTxHash)
   console.log("Stabl3Borrowing deployed to:", stabl3BorrowingContract.address)
+  console.log("at block number:", stabl3BorrowingTxReceipt.blockNumber)
 
   // Deploying Stabl3Bonding
   const stabl3Bonding = await hre.ethers.getContractFactory("Stabl3Bonding")
   const stabl3BondingContract = await stabl3Bonding.deploy(treasuryContract.address, roiContract.address)
   await stabl3BondingContract.deployed()
+  const stabl3BondingTxHash = stabl3BondingContract.deployTransaction.hash
+  let stabl3BondingTxReceipt = await stabl3BondingContract.provider.getTransactionReceipt(stabl3BondingTxHash)
   console.log("Stabl3Bonding deployed to:", stabl3BondingContract.address)
+  console.log("at block number:", stabl3BondingTxReceipt.blockNumber)
 
 
   let treasuryContractAddress = treasuryContract.address
@@ -115,6 +133,10 @@ async function main() {
   const stabl3BondingInstance = await hre.ethers.getContractAt("Stabl3Bonding", stabl3BondingContractAddress)
   await stabl3BondingInstance.updateState(true)
   console.log("Stabl3Bonding initialized")
+
+
+  await new Promise(resolve => setTimeout(resolve, 20000))
+
 
   // Verifying contracts
   await verify(treasuryContractAddress, [])
