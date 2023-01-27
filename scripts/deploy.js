@@ -135,7 +135,7 @@ async function main() {
   console.log("Stabl3Bonding initialized")
 
 
-  await new Promise(resolve => setTimeout(resolve, 20000))
+  await new Promise(resolve => setTimeout(resolve, 60000))
 
 
   // Verifying contracts
@@ -145,8 +145,6 @@ async function main() {
   await verify(stabl3StakingContractAddress, [treasuryContractAddress, roiContractAddress])
   await verify(stabl3BorrowingContractAddress, [treasuryContractAddress, roiContractAddress])
   await verify(stabl3BondingContractAddress, [treasuryContractAddress, roiContractAddress])
-
-  console.log("batch job complete")
 
   process.exit()
 }
