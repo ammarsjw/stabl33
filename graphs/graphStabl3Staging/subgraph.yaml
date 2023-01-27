@@ -1,0 +1,131 @@
+specVersion: 0.0.4
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: Treasury
+    network: goerli
+    source:
+      address: "0xAcAF9337537492cB3346EA5Dd3508BF3E8D212De"
+      abi: Treasury
+      startBlock: 8384327
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - Rate
+        - UpdatedExchangeFee
+        - UpdatedReservedToken
+      abis:
+        - name: Treasury
+          file: ./abis/Treasury.json
+      eventHandlers:
+        - event: Rate(uint256,uint256,uint256,uint256,uint256)
+          handler: handleRate
+        - event: UpdatedExchangeFee(uint256,uint256)
+          handler: handleUpdatedExchangeFee
+        - event: UpdatedReservedToken(address,bool)
+          handler: handleUpdatedReservedToken
+      file: ./src/treasury.ts
+  - kind: ethereum
+    name: ROI
+    network: goerli
+    source:
+      address: "0xCE3F656D2C2D8488AAD8e368739341092f6946eC"
+      abi: ROI
+      startBlock: 8384327
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - APR
+      abis:
+        - name: ROI
+          file: ./abis/ROI.json
+      eventHandlers:
+        - event: APR(uint256,uint256,uint256,uint256)
+          handler: handleAPR
+      file: ./src/roi.ts
+  - kind: ethereum
+    name: Stabl3Staking
+    network: goerli
+    source:
+      address: "0xc9040980cc458e8a73AF9cB7c68049FE33C48fA5"
+      abi: Stabl3Staking
+      startBlock: 8384327
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - ClaimedLendingStabl3
+        - Stake
+        - Unstake
+        - WithdrewReward
+      abis:
+        - name: Stabl3Staking
+          file: ./abis/Stabl3Staking.json
+      eventHandlers:
+        - event: ClaimedLendingStabl3(indexed address,uint256,address,uint256,uint256,uint256)
+          handler: handleClaimedLendingStabl3
+        - event: Stake(indexed address,uint256,bool,uint8,address,uint256,uint256,uint256,bool,uint256,uint256)
+          handler: handleStake
+        - event: Unstake(indexed address,uint256,address,uint256,uint256,uint8,bool)
+          handler: handleUnstake
+        - event: WithdrewReward(indexed address,uint256,address,uint256,uint256,bool,uint256)
+          handler: handleWithdrewReward
+      file: ./src/stabl-3-staking.ts
+  - kind: ethereum
+    name: Stabl3Borrowing
+    network: goerli
+    source:
+      address: "0x9DA7c18BE6fc5864D5C4EBBF51f0ad17ff46D297"
+      abi: Stabl3Borrowing
+      startBlock: 8384327
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - Borrow
+        - Payback
+        - ExchangeUCD
+      abis:
+        - name: Stabl3Borrowing
+          file: ./abis/Stabl3Borrowing.json
+      eventHandlers:
+        - event: Borrow(indexed address,uint256,uint256,uint256,uint256)
+          handler: handleBorrow
+        - event: Payback(indexed address,uint256,uint256,uint256,uint256)
+          handler: handlePayback
+        - event: ExchangeUCD(indexed address,address,uint256,uint256,uint256,uint256)
+          handler: handleExchangeUCD
+      file: ./src/stabl-3-borrowing.ts
+  - kind: ethereum
+    name: Stabl3Bonding
+    network: goerli
+    source:
+      address: "0x21C0dd0Cf56e00158887590f506ee81c6Bf345e8"
+      abi: Stabl3Bonding
+      startBlock: 8384327
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - CreatedBond
+        - Bond
+        - ClaimedBond
+      abis:
+        - name: Stabl3Bonding
+          file: ./abis/Stabl3Bonding.json
+      eventHandlers:
+        - event: CreatedBond(uint256,uint256,uint256,uint256,uint256)
+          handler: handleCreatedBond
+        - event: Bond(indexed address,uint256,uint256,uint256,address,uint256,uint256,uint256,uint256)
+          handler: handleBond
+        - event: ClaimedBond(indexed address,uint256,uint256,uint256,address,uint256,uint256,uint256,uint256)
+          handler: handleClaimedBond
+      file: ./src/stabl-3-bonding.ts
