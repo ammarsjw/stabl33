@@ -7,6 +7,7 @@ import "./Ownable.sol";
 import "./SafeMathUpgradeable.sol";
 import "./SafeERC20.sol";
 
+import "./IERC721.sol";
 import "./ITreasury.sol";
 import "./IROI.sol";
 import "./IUCD.sol";
@@ -27,6 +28,8 @@ contract Stabl3Borrowing is Ownable {
     IERC20 public immutable STABL3;
 
     IUCD public UCD;
+
+    IERC721 public stabl3InvestorsNFT;
 
     uint256 public buybackPercentage;
     uint256 public donationPercentage;
@@ -102,6 +105,9 @@ contract Stabl3Borrowing is Ownable {
 
         // TODO change
         UCD = IUCD(0x01fa8dEEdDEA8E4e465f158d93e162438d61c9eB);
+
+        // TODO change
+        stabl3InvestorsNFT = IERC721(0x1334E7c1B5CB9Fe515069E313517FC6c31150C91);
 
         buybackPercentage = 500;
         donationPercentage = 500;
@@ -188,7 +194,10 @@ contract Stabl3Borrowing is Ownable {
 
         uint256 amountUCD = treasury.getAmountIn(_amountStabl3, UCD);
 
-        uint256 fee = amountUCD.mul(borrowFee).div(1000);
+        uint256 fee;
+        if (stabl3InvestorsNFT.balanceOf(msg.sender) == 0) {
+            fee = amountUCD.mul(borrowFee).div(1000);
+        }
         uint256 amountUCDWithFee = amountUCD - fee;
 
         (uint256 availableUCD, , ) = getReservesUCD();
@@ -238,7 +247,7 @@ contract Stabl3Borrowing is Ownable {
 
         Borrowing storage borrowing = getBorrowings[msg.sender];
 
-        require(borrowing.amountUCD > 0, "Stabl3Borrowing: No UCD to payback");
+        require(borrowing.amountUCD > 0, "Stabl3Borrowing: No debt to payback");
 
         uint256 amountStabl3 = treasury.getAmountOut(UCD, _amountUCD);
         treasury.checkOutputAmount(amountStabl3);
@@ -298,7 +307,10 @@ contract Stabl3Borrowing is Ownable {
             amountExchangingToken /= 10 ** (decimalsUCD - decimalsExchangingToken);
         }
 
-        uint256 fee = amountExchangingToken.mul(exchangeFeeUCD).div(1000);
+        uint256 fee;
+        if (stabl3InvestorsNFT.balanceOf(msg.sender) == 0) {
+            fee = amountExchangingToken.mul(exchangeFeeUCD).div(1000);
+        }
         uint256 amountExchangingTokenWithFee = amountExchangingToken - fee;
 
         if (amountExchangingToken > _exchangingToken.balanceOf(address(treasury))) {
