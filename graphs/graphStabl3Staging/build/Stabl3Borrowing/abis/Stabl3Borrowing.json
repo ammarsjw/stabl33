@@ -494,6 +494,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "stabl3InvestorsNFT",
+    "outputs": [
+      {
+        "internalType": "contract IERC721",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",

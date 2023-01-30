@@ -575,6 +575,29 @@ export class Stabl3Borrowing extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toI32());
   }
 
+  stabl3InvestorsNFT(): Address {
+    let result = super.call(
+      "stabl3InvestorsNFT",
+      "stabl3InvestorsNFT():(address)",
+      []
+    );
+
+    return result[0].toAddress();
+  }
+
+  try_stabl3InvestorsNFT(): ethereum.CallResult<Address> {
+    let result = super.tryCall(
+      "stabl3InvestorsNFT",
+      "stabl3InvestorsNFT():(address)",
+      []
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+
   treasury(): Address {
     let result = super.call("treasury", "treasury():(address)", []);
 
