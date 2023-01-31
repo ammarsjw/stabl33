@@ -17,7 +17,7 @@ contract Stabl3Bonding is Ownable {
 
     uint8 private constant STABL3_RESERVED_POOL = 25;
 
-    ITreasury public treasury;
+    ITreasury public TREASURY;
     IROI public ROI;
     address public HQ;
 
@@ -116,8 +116,8 @@ contract Stabl3Bonding is Ownable {
 
     // constructor
 
-    constructor(address _treasury, address _ROI) {
-        treasury = ITreasury(_treasury);
+    constructor(address _TREASURY, address _ROI) {
+        TREASURY = ITreasury(_TREASURY);
         ROI = IROI(_ROI);
         // TODO change
         HQ = 0x294d0487fdf7acecf342ae70AFc5549A6E90f3e0;
@@ -134,10 +134,10 @@ contract Stabl3Bonding is Ownable {
         // bondingClaimTime = 2592000; // 1 month time in seconds
     }
 
-    function updateTreasury(address _treasury) external onlyOwner {
-        require(address(treasury) != _treasury, "Stabl3Bonding: Treasury is already this address");
-        emit UpdatedTreasury(_treasury, address(treasury));
-        treasury = ITreasury(_treasury);
+    function updateTreasury(address _TREASURY) external onlyOwner {
+        require(address(TREASURY) != _TREASURY, "Stabl3Bonding: Treasury is already this address");
+        emit UpdatedTreasury(_TREASURY, address(TREASURY));
+        TREASURY = ITreasury(_TREASURY);
     }
 
     function updateROI(address _ROI) external onlyOwner {
@@ -221,9 +221,9 @@ contract Stabl3Bonding is Ownable {
         require(timestampToConsider < bondInfo.expiryTime, "Stabl3Bonding: Bond has expired");
         require(bondInfo.bondAmountConsumed + amountTokenConverted <= bondInfo.bondAmount, "Stabl3Bonding: Bond limit reached");
 
-        uint256 amountStabl3 = treasury.getAmountOut(_token, _amountToken);
+        uint256 amountStabl3 = TREASURY.getAmountOut(_token, _amountToken);
         amountStabl3 = amountStabl3.mul(1000).div(1000 - bondInfo.discount);
-        treasury.checkOutputAmount(amountStabl3);
+        TREASURY.checkOutputAmount(amountStabl3);
 
         {
             uint256 amountTreasury = _amountToken.mul(treasuryPercentage).div(1000);
@@ -235,12 +235,12 @@ contract Stabl3Bonding is Ownable {
                 amountTreasury += _amountToken - totalAmountDistributed;
             }
 
-            SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), amountTreasury);
+            SafeERC20.safeTransferFrom(_token, msg.sender, address(TREASURY), amountTreasury);
             SafeERC20.safeTransferFrom(_token, msg.sender, address(ROI), amountROI);
             SafeERC20.safeTransferFrom(_token, msg.sender, HQ, amountHQ);
 
-            treasury.updatePool(BOND_POOL, _token, amountTreasury, amountROI, amountHQ, true);
-            treasury.updatePool(STABL3_RESERVED_POOL, STABL3, amountStabl3, 0, 0, true);
+            TREASURY.updatePool(BOND_POOL, _token, amountTreasury, amountROI, amountHQ, true);
+            TREASURY.updatePool(STABL3_RESERVED_POOL, STABL3, amountStabl3, 0, 0, true);
         }
 
         Bonding memory bonding;
@@ -262,7 +262,7 @@ contract Stabl3Bonding is Ownable {
 
         record.totalAmountToken += amountTokenConverted;
 
-        treasury.updateRate(_token, _amountToken);
+        TREASURY.updateRate(_token, _amountToken);
 
         ROI.updateAPR();
 
@@ -318,7 +318,7 @@ contract Stabl3Bonding is Ownable {
         require(bonding.status, "Stabl3Bonding: Invalid Bonding");
         require(timestampToConsider >= bonding.endTime, "Stabl3Bonding: Bonding not yet claimable");
 
-        STABL3.transferFrom(address(treasury), msg.sender, bonding.amountStabl3);
+        STABL3.transferFrom(address(TREASURY), msg.sender, bonding.amountStabl3);
 
         bonding.status = false;
 
@@ -326,8 +326,8 @@ contract Stabl3Bonding is Ownable {
 
         record.totalAmountStabl3 += bonding.amountStabl3;
 
-        treasury.updatePool(STABL3_RESERVED_POOL, STABL3, bonding.amountStabl3, 0, 0, false);
-        treasury.updateStabl3CirculatingSupply(bonding.amountStabl3, true);
+        TREASURY.updatePool(STABL3_RESERVED_POOL, STABL3, bonding.amountStabl3, 0, 0, false);
+        TREASURY.updateStabl3CirculatingSupply(bonding.amountStabl3, true);
 
         emit ClaimedBond(
             bonding.user,
@@ -356,7 +356,7 @@ contract Stabl3Bonding is Ownable {
     }
 
     modifier reserved(IERC20 _token) {
-        require(treasury.isReservedToken(_token), "Stabl3Bonding: Not a reserved token");
+        require(TREASURY.isReservedToken(_token), "Stabl3Bonding: Not a reserved token");
         _;
     }
 }

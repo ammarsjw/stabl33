@@ -30,7 +30,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
     uint256 private constant oneDayTime = 10;
     // uint256 private constant oneDayTime = 86400; // 1 day time in seconds
 
-    ITreasury public treasury;
+    ITreasury public TREASURY;
 
     IERC20 public immutable STABL3;
 
@@ -72,8 +72,8 @@ contract ROI is Ownable, IStabl3StakingStruct {
 
     // constructor
 
-    constructor(ITreasury _treasury) {
-        treasury = _treasury;
+    constructor(ITreasury _TREASURY) {
+        TREASURY = _TREASURY;
 
         // TODO change
         STABL3 = IERC20(0xDf9c4990a8973b6cC069738592F27Ea54b27D569);
@@ -90,15 +90,15 @@ contract ROI is Ownable, IStabl3StakingStruct {
 
         returnPools = [0, 1];
 
-        updatePermission(address(_treasury), true);
+        updatePermission(address(_TREASURY), true);
     }
 
-    function updateTreasury(address _treasury) external onlyOwner {
-        require(address(treasury) != _treasury, "ROI: Treasury is already this address");
-        if (address(treasury) != address(0)) updatePermission(address(treasury), false);
-        updatePermission(_treasury, true);
-        emit UpdatedTreasury(_treasury, address(treasury));
-        treasury = ITreasury(_treasury);
+    function updateTreasury(address _TREASURY) external onlyOwner {
+        require(address(TREASURY) != _TREASURY, "ROI: Treasury is already this address");
+        if (address(TREASURY) != address(0)) updatePermission(address(TREASURY), false);
+        updatePermission(_TREASURY, true);
+        emit UpdatedTreasury(_TREASURY, address(TREASURY));
+        TREASURY = ITreasury(_TREASURY);
     }
 
     function updateUCD(address _ucd) external onlyOwner {
@@ -156,8 +156,8 @@ contract ROI is Ownable, IStabl3StakingStruct {
 
             delegateApprove(UCD, _contractAddress, true);
 
-            for (uint256 i = 0 ; i < treasury.allReservedTokensLength() ; i++) {
-                delegateApprove(treasury.allReservedTokens(i), _contractAddress, true);
+            for (uint256 i = 0 ; i < TREASURY.allReservedTokensLength() ; i++) {
+                delegateApprove(TREASURY.allReservedTokens(i), _contractAddress, true);
             }
         }
         else {
@@ -165,8 +165,8 @@ contract ROI is Ownable, IStabl3StakingStruct {
 
             delegateApprove(UCD, _contractAddress, false);
 
-            for (uint256 i = 0 ; i < treasury.allReservedTokensLength() ; i++) {
-                delegateApprove(treasury.allReservedTokens(i), _contractAddress, false);
+            for (uint256 i = 0 ; i < TREASURY.allReservedTokensLength() ; i++) {
+                delegateApprove(TREASURY.allReservedTokens(i), _contractAddress, false);
             }
         }
 
@@ -182,12 +182,12 @@ contract ROI is Ownable, IStabl3StakingStruct {
     function getTotalRewardDistributed() public view returns (uint256) {
         uint256 totalRewardDistributed;
 
-        for (uint256 i = 0 ; i < treasury.allReservedTokensLength() ; i++) {
-            IERC20 reservedToken = treasury.allReservedTokens(i);
+        for (uint256 i = 0 ; i < TREASURY.allReservedTokensLength() ; i++) {
+            IERC20 reservedToken = TREASURY.allReservedTokens(i);
 
-            if (treasury.isReservedToken(reservedToken)) {
-                uint256 stakeRewardAmount = treasury.sumOfAllPools(STAKE_REWARD_POOL, reservedToken);
-                uint256 lendRewardAmount = treasury.sumOfAllPools(LEND_REWARD_POOL, reservedToken);
+            if (TREASURY.isReservedToken(reservedToken)) {
+                uint256 stakeRewardAmount = TREASURY.sumOfAllPools(STAKE_REWARD_POOL, reservedToken);
+                uint256 lendRewardAmount = TREASURY.sumOfAllPools(LEND_REWARD_POOL, reservedToken);
 
                 uint256 decimals = reservedToken.decimals();
 
@@ -204,10 +204,10 @@ contract ROI is Ownable, IStabl3StakingStruct {
     function getReserves() public view returns (uint256) {
         uint256 totalReserves;
 
-        for (uint256 i = 0 ; i < treasury.allReservedTokensLength() ; i++) {
-            IERC20 reservedToken = treasury.allReservedTokens(i);
+        for (uint256 i = 0 ; i < TREASURY.allReservedTokensLength() ; i++) {
+            IERC20 reservedToken = TREASURY.allReservedTokens(i);
 
-            if (treasury.isReservedToken(reservedToken)) {
+            if (TREASURY.isReservedToken(reservedToken)) {
                 uint256 amountToken = reservedToken.balanceOf(address(this));
 
                 uint256 decimals = reservedToken.decimals();
@@ -225,12 +225,12 @@ contract ROI is Ownable, IStabl3StakingStruct {
     function getAPR() public view returns (uint256) {
         uint256 maxPool;
 
-        for (uint256 i = 0 ; i < treasury.allReservedTokensLength() ; i++) {
-            IERC20 reservedToken = treasury.allReservedTokens(i);
+        for (uint256 i = 0 ; i < TREASURY.allReservedTokensLength() ; i++) {
+            IERC20 reservedToken = TREASURY.allReservedTokens(i);
 
-            if (treasury.isReservedToken(reservedToken)) {
-                uint256 boughtAmount = treasury.getTreasuryPool(BUY_POOL, reservedToken);
-                uint256 bondedAmount = treasury.getTreasuryPool(BOND_POOL, reservedToken);
+            if (TREASURY.isReservedToken(reservedToken)) {
+                uint256 boughtAmount = TREASURY.getTreasuryPool(BUY_POOL, reservedToken);
+                uint256 bondedAmount = TREASURY.getTreasuryPool(BOND_POOL, reservedToken);
 
                 uint256 decimals = reservedToken.decimals();
 
@@ -256,12 +256,12 @@ contract ROI is Ownable, IStabl3StakingStruct {
         uint8 _stakingType,
         bool _isLending
     ) public view reserved(_token) returns (uint256 maxPool, uint256 currentPool) {
-        for (uint256 i = 0 ; i < treasury.allReservedTokensLength() ; i++) {
-            IERC20 reservedToken = treasury.allReservedTokens(i);
+        for (uint256 i = 0 ; i < TREASURY.allReservedTokensLength() ; i++) {
+            IERC20 reservedToken = TREASURY.allReservedTokens(i);
 
-            if (treasury.isReservedToken(reservedToken)) {
-                uint256 boughtAmount = treasury.getTreasuryPool(BUY_POOL, reservedToken);
-                uint256 bondedAmount = treasury.getTreasuryPool(BOND_POOL, reservedToken);
+            if (TREASURY.isReservedToken(reservedToken)) {
+                uint256 boughtAmount = TREASURY.getTreasuryPool(BUY_POOL, reservedToken);
+                uint256 bondedAmount = TREASURY.getTreasuryPool(BOND_POOL, reservedToken);
 
                 uint256 decimals = reservedToken.decimals();
 
@@ -275,7 +275,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
         maxPool = maxPool.mul(maxPoolPercentage).div(1000);
         maxPool = maxPool.mul(stakingTypePercentage).div(1000);
 
-        currentPool = treasury.getTreasuryPool(STAKING_TYPE_POOL + _stakingType, IERC20(address(0)));
+        currentPool = TREASURY.getTreasuryPool(STAKING_TYPE_POOL + _stakingType, IERC20(address(0)));
 
         if (_isLending) {
             _amountToken = _amountToken.mul(1000 - stabl3Staking.lendingStabl3Percentage()).div(1000);
@@ -298,16 +298,16 @@ contract ROI is Ownable, IStabl3StakingStruct {
 
                 _amountRewardToken -= amountRewardTokenROI;
 
-                treasury.updatePool(_rewardPoolType, _rewardToken, 0, amountRewardTokenROI, 0, true);
+                TREASURY.updatePool(_rewardPoolType, _rewardToken, 0, amountRewardTokenROI, 0, true);
             }
 
             uint256 decimalsRewardToken = _rewardToken.decimals();
 
-            for (uint256 i = 0 ; i < treasury.allReservedTokensLength() && _amountRewardToken > 0 ; i++) {
-                IERC20 reservedToken = treasury.allReservedTokens(i);
+            for (uint256 i = 0 ; i < TREASURY.allReservedTokensLength() && _amountRewardToken > 0 ; i++) {
+                IERC20 reservedToken = TREASURY.allReservedTokens(i);
 
                 if (
-                    treasury.isReservedToken(reservedToken) &&
+                    TREASURY.isReservedToken(reservedToken) &&
                     reservedToken != _rewardToken &&
                     _amountRewardToken != 0
                 ) {
@@ -326,7 +326,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
                     if (amountRewardTokenConverted > amountReservedTokenROI) {
                         SafeERC20.safeTransfer(reservedToken, _user, amountReservedTokenROI);
 
-                        treasury.updatePool(_rewardPoolType, reservedToken, 0, amountReservedTokenROI, 0, true);
+                        TREASURY.updatePool(_rewardPoolType, reservedToken, 0, amountReservedTokenROI, 0, true);
 
                         if (decimalsRewardToken > decimalsReservedToken) {
                             _amountRewardToken -= amountReservedTokenROI * (10 ** (decimalsRewardToken - decimalsReservedToken));
@@ -338,7 +338,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
                     else {
                         SafeERC20.safeTransfer(reservedToken, _user, amountRewardTokenConverted);
 
-                        treasury.updatePool(_rewardPoolType, reservedToken, 0, amountRewardTokenConverted, 0, true);
+                        TREASURY.updatePool(_rewardPoolType, reservedToken, 0, amountRewardTokenConverted, 0, true);
 
                         _amountRewardToken = 0;
                         break;
@@ -349,7 +349,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
         else {
             SafeERC20.safeTransfer(_rewardToken, _user, _amountRewardToken);
 
-            treasury.updatePool(_rewardPoolType, _rewardToken, 0, _amountRewardToken, 0, true);
+            TREASURY.updatePool(_rewardPoolType, _rewardToken, 0, _amountRewardToken, 0, true);
         }
     }
 
@@ -379,24 +379,24 @@ contract ROI is Ownable, IStabl3StakingStruct {
     /**
      * @dev Called when Treasury does not have enough funds
      * @dev Transfers funds from ROI to Treasury
-     * @dev Updates values of both treasury and ROI pools
+     * @dev Updates values of both TREASURY and ROI pools
      */
     function returnFunds(IERC20 _token, uint256 _amountToken) external permission reserved(_token) {
         uint256 amountToUpdate = _amountToken;
 
         for (uint8 i = 0 ; i < returnPools.length ; i++) {
-            uint256 amountPool = treasury.getROIPool(returnPools[i], _token);
+            uint256 amountPool = TREASURY.getROIPool(returnPools[i], _token);
 
             if (amountPool != 0) {
                 if (amountPool < amountToUpdate) {
-                    treasury.updatePool(returnPools[i], _token, 0, amountPool, 0, false);
-                    treasury.updatePool(returnPools[i], _token, amountPool, 0, 0, true);
+                    TREASURY.updatePool(returnPools[i], _token, 0, amountPool, 0, false);
+                    TREASURY.updatePool(returnPools[i], _token, amountPool, 0, 0, true);
 
                     amountToUpdate -= amountPool;
                 }
                 else {
-                    treasury.updatePool(returnPools[i], _token, 0, amountToUpdate, 0, false);
-                    treasury.updatePool(returnPools[i], _token, amountToUpdate, 0, 0, true);
+                    TREASURY.updatePool(returnPools[i], _token, 0, amountToUpdate, 0, false);
+                    TREASURY.updatePool(returnPools[i], _token, amountToUpdate, 0, 0, true);
 
                     amountToUpdate = 0;
                     break;
@@ -406,7 +406,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
 
         require(amountToUpdate == 0, "ROI: Not enough funds in the specified pools");
 
-        SafeERC20.safeTransfer(_token, address(treasury), _amountToken);
+        SafeERC20.safeTransfer(_token, address(TREASURY), _amountToken);
     }
 
     function delegateApprove(IERC20 _token, address _spender, bool _isApprove) public onlyOwner {
@@ -432,7 +432,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
     }
 
     modifier reserved(IERC20 _token) {
-        require(treasury.isReservedToken(_token), "ROI: Not a reserved token");
+        require(TREASURY.isReservedToken(_token), "ROI: Not a reserved token");
         _;
     }
 }

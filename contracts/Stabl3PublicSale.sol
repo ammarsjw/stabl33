@@ -18,7 +18,7 @@ contract Stabl3PublicSale is Ownable {
     uint8 private constant STAKE_POOL = 2;
     uint8 private constant LEND_POOL = 5;
 
-    ITreasury public treasury;
+    ITreasury public TREASURY;
     IROI public ROI;
     address public HQ;
 
@@ -75,8 +75,8 @@ contract Stabl3PublicSale is Ownable {
 
     // constructor
 
-    constructor(address _treasury, address _ROI) {
-        treasury = ITreasury(_treasury);
+    constructor(address _TREASURY, address _ROI) {
+        TREASURY = ITreasury(_TREASURY);
         ROI = IROI(_ROI);
         // TODO change
         HQ = 0x294d0487fdf7acecf342ae70AFc5549A6E90f3e0;
@@ -93,10 +93,10 @@ contract Stabl3PublicSale is Ownable {
         exchangeLimitPercentage = 300;
     }
 
-    function updateTreasury(address _treasury) external onlyOwner {
-        require(address(treasury) != _treasury, "Stabl3PublicSale: Treasury is already this address");
-        emit UpdatedTreasury(_treasury, address(treasury));
-        treasury = ITreasury(_treasury);
+    function updateTreasury(address _TREASURY) external onlyOwner {
+        require(address(TREASURY) != _TREASURY, "Stabl3PublicSale: Treasury is already this address");
+        emit UpdatedTreasury(_TREASURY, address(TREASURY));
+        TREASURY = ITreasury(_TREASURY);
     }
 
     function updateROI(address _ROI) external onlyOwner {
@@ -147,8 +147,8 @@ contract Stabl3PublicSale is Ownable {
     function buy(IERC20 _token, uint256 _amountToken) external saleActive reserved(_token) {
         require(_amountToken > 0, "Stabl3PublicSale: Insufficient amount");
 
-        uint256 amountStabl3 = treasury.getAmountOut(_token, _amountToken);
-        treasury.checkOutputAmount(amountStabl3);
+        uint256 amountStabl3 = TREASURY.getAmountOut(_token, _amountToken);
+        TREASURY.checkOutputAmount(amountStabl3);
 
         uint256 amountTreasury = _amountToken.mul(treasuryPercentage).div(1000);
         uint256 amountROI = _amountToken.mul(ROIPercentage).div(1000);
@@ -159,16 +159,16 @@ contract Stabl3PublicSale is Ownable {
             amountTreasury += _amountToken - totalAmountDistributed;
         }
 
-        SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), amountTreasury);
+        SafeERC20.safeTransferFrom(_token, msg.sender, address(TREASURY), amountTreasury);
         SafeERC20.safeTransferFrom(_token, msg.sender, address(ROI), amountROI);
         SafeERC20.safeTransferFrom(_token, msg.sender, HQ, amountHQ);
 
-        STABL3.transferFrom(address(treasury), msg.sender, amountStabl3);
+        STABL3.transferFrom(address(TREASURY), msg.sender, amountStabl3);
 
-        treasury.updatePool(BUY_POOL, _token, amountTreasury, amountROI, amountHQ, true);
-        treasury.updateStabl3CirculatingSupply(amountStabl3, true);
+        TREASURY.updatePool(BUY_POOL, _token, amountTreasury, amountROI, amountHQ, true);
+        TREASURY.updateStabl3CirculatingSupply(amountStabl3, true);
 
-        treasury.updateRate(_token, _amountToken);
+        TREASURY.updateRate(_token, _amountToken);
 
         ROI.updateAPR();
 
@@ -192,9 +192,9 @@ contract Stabl3PublicSale is Ownable {
         }
 
         uint256 amountExchangingTokenToConsider =
-            _exchangingToken.balanceOf(address(treasury))
-            .safeSub(treasury.getTreasuryPool(STAKE_POOL, _exchangingToken))
-            .safeSub(treasury.getTreasuryPool(LEND_POOL, _exchangingToken));
+            _exchangingToken.balanceOf(address(TREASURY))
+            .safeSub(TREASURY.getTreasuryPool(STAKE_POOL, _exchangingToken))
+            .safeSub(TREASURY.getTreasuryPool(LEND_POOL, _exchangingToken));
 
         uint256 decimals = _exchangingToken.decimals();
 
@@ -221,7 +221,7 @@ contract Stabl3PublicSale is Ownable {
      * @dev This function allows users to exchange 1 stable coin with another but only if it is part of the protocol's reserve
      * @dev Multiple security features incorporated to secure funds
      * @dev Each user has a certain time wait before each consecutive exchange call
-     * @dev Each user is limited to take out a maximum of X% within Y hours of the token they want which is currently in the treasury
+     * @dev Each user is limited to take out a maximum of X% within Y hours of the token they want which is currently in the TREASURY
             minus the amounts that came in through staking and lending
      * @dev Using the current chain's highest liquidity AMM for exchange price
      */
@@ -234,35 +234,35 @@ contract Stabl3PublicSale is Ownable {
         require(_exchangingToken != _token, "Stabl3PublicSale: Invalid exchange");
         require(_amountToken > 0, "Stabl3PublicSale: Insufficient amount");
 
-        uint256 amountExchangingToken = treasury.getExchangeAmountOut(_exchangingToken, _token, _amountToken);
+        uint256 amountExchangingToken = TREASURY.getExchangeAmountOut(_exchangingToken, _token, _amountToken);
 
         require(amountExchangingToken >= _amountExchangingTokenMin, "StablePublicSale: Slippage");
 
         _handleLimit(_exchangingToken, amountExchangingToken);
 
-        uint256 fee = _amountToken.mul(treasury.exchangeFee()).div(1000);
+        uint256 fee = _amountToken.mul(TREASURY.exchangeFee()).div(1000);
         uint256 amountTokenWithFee = _amountToken - fee;
 
         // buy
-        uint256 amountStabl3 = treasury.getAmountOut(_token, fee);
-        treasury.checkOutputAmount(amountStabl3);
+        uint256 amountStabl3 = TREASURY.getAmountOut(_token, fee);
+        TREASURY.checkOutputAmount(amountStabl3);
 
         SafeERC20.safeTransferFrom(_token, msg.sender, address(ROI), fee);
 
-        STABL3.transferFrom(address(treasury), msg.sender, amountStabl3);
+        STABL3.transferFrom(address(TREASURY), msg.sender, amountStabl3);
 
-        treasury.updatePool(BUY_POOL, _token, 0, fee, 0, true);
-        treasury.updateStabl3CirculatingSupply(amountStabl3, true);
+        TREASURY.updatePool(BUY_POOL, _token, 0, fee, 0, true);
+        TREASURY.updateStabl3CirculatingSupply(amountStabl3, true);
 
-        treasury.updateRate(_token, fee);
+        TREASURY.updateRate(_token, fee);
 
         // exchange
-        SafeERC20.safeTransferFrom(_exchangingToken, address(treasury), msg.sender, amountExchangingToken);
+        SafeERC20.safeTransferFrom(_exchangingToken, address(TREASURY), msg.sender, amountExchangingToken);
 
-        SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), amountTokenWithFee);
+        SafeERC20.safeTransferFrom(_token, msg.sender, address(TREASURY), amountTokenWithFee);
 
-        treasury.updatePool(BUY_POOL, _exchangingToken, amountExchangingToken, 0, 0, false);
-        treasury.updatePool(BUY_POOL, _token, amountTokenWithFee, 0, 0, true);
+        TREASURY.updatePool(BUY_POOL, _exchangingToken, amountExchangingToken, 0, 0, false);
+        TREASURY.updatePool(BUY_POOL, _token, amountTokenWithFee, 0, 0, true);
 
         ROI.updateAPR();
 
@@ -277,7 +277,7 @@ contract Stabl3PublicSale is Ownable {
     }
 
     modifier reserved(IERC20 _token) {
-        require(treasury.isReservedToken(_token), "Stabl3PublicSale: Not a reserved token");
+        require(TREASURY.isReservedToken(_token), "Stabl3PublicSale: Not a reserved token");
         _;
     }
 }

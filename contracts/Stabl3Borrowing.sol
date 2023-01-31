@@ -22,14 +22,14 @@ contract Stabl3Borrowing is Ownable {
 
     address public donationWallet;
 
-    ITreasury public treasury;
+    ITreasury public TREASURY;
     IROI public ROI;
 
     IERC20 public immutable STABL3;
 
     IUCD public UCD;
 
-    IERC721 public stabl3InvestorsNFT;
+    IERC721 public INVESTORS;
 
     uint256 public buybackPercentage;
     uint256 public donationPercentage;
@@ -93,11 +93,11 @@ contract Stabl3Borrowing is Ownable {
 
     // constructor
 
-    constructor(address _treasury, address _ROI) {
+    constructor(address _TREASURY, address _ROI) {
         // TODO change
         donationWallet = 0x3edCe801a3f1851675e68589844B1b412EAc6B07;
 
-        treasury = ITreasury(_treasury);
+        TREASURY = ITreasury(_TREASURY);
         ROI = IROI(_ROI);
 
         // TODO change
@@ -107,7 +107,7 @@ contract Stabl3Borrowing is Ownable {
         UCD = IUCD(0x01fa8dEEdDEA8E4e465f158d93e162438d61c9eB);
 
         // TODO change
-        stabl3InvestorsNFT = IERC721(0x1334E7c1B5CB9Fe515069E313517FC6c31150C91);
+        INVESTORS = IERC721(0x1334E7c1B5CB9Fe515069E313517FC6c31150C91);
 
         buybackPercentage = 500;
         donationPercentage = 500;
@@ -124,10 +124,10 @@ contract Stabl3Borrowing is Ownable {
         donationWallet = _donationWallet;
     }
 
-    function updateTreasury(address _treasury) external onlyOwner {
-        require(address(treasury) != _treasury, "Stabl3Borrowing: Treasury is already this address");
-        emit UpdatedTreasury(_treasury, address(treasury));
-        treasury = ITreasury(_treasury);
+    function updateTreasury(address _TREASURY) external onlyOwner {
+        require(address(TREASURY) != _TREASURY, "Stabl3Borrowing: Treasury is already this address");
+        emit UpdatedTreasury(_TREASURY, address(TREASURY));
+        TREASURY = ITreasury(_TREASURY);
     }
 
     function updateROI(address _ROI) external onlyOwner {
@@ -174,7 +174,7 @@ contract Stabl3Borrowing is Ownable {
     }
 
     function getReservesUCD() public view returns (uint256 availableUCD, uint256 borrowedUCD, uint256 returnedUCD) {
-        (, uint256 marketCap, ) = treasury.rateInfo();
+        (, uint256 marketCap, ) = TREASURY.rateInfo();
 
         uint256 marketCapToConsider = marketCap / (10 ** (18 - UCD.decimals()));
 
@@ -192,10 +192,10 @@ contract Stabl3Borrowing is Ownable {
     function borrow(uint256 _amountStabl3) external borrowActive {
         require(_amountStabl3 > 0, "Stabl3Borrowing: Insufficient amount");
 
-        uint256 amountUCD = treasury.getAmountIn(_amountStabl3, UCD);
+        uint256 amountUCD = TREASURY.getAmountIn(_amountStabl3, UCD);
 
         uint256 fee;
-        if (stabl3InvestorsNFT.balanceOf(msg.sender) == 0) {
+        if (INVESTORS.balanceOf(msg.sender) == 0) {
             fee = amountUCD.mul(borrowFee).div(1000);
         }
         uint256 amountUCDWithFee = amountUCD - fee;
@@ -208,7 +208,7 @@ contract Stabl3Borrowing is Ownable {
         borrowing.amountUCD += amountUCDWithFee;
         borrowing.amountStabl3 += _amountStabl3;
 
-        IERC20 reservedToken = treasury.reservedTokenSelector();
+        IERC20 reservedToken = TREASURY.reservedTokenSelector();
 
         uint256 decimalsReservedToken = reservedToken.decimals();
         uint256 decimalsUCD = UCD.decimals();
@@ -222,20 +222,20 @@ contract Stabl3Borrowing is Ownable {
 
         _returnBorrowingFunds(reservedToken, fee);
 
-        SafeERC20.safeTransferFrom(reservedToken, address(treasury), address(ROI), fee);
+        SafeERC20.safeTransferFrom(reservedToken, address(TREASURY), address(ROI), fee);
 
-        STABL3.transferFrom(msg.sender, address(treasury), _amountStabl3);
+        STABL3.transferFrom(msg.sender, address(TREASURY), _amountStabl3);
 
         UCD.mintWithPermit(msg.sender, amountUCDWithFee);
 
-        treasury.updatePool(UCD_BORROW_POOL, UCD, amountUCDWithFee, 0, 0, true);
-        treasury.updatePool(STABL3_COLLATERAL_POOL, STABL3, _amountStabl3, 0, 0, true);
+        TREASURY.updatePool(UCD_BORROW_POOL, UCD, amountUCDWithFee, 0, 0, true);
+        TREASURY.updatePool(STABL3_COLLATERAL_POOL, STABL3, _amountStabl3, 0, 0, true);
 
-        treasury.updateStabl3CirculatingSupply(_amountStabl3, false);
+        TREASURY.updateStabl3CirculatingSupply(_amountStabl3, false);
 
         ROI.updateAPR();
 
-        emit Borrow(msg.sender, amountUCDWithFee, _amountStabl3, treasury.getRate(), block.timestamp);
+        emit Borrow(msg.sender, amountUCDWithFee, _amountStabl3, TREASURY.getRate(), block.timestamp);
     }
 
     /**
@@ -249,8 +249,8 @@ contract Stabl3Borrowing is Ownable {
 
         require(borrowing.amountUCD > 0, "Stabl3Borrowing: No debt to payback");
 
-        uint256 amountStabl3 = treasury.getAmountOut(UCD, _amountUCD);
-        treasury.checkOutputAmount(amountStabl3);
+        uint256 amountStabl3 = TREASURY.getAmountOut(UCD, _amountUCD);
+        TREASURY.checkOutputAmount(amountStabl3);
 
         borrowing.amountUCD = borrowing.amountUCD.safeSub(_amountUCD);
         borrowing.amountStabl3 = borrowing.amountStabl3.safeSub(amountStabl3);
@@ -258,16 +258,16 @@ contract Stabl3Borrowing is Ownable {
         UCD.burnWithPermit(msg.sender, _amountUCD);
         burnedUCD += _amountUCD;
 
-        STABL3.transferFrom(address(treasury), msg.sender, amountStabl3);
+        STABL3.transferFrom(address(TREASURY), msg.sender, amountStabl3);
 
-        treasury.updatePool(UCD_PAYBACK_POOL, UCD, _amountUCD, 0, 0, true);
-        treasury.updatePool(STABL3_COLLATERAL_POOL, STABL3, amountStabl3, 0, 0, false);
+        TREASURY.updatePool(UCD_PAYBACK_POOL, UCD, _amountUCD, 0, 0, true);
+        TREASURY.updatePool(STABL3_COLLATERAL_POOL, STABL3, amountStabl3, 0, 0, false);
         // calculating and processing STABL3 amount that is `leftover` after price changes
         _processLeftoverCollateral(borrowing, _amountUCD, amountStabl3);
 
-        treasury.updateStabl3CirculatingSupply(amountStabl3, true);
+        TREASURY.updateStabl3CirculatingSupply(amountStabl3, true);
 
-        emit Payback(msg.sender, _amountUCD, amountStabl3, treasury.getRate(), block.timestamp);
+        emit Payback(msg.sender, _amountUCD, amountStabl3, TREASURY.getRate(), block.timestamp);
     }
 
     /**
@@ -281,8 +281,8 @@ contract Stabl3Borrowing is Ownable {
         if (getBorrowings[msg.sender].amountUCD > 0) {
             Borrowing storage borrowing = getBorrowings[msg.sender];
 
-            uint256 amountStabl3 = treasury.getAmountOut(UCD, _amountUCD);
-            treasury.checkOutputAmount(amountStabl3);
+            uint256 amountStabl3 = TREASURY.getAmountOut(UCD, _amountUCD);
+            TREASURY.checkOutputAmount(amountStabl3);
 
             borrowing.amountUCD = borrowing.amountUCD.safeSub(_amountUCD);
             borrowing.amountStabl3 = borrowing.amountStabl3.safeSub(amountStabl3);
@@ -290,7 +290,7 @@ contract Stabl3Borrowing is Ownable {
             UCD.burnWithPermit(msg.sender, _amountUCD);
             burnedUCD += _amountUCD;
 
-            treasury.updatePool(STABL3_COLLATERAL_POOL, STABL3, amountStabl3, 0, 0, false);
+            TREASURY.updatePool(STABL3_COLLATERAL_POOL, STABL3, amountStabl3, 0, 0, false);
             // calculating and processing collateral STABL3 amount that is `leftover` after price changes
             _processLeftoverCollateral(borrowing, _amountUCD, amountStabl3);
         }
@@ -308,22 +308,22 @@ contract Stabl3Borrowing is Ownable {
         }
 
         uint256 fee;
-        if (stabl3InvestorsNFT.balanceOf(msg.sender) == 0) {
+        if (INVESTORS.balanceOf(msg.sender) == 0) {
             fee = amountExchangingToken.mul(exchangeFeeUCD).div(1000);
         }
         uint256 amountExchangingTokenWithFee = amountExchangingToken - fee;
 
-        if (amountExchangingToken > _exchangingToken.balanceOf(address(treasury))) {
-            ROI.returnFunds(_exchangingToken, amountExchangingToken - _exchangingToken.balanceOf(address(treasury)));
+        if (amountExchangingToken > _exchangingToken.balanceOf(address(TREASURY))) {
+            ROI.returnFunds(_exchangingToken, amountExchangingToken - _exchangingToken.balanceOf(address(TREASURY)));
         }
 
         _returnBorrowingFunds(_exchangingToken, amountExchangingToken);
 
-        SafeERC20.safeTransferFrom(_exchangingToken, address(treasury), address(ROI), fee);
-        SafeERC20.safeTransferFrom(_exchangingToken, address(treasury), msg.sender, amountExchangingTokenWithFee);
+        SafeERC20.safeTransferFrom(_exchangingToken, address(TREASURY), address(ROI), fee);
+        SafeERC20.safeTransferFrom(_exchangingToken, address(TREASURY), msg.sender, amountExchangingTokenWithFee);
 
-        treasury.updatePool(UCD_TO_TOKEN_EXCHANGE_POOL, _exchangingToken, amountExchangingTokenWithFee, 0, 0, true);
-        treasury.updatePool(UCD_TO_TOKEN_EXCHANGE_POOL, UCD, _amountUCD, 0, 0, true);
+        TREASURY.updatePool(UCD_TO_TOKEN_EXCHANGE_POOL, _exchangingToken, amountExchangingTokenWithFee, 0, 0, true);
+        TREASURY.updatePool(UCD_TO_TOKEN_EXCHANGE_POOL, UCD, _amountUCD, 0, 0, true);
 
         ROI.updateAPR();
 
@@ -352,21 +352,21 @@ contract Stabl3Borrowing is Ownable {
             }
 
             // buyback
-            IERC20 reservedToken = treasury.reservedTokenSelector();
+            IERC20 reservedToken = TREASURY.reservedTokenSelector();
 
-            uint256 amountTokenBuyback = treasury.getAmountIn(buybackStabl3, reservedToken);
+            uint256 amountTokenBuyback = TREASURY.getAmountIn(buybackStabl3, reservedToken);
 
-            SafeERC20.safeTransferFrom(reservedToken, address(treasury), address(ROI), amountTokenBuyback);
+            SafeERC20.safeTransferFrom(reservedToken, address(TREASURY), address(ROI), amountTokenBuyback);
 
             // donation
-            STABL3.transferFrom(address(treasury), donationWallet, donationStabl3);
+            STABL3.transferFrom(address(TREASURY), donationWallet, donationStabl3);
 
             // removing `leftover` collateral STABL3 amount from the STABL3 collateral pool
-            treasury.updatePool(STABL3_COLLATERAL_POOL, STABL3, buybackStabl3 + donationStabl3, 0, 0, false);
+            TREASURY.updatePool(STABL3_COLLATERAL_POOL, STABL3, buybackStabl3 + donationStabl3, 0, 0, false);
 
-            // buyback STABL3 amount is part of the treasury and hence isn't considered into the circulating supply
-            // donation STABL3 amount is not part of the treasury and hence is considered into the circulating supply
-            treasury.updateStabl3CirculatingSupply(donationStabl3, true);
+            // buyback STABL3 amount is part of the TREASURY and hence isn't considered into the circulating supply
+            // donation STABL3 amount is not part of the TREASURY and hence is considered into the circulating supply
+            TREASURY.updateStabl3CirculatingSupply(donationStabl3, true);
 
             // updating APR
             ROI.updateAPR();
@@ -377,22 +377,22 @@ contract Stabl3Borrowing is Ownable {
     }
 
     /**
-     * @dev Calls treasury's updatePool to reduce the treasury amounts
+     * @dev Calls TREASURY's updatePool to reduce the TREASURY amounts
      */
     function _returnBorrowingFunds(IERC20 _token, uint256 _amountToken) internal {
         uint256 amountToUpdate = _amountToken;
 
         for (uint8 i = 0 ; i < returnBorrowingPools.length ; i++) {
-            uint256 amountPool = treasury.getTreasuryPool(returnBorrowingPools[i], _token);
+            uint256 amountPool = TREASURY.getTreasuryPool(returnBorrowingPools[i], _token);
 
             if (amountPool != 0) {
                 if (amountPool < amountToUpdate) {
-                    treasury.updatePool(returnBorrowingPools[i], _token, amountPool, 0, 0, false);
+                    TREASURY.updatePool(returnBorrowingPools[i], _token, amountPool, 0, 0, false);
 
                     amountToUpdate -= amountPool;
                 }
                 else {
-                    treasury.updatePool(returnBorrowingPools[i], _token, amountToUpdate, 0, 0, false);
+                    TREASURY.updatePool(returnBorrowingPools[i], _token, amountToUpdate, 0, 0, false);
 
                     amountToUpdate = 0;
                     break;
@@ -411,7 +411,7 @@ contract Stabl3Borrowing is Ownable {
     }
 
     modifier reserved(IERC20 _token) {
-        require(treasury.isReservedToken(_token), "Stabl3Borrowing: Not a reserved token");
+        require(TREASURY.isReservedToken(_token), "Stabl3Borrowing: Not a reserved token");
         _;
     }
 }

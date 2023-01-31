@@ -55,7 +55,7 @@ contract Treasury is Ownable {
     mapping (uint8 => mapping(IERC20 => uint256)) public getROIPool;
     mapping (uint8 => mapping(IERC20 => uint256)) public getHQPool;
 
-    /// @dev Contracts with permission to access treasury funds
+    /// @dev Contracts with permission to access TREASURY funds
     mapping (address => bool) public permitted;
 
     // events

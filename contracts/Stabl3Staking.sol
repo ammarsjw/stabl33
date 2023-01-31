@@ -35,7 +35,7 @@ contract Stabl3Staking is Ownable, IStabl3StakingStruct {
     // uint256 private constant oneDayTime = 86400; // 1 day time in seconds
     // uint256 private constant oneYearTime = 31536000; // 1 year time in seconds
 
-    ITreasury public treasury;
+    ITreasury public TREASURY;
     IROI public ROI;
     address public HQ;
 
@@ -134,8 +134,8 @@ contract Stabl3Staking is Ownable, IStabl3StakingStruct {
 
     // constructor
 
-    constructor(address _treasury, address _ROI) {
-        treasury = ITreasury(_treasury);
+    constructor(address _TREASURY, address _ROI) {
+        TREASURY = ITreasury(_TREASURY);
         ROI = IROI(_ROI);
         // TODO change
         HQ = 0x294d0487fdf7acecf342ae70AFc5549A6E90f3e0;
@@ -161,10 +161,10 @@ contract Stabl3Staking is Ownable, IStabl3StakingStruct {
         unstakeFeePercentage = 50;
     }
 
-    function updateTreasury(address _treasury) external onlyOwner {
-        require(address(treasury) != _treasury, "Stabl3Staking: Treasury is already this address");
-        emit UpdatedTreasury(_treasury, address(treasury));
-        treasury = ITreasury(_treasury);
+    function updateTreasury(address _TREASURY) external onlyOwner {
+        require(address(TREASURY) != _TREASURY, "Stabl3Staking: Treasury is already this address");
+        emit UpdatedTreasury(_TREASURY, address(TREASURY));
+        TREASURY = ITreasury(_TREASURY);
     }
 
     function updateROI(address _ROI) external onlyOwner {
@@ -290,8 +290,8 @@ contract Stabl3Staking is Ownable, IStabl3StakingStruct {
             uint256 amountHQ = _amountToken.mul(HQPercentages[1]).div(1000);
             uint256 amountTokenLending = _amountToken.mul(lendingStabl3Percentage).div(1000);
 
-            amountStabl3Lending = treasury.getAmountOut(_token, amountTokenLending);
-            treasury.checkOutputAmount(amountStabl3Lending);
+            amountStabl3Lending = TREASURY.getAmountOut(_token, amountTokenLending);
+            TREASURY.checkOutputAmount(amountStabl3Lending);
 
             uint256 totalAmountDistributed = amountTreasury + amountROI + amountHQ + amountTokenLending;
             if (_amountToken > totalAmountDistributed) {
@@ -300,16 +300,16 @@ contract Stabl3Staking is Ownable, IStabl3StakingStruct {
 
             _amountToken -= amountTokenLending;
 
-            SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), amountTreasury);
+            SafeERC20.safeTransferFrom(_token, msg.sender, address(TREASURY), amountTreasury);
             SafeERC20.safeTransferFrom(_token, msg.sender, address(ROI), amountROI);
             SafeERC20.safeTransferFrom(_token, msg.sender, HQ, amountHQ);
             SafeERC20.safeTransferFrom(_token, msg.sender, address(ROI), amountTokenLending);
 
-            treasury.updatePool(LEND_POOL, _token, amountTreasury + amountHQ, amountROI, amountHQ, true);
-            treasury.updatePool(BUY_POOL, _token, 0, amountTokenLending, 0, true);
-            treasury.updatePool(STABL3_RESERVED_POOL, STABL3, amountStabl3Lending, 0, 0, true);
+            TREASURY.updatePool(LEND_POOL, _token, amountTreasury + amountHQ, amountROI, amountHQ, true);
+            TREASURY.updatePool(BUY_POOL, _token, 0, amountTokenLending, 0, true);
+            TREASURY.updatePool(STABL3_RESERVED_POOL, STABL3, amountStabl3Lending, 0, 0, true);
 
-            treasury.updateRate(_token, amountTokenLending);
+            TREASURY.updateRate(_token, amountTokenLending);
         }
         else {
             uint256 amountTreasury = _amountToken.mul(treasuryPercentages[0]).div(1000);
@@ -321,11 +321,11 @@ contract Stabl3Staking is Ownable, IStabl3StakingStruct {
                 amountTreasury += _amountToken - totalAmountDistributed;
             }
 
-            SafeERC20.safeTransferFrom(_token, msg.sender, address(treasury), amountTreasury);
+            SafeERC20.safeTransferFrom(_token, msg.sender, address(TREASURY), amountTreasury);
             SafeERC20.safeTransferFrom(_token, msg.sender, address(ROI), amountROI);
             SafeERC20.safeTransferFrom(_token, msg.sender, HQ, amountHQ);
 
-            treasury.updatePool(STAKE_POOL, _token, amountTreasury + amountHQ, amountROI, amountHQ, true);
+            TREASURY.updatePool(STAKE_POOL, _token, amountTreasury + amountHQ, amountROI, amountHQ, true);
         }
 
         ROI.updateAPR();
@@ -358,7 +358,7 @@ contract Stabl3Staking is Ownable, IStabl3StakingStruct {
 
         uint256 amountTokenConverted = _token.decimals() < 18 ? _amountToken * (10 ** (18 - _token.decimals())) : _amountToken;
 
-        treasury.updatePool(STAKING_TYPE_POOL + _stakingType, IERC20(address(0)), amountTokenConverted, 0, 0, true);
+        TREASURY.updatePool(STAKING_TYPE_POOL + _stakingType, IERC20(address(0)), amountTokenConverted, 0, 0, true);
         record.totalAmountTokenStaked += amountTokenConverted;
 
         emit Stake(
@@ -499,12 +499,12 @@ contract Stabl3Staking is Ownable, IStabl3StakingStruct {
         uint256 amountStabl3Lending = getClaimableStabl3LendingSingle(msg.sender, _index, _timestamp);
 
         if (amountStabl3Lending > 0) {
-            STABL3.transferFrom(address(treasury), msg.sender, amountStabl3Lending);
+            STABL3.transferFrom(address(TREASURY), msg.sender, amountStabl3Lending);
 
             record.totalAmountStabl3Withdrawn += amountStabl3Lending;
 
-            treasury.updatePool(STABL3_RESERVED_POOL, STABL3, amountStabl3Lending, 0, 0, false);
-            treasury.updateStabl3CirculatingSupply(amountStabl3Lending, true);
+            TREASURY.updatePool(STABL3_RESERVED_POOL, STABL3, amountStabl3Lending, 0, 0, false);
+            TREASURY.updateStabl3CirculatingSupply(amountStabl3Lending, true);
 
             emit ClaimedLendingStabl3(
                 staking.user,
@@ -538,8 +538,8 @@ contract Stabl3Staking is Ownable, IStabl3StakingStruct {
     function _unstakeSingle(uint256 _index, uint256 _amountToUnstake) internal {
         Staking storage staking = getStakings[msg.sender][_index];
 
-        if (staking.amountTokenStaked > staking.token.balanceOf(address(treasury))) {
-            ROI.returnFunds(staking.token, staking.amountTokenStaked - staking.token.balanceOf(address(treasury)));
+        if (staking.amountTokenStaked > staking.token.balanceOf(address(TREASURY))) {
+            ROI.returnFunds(staking.token, staking.amountTokenStaked - staking.token.balanceOf(address(TREASURY)));
         }
 
         staking.status = false;
@@ -547,22 +547,22 @@ contract Stabl3Staking is Ownable, IStabl3StakingStruct {
         uint256 fee = staking.amountTokenStaked.mul(unstakeFeePercentage).div(1000);
         uint256 amountToUnstakeWithFee = staking.amountTokenStaked - fee;
 
-        SafeERC20.safeTransferFrom(staking.token, address(treasury), address(ROI), fee);
+        SafeERC20.safeTransferFrom(staking.token, address(TREASURY), address(ROI), fee);
 
-        SafeERC20.safeTransferFrom(staking.token, address(treasury), msg.sender, amountToUnstakeWithFee);
+        SafeERC20.safeTransferFrom(staking.token, address(TREASURY), msg.sender, amountToUnstakeWithFee);
 
         if (!staking.isDormant) {
             (uint8 poolType, uint8 feeType) = staking.isLending ? (LEND_POOL, LEND_FEE_POOL) : (STAKE_POOL, STAKE_FEE_POOL);
 
-            treasury.updatePool(poolType, staking.token, staking.amountTokenStaked, 0, 0, false);
-            treasury.updatePool(feeType, staking.token, 0, fee, 0, true);
+            TREASURY.updatePool(poolType, staking.token, staking.amountTokenStaked, 0, 0, false);
+            TREASURY.updatePool(feeType, staking.token, 0, fee, 0, true);
 
             uint256 amountTokenConverted =
                 staking.token.decimals() < 18 ?
                 staking.amountTokenStaked * (10 ** (18 - staking.token.decimals())) :
                 staking.amountTokenStaked;
 
-            treasury.updatePool(STAKING_TYPE_POOL + staking.stakingType, IERC20(address(0)), amountTokenConverted, 0, 0, false);
+            TREASURY.updatePool(STAKING_TYPE_POOL + staking.stakingType, IERC20(address(0)), amountTokenConverted, 0, 0, false);
         }
 
         ROI.updateAPR();
@@ -681,10 +681,10 @@ contract Stabl3Staking is Ownable, IStabl3StakingStruct {
 
                 (uint8 poolType, uint8 feeType) = staking.isLending ? (LEND_POOL, LEND_FEE_POOL) : (STAKE_POOL, STAKE_FEE_POOL);
 
-                treasury.updatePool(poolType, staking.token, staking.amountTokenStaked, 0, 0, false);
-                treasury.updatePool(feeType, staking.token, 0, fee, 0, true);
+                TREASURY.updatePool(poolType, staking.token, staking.amountTokenStaked, 0, 0, false);
+                TREASURY.updatePool(feeType, staking.token, 0, fee, 0, true);
 
-                treasury.updatePool(STAKING_TYPE_POOL + staking.stakingType, IERC20(address(0)), amountTokenConverted, 0, 0, false);
+                TREASURY.updatePool(STAKING_TYPE_POOL + staking.stakingType, IERC20(address(0)), amountTokenConverted, 0, 0, false);
 
                 // Designating this stake as Dormant
 
@@ -723,6 +723,6 @@ contract Stabl3Staking is Ownable, IStabl3StakingStruct {
     }
 
     function _reserved(IERC20 _token) internal view {
-        require(treasury.isReservedToken(_token), "Stabl3Staking: Not a reserved token");
+        require(TREASURY.isReservedToken(_token), "Stabl3Staking: Not a reserved token");
     }
 }
