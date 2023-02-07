@@ -214,10 +214,10 @@ contract Stabl3Borrowing is Ownable {
         uint256 decimalsUCD = UCD.decimals();
 
         if (decimalsReservedToken > decimalsUCD) {
-            fee *= 10 ** (18 - decimalsReservedToken);
+            fee *= 10 ** (decimalsReservedToken - decimalsUCD);
         }
         else if (decimalsReservedToken < decimalsUCD) {
-            fee /= 10 ** (18 - decimalsReservedToken);
+            fee /= 10 ** (decimalsUCD - decimalsReservedToken);
         }
 
         _returnBorrowingFunds(reservedToken, fee);
