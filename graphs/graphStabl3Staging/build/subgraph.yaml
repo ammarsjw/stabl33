@@ -82,9 +82,9 @@ dataSources:
     name: Stabl3Borrowing
     network: goerli
     source:
-      address: "0x237E62e582060c1cF4b2f04AFD7740BDf88Ae88f"
+      address: "0xc3D191a9f8c5b7441F98F98954D4207405f87429"
       abi: Stabl3Borrowing
-      startBlock: 8454684
+      startBlock: 8484911
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6

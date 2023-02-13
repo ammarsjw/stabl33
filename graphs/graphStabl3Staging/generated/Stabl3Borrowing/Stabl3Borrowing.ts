@@ -310,6 +310,21 @@ export class Stabl3Borrowing extends ethereum.SmartContract {
     return new Stabl3Borrowing("Stabl3Borrowing", address);
   }
 
+  INVESTORS(): Address {
+    let result = super.call("INVESTORS", "INVESTORS():(address)", []);
+
+    return result[0].toAddress();
+  }
+
+  try_INVESTORS(): ethereum.CallResult<Address> {
+    let result = super.tryCall("INVESTORS", "INVESTORS():(address)", []);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+
   ROI(): Address {
     let result = super.call("ROI", "ROI():(address)", []);
 
@@ -333,6 +348,21 @@ export class Stabl3Borrowing extends ethereum.SmartContract {
 
   try_STABL3(): ethereum.CallResult<Address> {
     let result = super.tryCall("STABL3", "STABL3():(address)", []);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+
+  TREASURY(): Address {
+    let result = super.call("TREASURY", "TREASURY():(address)", []);
+
+    return result[0].toAddress();
+  }
+
+  try_TREASURY(): ethereum.CallResult<Address> {
+    let result = super.tryCall("TREASURY", "TREASURY():(address)", []);
     if (result.reverted) {
       return new ethereum.CallResult();
     }
@@ -574,44 +604,6 @@ export class Stabl3Borrowing extends ethereum.SmartContract {
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toI32());
   }
-
-  stabl3InvestorsNFT(): Address {
-    let result = super.call(
-      "stabl3InvestorsNFT",
-      "stabl3InvestorsNFT():(address)",
-      []
-    );
-
-    return result[0].toAddress();
-  }
-
-  try_stabl3InvestorsNFT(): ethereum.CallResult<Address> {
-    let result = super.tryCall(
-      "stabl3InvestorsNFT",
-      "stabl3InvestorsNFT():(address)",
-      []
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toAddress());
-  }
-
-  treasury(): Address {
-    let result = super.call("treasury", "treasury():(address)", []);
-
-    return result[0].toAddress();
-  }
-
-  try_treasury(): ethereum.CallResult<Address> {
-    let result = super.tryCall("treasury", "treasury():(address)", []);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toAddress());
-  }
 }
 
 export class ConstructorCall extends ethereum.Call {
@@ -631,7 +623,7 @@ export class ConstructorCall__Inputs {
     this._call = call;
   }
 
-  get _treasury(): Address {
+  get _TREASURY(): Address {
     return this._call.inputValues[0].value.toAddress();
   }
 
@@ -1029,7 +1021,7 @@ export class UpdateTreasuryCall__Inputs {
     this._call = call;
   }
 
-  get _treasury(): Address {
+  get _TREASURY(): Address {
     return this._call.inputValues[0].value.toAddress();
   }
 }

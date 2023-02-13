@@ -3,7 +3,7 @@
         "inputs": [
             {
                 "internalType": "address",
-                "name": "_treasury",
+                "name": "_TREASURY",
                 "type": "address"
             },
             {
@@ -248,6 +248,19 @@
     },
     {
         "inputs": [],
+        "name": "INVESTORS",
+        "outputs": [
+            {
+                "internalType": "contract IERC721",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
         "name": "ROI",
         "outputs": [
             {
@@ -265,6 +278,19 @@
         "outputs": [
             {
                 "internalType": "contract IERC20",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "TREASURY",
+        "outputs": [
+            {
+                "internalType": "contract ITreasury",
                 "name": "",
                 "type": "address"
             }
@@ -494,19 +520,6 @@
         "type": "function"
     },
     {
-        "inputs": [],
-        "name": "stabl3InvestorsNFT",
-        "outputs": [
-            {
-                "internalType": "contract IERC721",
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
         "inputs": [
             {
                 "internalType": "address",
@@ -517,19 +530,6 @@
         "name": "transferOwnership",
         "outputs": [],
         "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "treasury",
-        "outputs": [
-            {
-                "internalType": "contract ITreasury",
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "stateMutability": "view",
         "type": "function"
     },
     {
@@ -632,7 +632,7 @@
         "inputs": [
             {
                 "internalType": "address",
-                "name": "_treasury",
+                "name": "_TREASURY",
                 "type": "address"
             }
         ],

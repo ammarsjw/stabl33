@@ -252,6 +252,9 @@ contract Stabl3Borrowing is Ownable {
         uint256 amountStabl3 = TREASURY.getAmountOut(UCD, _amountUCD);
         TREASURY.checkOutputAmount(amountStabl3);
 
+        uint256 borrowingUCD = borrowing.amountUCD;
+        uint256 borrowingStabl3 = borrowing.amountStabl3;
+
         borrowing.amountUCD = borrowing.amountUCD.safeSub(_amountUCD);
         borrowing.amountStabl3 = borrowing.amountStabl3.safeSub(amountStabl3);
 
@@ -263,7 +266,7 @@ contract Stabl3Borrowing is Ownable {
         TREASURY.updatePool(UCD_PAYBACK_POOL, UCD, _amountUCD, 0, 0, true);
         TREASURY.updatePool(STABL3_COLLATERAL_POOL, STABL3, amountStabl3, 0, 0, false);
         // calculating and processing STABL3 amount that is `leftover` after price changes
-        _processLeftoverCollateral(borrowing, _amountUCD, amountStabl3);
+        _processLeftoverCollateral(borrowingUCD, borrowingStabl3, _amountUCD, amountStabl3);
 
         TREASURY.updateStabl3CirculatingSupply(amountStabl3, true);
 
@@ -284,6 +287,9 @@ contract Stabl3Borrowing is Ownable {
             uint256 amountStabl3 = TREASURY.getAmountOut(UCD, _amountUCD);
             TREASURY.checkOutputAmount(amountStabl3);
 
+            uint256 borrowingUCD = borrowing.amountUCD;
+            uint256 borrowingStabl3 = borrowing.amountStabl3;
+
             borrowing.amountUCD = borrowing.amountUCD.safeSub(_amountUCD);
             borrowing.amountStabl3 = borrowing.amountStabl3.safeSub(amountStabl3);
 
@@ -292,7 +298,7 @@ contract Stabl3Borrowing is Ownable {
 
             TREASURY.updatePool(STABL3_COLLATERAL_POOL, STABL3, amountStabl3, 0, 0, false);
             // calculating and processing collateral STABL3 amount that is `leftover` after price changes
-            _processLeftoverCollateral(borrowing, _amountUCD, amountStabl3);
+            _processLeftoverCollateral(borrowingUCD, borrowingStabl3, _amountUCD, amountStabl3);
         }
 
         uint256 amountExchangingToken = _amountUCD;
@@ -333,9 +339,14 @@ contract Stabl3Borrowing is Ownable {
     /**
      * @dev Handling `leftover` collateral STABL3 amount
      */
-    function _processLeftoverCollateral(Borrowing storage _borrowing, uint256 _paybackUCD, uint256 _paybackStabl3) internal {
+    function _processLeftoverCollateral(
+        uint256 _borrowingUCD,
+        uint256 _borrowingStabl3,
+        uint256 _paybackUCD,
+        uint256 _paybackStabl3
+    ) internal {
         // calculating `leftover` collateral STABL3 amount
-        uint256 borrowingRate = _borrowing.amountUCD * (10 ** 18) / _borrowing.amountStabl3;
+        uint256 borrowingRate = _borrowingUCD * (10 ** 18) / _borrowingStabl3;
 
         uint256 amountStabl3ToConsider = _paybackUCD * (10 ** 18) / borrowingRate;
 
@@ -372,7 +383,7 @@ contract Stabl3Borrowing is Ownable {
             ROI.updateAPR();
 
             // removing `leftover` collateral STABL3 amount from the debt
-            _borrowing.amountStabl3 = _borrowing.amountStabl3.safeSub(buybackStabl3 + donationStabl3);
+            _borrowingStabl3 = _borrowingStabl3.safeSub(buybackStabl3 + donationStabl3);
         }
     }
 
