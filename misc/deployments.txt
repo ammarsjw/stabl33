@@ -1,19 +1,19 @@
-Treasury deployed to: 0x2d57d593F15535c4E8eC2229cBeA8040CAEce4Ca
-at block number: 8454679
-ROI deployed to: 0x199Ef06C643C80d3D9C1a0A5de36c7673C1024D7
-at block number: 8454680
-Stabl3PublicSale deployed to: 0x6cD32b398DD3ae32786d7B9125504fba79A65cB1
-at block number: 8454681
-Stabl3Staking deployed to: 0x2f5AfF0d3f3945f2C32193349998123Fe0992F2E
-at block number: 8454683
-Stabl3Borrowing deployed to: 0x237E62e582060c1cF4b2f04AFD7740BDf88Ae88f
-at block number: 8454684
-Stabl3Bonding deployed to: 0x1D4009604792cDf3936832Ecaaa100508f2d028a
-at block number: 8454685
+Treasury deployed to: 0x4D3E6bd9b81740250E76fc1C64657660586f8416
+at block number: 8495492
+ROI deployed to: 0x28DE9D22C2e42bFd96AcA7D46D486c2a5248EaCe
+at block number: 8495494
+Stabl3PublicSale deployed to: 0x12e2437851de790d84066F3c91CC958aDceBa9D0
+at block number: 8495495
+Stabl3Staking deployed to: 0x8715697827dbFBe825cf85b53CF4401921359B52
+at block number: 8495496
+Stabl3Borrowing deployed to: 0x43683F882569f6Fea04F137f8A5Cf7a4E4036201
+at block number: 8495497
+Stabl3Bonding deployed to: 0x8E07e6d8D0EC9ce1bad3A2CEcC579fd88d270511
+at block number: 8495499
 
-Treasury - https://goerli.etherscan.io/address/0x2d57d593F15535c4E8eC2229cBeA8040CAEce4Ca#code
-ROI - https://goerli.etherscan.io/address/0x199Ef06C643C80d3D9C1a0A5de36c7673C1024D7#code
-Stabl3PublicSale - https://goerli.etherscan.io/address/0x6cD32b398DD3ae32786d7B9125504fba79A65cB1#code
-Stabl3Staking - https://goerli.etherscan.io/address/0x2f5AfF0d3f3945f2C32193349998123Fe0992F2E#code
-Stabl3Borrowing - https://goerli.etherscan.io/address/0x237E62e582060c1cF4b2f04AFD7740BDf88Ae88f#code
-Stabl3Bonding - https://goerli.etherscan.io/address/0x1D4009604792cDf3936832Ecaaa100508f2d028a#code
+Treasury - https://goerli.etherscan.io/address/0x4D3E6bd9b81740250E76fc1C64657660586f8416#code
+ROI - https://goerli.etherscan.io/address/0x28DE9D22C2e42bFd96AcA7D46D486c2a5248EaCe#code
+Stabl3PublicSale - https://goerli.etherscan.io/address/0x12e2437851de790d84066F3c91CC958aDceBa9D0#code
+Stabl3Staking - https://goerli.etherscan.io/address/0x8715697827dbFBe825cf85b53CF4401921359B52#code
+Stabl3Borrowing - https://goerli.etherscan.io/address/0x43683F882569f6Fea04F137f8A5Cf7a4E4036201#code
+Stabl3Bonding - https://goerli.etherscan.io/address/0x8E07e6d8D0EC9ce1bad3A2CEcC579fd88d270511#code

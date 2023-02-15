@@ -1,19 +1,19 @@
 {
   "goerli": {
     "Treasury": {
-      "address": "0x2d57d593F15535c4E8eC2229cBeA8040CAEce4Ca"
+      "address": "0x4D3E6bd9b81740250E76fc1C64657660586f8416"
     },
     "ROI": {
-      "address": "0x199Ef06C643C80d3D9C1a0A5de36c7673C1024D7"
+      "address": "0x28DE9D22C2e42bFd96AcA7D46D486c2a5248EaCe"
     },
     "Stabl3Staking": {
-      "address": "0x2f5AfF0d3f3945f2C32193349998123Fe0992F2E"
+      "address": "0x8715697827dbFBe825cf85b53CF4401921359B52"
     },
     "Stabl3Borrowing": {
-      "address": "0xc3D191a9f8c5b7441F98F98954D4207405f87429"
+      "address": "0x43683F882569f6Fea04F137f8A5Cf7a4E4036201"
     },
     "Stabl3Bonding": {
-      "address": "0x1D4009604792cDf3936832Ecaaa100508f2d028a"
+      "address": "0x8E07e6d8D0EC9ce1bad3A2CEcC579fd88d270511"
     }
   }
 }

@@ -6,9 +6,9 @@ dataSources:
     name: Treasury
     network: goerli
     source:
-      address: "0x2d57d593F15535c4E8eC2229cBeA8040CAEce4Ca"
+      address: "0x4D3E6bd9b81740250E76fc1C64657660586f8416"
       abi: Treasury
-      startBlock: 8454679
+      startBlock: 8495492
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -32,9 +32,9 @@ dataSources:
     name: ROI
     network: goerli
     source:
-      address: "0x199Ef06C643C80d3D9C1a0A5de36c7673C1024D7"
+      address: "0x28DE9D22C2e42bFd96AcA7D46D486c2a5248EaCe"
       abi: ROI
-      startBlock: 8454680
+      startBlock: 8495494
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -52,9 +52,9 @@ dataSources:
     name: Stabl3Staking
     network: goerli
     source:
-      address: "0x2f5AfF0d3f3945f2C32193349998123Fe0992F2E"
+      address: "0x8715697827dbFBe825cf85b53CF4401921359B52"
       abi: Stabl3Staking
-      startBlock: 8454683
+      startBlock: 8495496
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -81,9 +81,9 @@ dataSources:
     name: Stabl3Borrowing
     network: goerli
     source:
-      address: "0xc3D191a9f8c5b7441F98F98954D4207405f87429"
+      address: "0x43683F882569f6Fea04F137f8A5Cf7a4E4036201"
       abi: Stabl3Borrowing
-      startBlock: 8484911
+      startBlock: 8495497
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -107,9 +107,9 @@ dataSources:
     name: Stabl3Bonding
     network: goerli
     source:
-      address: "0x1D4009604792cDf3936832Ecaaa100508f2d028a"
+      address: "0x8E07e6d8D0EC9ce1bad3A2CEcC579fd88d270511"
       abi: Stabl3Bonding
-      startBlock: 8454685
+      startBlock: 8495499
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
