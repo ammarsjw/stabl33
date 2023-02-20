@@ -338,10 +338,13 @@ contract Treasury is Ownable {
 
         (uint256 reserve0, uint256 reserve1, ) = IUniswapV2Pair(pair).getReserves();
 
-        uint256 amountExchangingToken =
-            IUniswapV2Pair(pair).token0() == address(_token) ?
-            uniswapRouter.quote(amountTokenWithFee, reserve0, reserve1) :
-            uniswapRouter.quote(amountTokenWithFee, reserve1, reserve0);
+        address token0 = IUniswapV2Pair(pair).token0();
+        (uint256 reserveToken, uint256 reserveExchangingToken) =
+            address(_token) == token0 ?
+            (reserve0, reserve1) :
+            (reserve1, reserve0);
+
+        uint256 amountExchangingToken = uniswapRouter.quote(amountTokenWithFee, reserveToken, reserveExchangingToken);
 
         return amountExchangingToken;
     }
@@ -355,10 +358,13 @@ contract Treasury is Ownable {
 
         (uint256 reserve0, uint256 reserve1, ) = IUniswapV2Pair(pair).getReserves();
 
-        uint256 amountToken =
-            IUniswapV2Pair(pair).token0() == address(_exchangingToken) ?
-            uniswapRouter.quote(_amountExchangingToken, reserve0, reserve1) :
-            uniswapRouter.quote(_amountExchangingToken, reserve1, reserve0);
+        address token0 = IUniswapV2Pair(pair).token0();
+        (uint256 reserveExchangingToken, uint256 reserveToken) =
+            address(_exchangingToken) == token0 ?
+            (reserve0, reserve1) :
+            (reserve1, reserve0);
+
+        uint256 amountToken = uniswapRouter.quote(_amountExchangingToken, reserveExchangingToken, reserveToken);
 
         uint256 amountTokenWithFee = amountToken.mul(1000).div(1000 - exchangeFee);
 
