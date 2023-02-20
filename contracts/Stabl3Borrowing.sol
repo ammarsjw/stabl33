@@ -31,8 +31,8 @@ contract Stabl3Borrowing is Ownable {
 
     IERC721 public INVESTORS;
 
-    uint256 public buybackPercentage;
-    uint256 public donationPercentage;
+    // uint256 public buybackPercentage;
+    // uint256 public donationPercentage;
 
     uint256 public borrowFee;
     uint256 public exchangeFeeUCD;
@@ -109,8 +109,8 @@ contract Stabl3Borrowing is Ownable {
         // TODO change
         INVESTORS = IERC721(0x1334E7c1B5CB9Fe515069E313517FC6c31150C91);
 
-        buybackPercentage = 500;
-        donationPercentage = 500;
+        // buybackPercentage = 500;
+        // donationPercentage = 500;
 
         borrowFee = 50;
         exchangeFeeUCD = 25;
@@ -141,16 +141,16 @@ contract Stabl3Borrowing is Ownable {
         UCD = IUCD(_ucd);
     }
 
-    function updateDistributionPercentages(
-        uint256 _buybackPercentage,
-        uint256 _donationPercentage
-    ) external onlyOwner {
-        require(_buybackPercentage + _donationPercentage == 1000,
-            "Stabl3PublicSale: Sum of magnified percentages should equal 1000");
+    // function updateDistributionPercentages(
+    //     uint256 _buybackPercentage,
+    //     uint256 _donationPercentage
+    // ) external onlyOwner {
+    //     require(_buybackPercentage + _donationPercentage == 1000,
+    //         "Stabl3PublicSale: Sum of magnified percentages should equal 1000");
 
-        buybackPercentage = _buybackPercentage;
-        donationPercentage = _donationPercentage;
-    }
+    //     buybackPercentage = _buybackPercentage;
+    //     donationPercentage = _donationPercentage;
+    // }
 
     function updateBorrowFee(uint256 _borrowFee) external onlyOwner {
         require(borrowFee != _borrowFee, "Stabl3Borrowing: Borrow Fee is already this value");
@@ -174,12 +174,13 @@ contract Stabl3Borrowing is Ownable {
     }
 
     function getReservesUCD() public view returns (uint256 availableUCD, uint256 borrowedUCD, uint256 returnedUCD) {
-        (, uint256 marketCap, ) = TREASURY.rateInfo();
+        // (, uint256 marketCap, ) = TREASURY.rateInfo();
 
-        uint256 marketCapToConsider = marketCap / (10 ** (18 - UCD.decimals()));
+        // uint256 marketCapToConsider = marketCap / (10 ** (18 - UCD.decimals()));
+        uint256 availableReserves = (TREASURY.getReserves() + ROI.getReserves()) / (10 ** (18 - UCD.decimals()));
 
         return (
-            marketCapToConsider.safeSub(UCD.totalSupply()),
+            availableReserves.safeSub(UCD.totalSupply()),
             UCD.totalSupply(),
             burnedUCD
         );
@@ -250,7 +251,10 @@ contract Stabl3Borrowing is Ownable {
         require(borrowing.amountUCD > 0, "Stabl3Borrowing: No debt to payback");
 
         uint256 amountStabl3 = TREASURY.getAmountOut(UCD, _amountUCD);
-        TREASURY.checkOutputAmount(amountStabl3);
+        require(
+            STABL3.balanceOf(address(TREASURY)) >= amountStabl3 + TREASURY.getLockedAmount(),
+            "Stabl3Borrowing: Insufficient Stabl3 reserves"
+        );
 
         uint256 borrowingUCD = borrowing.amountUCD;
         uint256 borrowingStabl3 = borrowing.amountStabl3;
@@ -285,7 +289,10 @@ contract Stabl3Borrowing is Ownable {
             Borrowing storage borrowing = getBorrowings[msg.sender];
 
             uint256 amountStabl3 = TREASURY.getAmountOut(UCD, _amountUCD);
-            TREASURY.checkOutputAmount(amountStabl3);
+            require(
+                STABL3.balanceOf(address(TREASURY)) >= amountStabl3 + TREASURY.getLockedAmount(),
+                "Stabl3Borrowing: Insufficient Stabl3 reserves"
+            );
 
             uint256 borrowingUCD = borrowing.amountUCD;
             uint256 borrowingStabl3 = borrowing.amountStabl3;
@@ -354,36 +361,48 @@ contract Stabl3Borrowing is Ownable {
 
         // processing `leftover` collateral STABL3 amount
         if (leftoverStabl3 > 0) {
-            uint256 buybackStabl3 = leftoverStabl3.mul(buybackPercentage).div(1000);
-            uint256 donationStabl3 = leftoverStabl3.mul(donationPercentage).div(1000);
-
-            uint256 totalAmountStabl3Distributed = buybackStabl3 + donationStabl3;
-            if (leftoverStabl3 > totalAmountStabl3Distributed) {
-                buybackStabl3 += leftoverStabl3 - totalAmountStabl3Distributed;
-            }
-
-            // buyback
-            IERC20 reservedToken = TREASURY.reservedTokenSelector();
-
-            uint256 amountTokenBuyback = TREASURY.getAmountIn(buybackStabl3, reservedToken);
-
-            SafeERC20.safeTransferFrom(reservedToken, address(TREASURY), address(ROI), amountTokenBuyback);
-
             // donation
-            STABL3.transferFrom(address(TREASURY), donationWallet, donationStabl3);
+            STABL3.transferFrom(address(TREASURY), donationWallet, leftoverStabl3);
 
             // removing `leftover` collateral STABL3 amount from the STABL3 collateral pool
-            TREASURY.updatePool(STABL3_COLLATERAL_POOL, STABL3, buybackStabl3 + donationStabl3, 0, 0, false);
+            TREASURY.updatePool(STABL3_COLLATERAL_POOL, STABL3, leftoverStabl3, 0, 0, false);
 
-            // buyback STABL3 amount is part of the TREASURY and hence isn't considered into the circulating supply
             // donation STABL3 amount is not part of the TREASURY and hence is considered into the circulating supply
-            TREASURY.updateStabl3CirculatingSupply(donationStabl3, true);
+            TREASURY.updateStabl3CirculatingSupply(leftoverStabl3, true);
 
-            // updating APR
-            ROI.updateAPR();
+            // removing `leftover` collateral STABL3 amount from the user's debt
+            getBorrowings[msg.sender].amountStabl3 = getBorrowings[msg.sender].amountStabl3.safeSub(leftoverStabl3);
 
-            // removing `leftover` collateral STABL3 amount from the debt
-            _borrowingStabl3 = _borrowingStabl3.safeSub(buybackStabl3 + donationStabl3);
+            // uint256 buybackStabl3 = leftoverStabl3.mul(buybackPercentage).div(1000);
+            // uint256 donationStabl3 = leftoverStabl3.mul(donationPercentage).div(1000);
+
+            // uint256 totalAmountStabl3Distributed = buybackStabl3 + donationStabl3;
+            // if (leftoverStabl3 > totalAmountStabl3Distributed) {
+            //     buybackStabl3 += leftoverStabl3 - totalAmountStabl3Distributed;
+            // }
+
+            // // buyback
+            // IERC20 reservedToken = TREASURY.reservedTokenSelector();
+
+            // uint256 amountTokenBuyback = TREASURY.getAmountIn(buybackStabl3, reservedToken);
+
+            // SafeERC20.safeTransferFrom(reservedToken, address(TREASURY), address(ROI), amountTokenBuyback);
+
+            // // donation
+            // STABL3.transferFrom(address(TREASURY), donationWallet, donationStabl3);
+
+            // // removing `leftover` collateral STABL3 amount from the STABL3 collateral pool
+            // TREASURY.updatePool(STABL3_COLLATERAL_POOL, STABL3, buybackStabl3 + donationStabl3, 0, 0, false);
+
+            // // buyback STABL3 amount is part of the TREASURY and hence isn't considered into the circulating supply
+            // // donation STABL3 amount is not part of the TREASURY and hence is considered into the circulating supply
+            // TREASURY.updateStabl3CirculatingSupply(donationStabl3, true);
+
+            // // updating APR
+            // ROI.updateAPR();
+
+            // // removing `leftover` collateral STABL3 amount from the user's debt
+            // getBorrowings[msg.sender].amountStabl3 = getBorrowings[msg.sender].amountStabl3.safeSub(buybackStabl3 + donationStabl3);
         }
     }
 

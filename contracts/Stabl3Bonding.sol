@@ -223,7 +223,10 @@ contract Stabl3Bonding is Ownable {
 
         uint256 amountStabl3 = TREASURY.getAmountOut(_token, _amountToken);
         amountStabl3 = amountStabl3.mul(1000).div(1000 - bondInfo.discount);
-        TREASURY.checkOutputAmount(amountStabl3);
+        require(
+            STABL3.balanceOf(address(TREASURY)) >= amountStabl3 + TREASURY.getLockedAmount(),
+            "Stabl3Bonding: Insufficient Stabl3 reserves"
+        );
 
         {
             uint256 amountTreasury = _amountToken.mul(treasuryPercentage).div(1000);

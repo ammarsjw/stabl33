@@ -32,7 +32,7 @@ interface ITreasury {
 
     function reservedTokenSelector() external view returns (IERC20);
 
-    function checkOutputAmount(uint256 _amountStabl3) external view;
+    function getLockedAmount() external view returns (uint256);
 
     function getRate() external view returns (uint256);
 

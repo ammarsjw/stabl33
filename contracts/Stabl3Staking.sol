@@ -291,7 +291,10 @@ contract Stabl3Staking is Ownable, IStabl3StakingStruct {
             uint256 amountTokenLending = _amountToken.mul(lendingStabl3Percentage).div(1000);
 
             amountStabl3Lending = TREASURY.getAmountOut(_token, amountTokenLending);
-            TREASURY.checkOutputAmount(amountStabl3Lending);
+            require(
+                STABL3.balanceOf(address(TREASURY)) >= amountStabl3Lending + TREASURY.getLockedAmount(),
+                "Stabl3Staking: Insufficient Stabl3 reserves"
+            );
 
             uint256 totalAmountDistributed = amountTreasury + amountROI + amountHQ + amountTokenLending;
             if (_amountToken > totalAmountDistributed) {

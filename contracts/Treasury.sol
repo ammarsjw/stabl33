@@ -23,7 +23,7 @@ contract Treasury is Ownable {
     address public HQ;
 
     IERC20 public immutable STABL3;
-    uint256 public stabl3CirculatingSupply;
+    uint256 private _stabl3CirculatingSupply;
 
     IERC20 public UCD;
 
@@ -51,9 +51,9 @@ contract Treasury is Ownable {
     IERC20[] public allReservedTokens;
 
     /// @dev Record for funds pooled
-    mapping (uint8 => mapping(IERC20 => uint256)) public getTreasuryPool;
-    mapping (uint8 => mapping(IERC20 => uint256)) public getROIPool;
-    mapping (uint8 => mapping(IERC20 => uint256)) public getHQPool;
+    mapping (uint8 => mapping (IERC20 => uint256)) public getTreasuryPool;
+    mapping (uint8 => mapping (IERC20 => uint256)) public getROIPool;
+    mapping (uint8 => mapping (IERC20 => uint256)) public getHQPool;
 
     /// @dev Contracts with permission to access TREASURY funds
     mapping (address => bool) public permitted;
@@ -131,6 +131,10 @@ contract Treasury is Ownable {
         HQ = _HQ;
     }
 
+    function stabl3CirculatingSupply() public view returns (uint256) {
+        return _stabl3CirculatingSupply + getTreasuryPool[lockedStabl3Pools[0]][STABL3];
+    }
+
     function updateUCD(address _ucd) external onlyOwner {
         require(address(UCD) != _ucd, "Treasury: UCD is already this address");
         UCD = IERC20(_ucd);
@@ -176,7 +180,6 @@ contract Treasury is Ownable {
 
         if (_state) {
             delegateApprove(STABL3, _contractAddress, true);
-
             delegateApprove(UCD, _contractAddress, true);
 
             for (uint256 i = 0 ; i < allReservedTokens.length ; i++) {
@@ -185,7 +188,6 @@ contract Treasury is Ownable {
         }
         else {
             delegateApprove(STABL3, _contractAddress, false);
-
             delegateApprove(UCD, _contractAddress, false);
 
             for (uint256 i = 0 ; i < allReservedTokens.length ; i++) {
@@ -264,14 +266,14 @@ contract Treasury is Ownable {
         return selectedReservedToken;
     }
 
-    function checkOutputAmount(uint256 _amountStabl3) external view {
+    function getLockedAmount() external view returns (uint256) {
         uint256 amountStabl3Locked;
 
         for (uint256 i = 0 ; i < lockedStabl3Pools.length ; i++) {
             amountStabl3Locked += getTreasuryPool[lockedStabl3Pools[i]][STABL3];
         }
 
-        require(STABL3.balanceOf(address(this)) >= _amountStabl3 + amountStabl3Locked, "Treasury: Insufficient output amount");
+        return amountStabl3Locked;
     }
 
     /// @notice Rate is in 18 decimals
@@ -385,10 +387,10 @@ contract Treasury is Ownable {
 
     function updateStabl3CirculatingSupply(uint256 _amountStabl3, bool _isIncrease) external permission {
         if (_isIncrease) {
-            stabl3CirculatingSupply += _amountStabl3;
+            _stabl3CirculatingSupply += _amountStabl3;
         }
         else {
-            stabl3CirculatingSupply -= _amountStabl3;
+            _stabl3CirculatingSupply -= _amountStabl3;
         }
     }
 
@@ -404,7 +406,9 @@ contract Treasury is Ownable {
 
         uint256 totalValueLocked = getTotalValueLocked();
 
-        emit Rate(rateInfo.rate, reserves, totalValueLocked, stabl3CirculatingSupply, block.timestamp);
+        uint256 circulatingSupply = stabl3CirculatingSupply();
+
+        emit Rate(rateInfo.rate, reserves, totalValueLocked, circulatingSupply, block.timestamp);
     }
 
     function delegateApprove(IERC20 _token, address _spender, bool _isApprove) public onlyOwner {

@@ -153,7 +153,6 @@ contract ROI is Ownable, IStabl3StakingStruct {
 
         if (_state) {
             delegateApprove(STABL3, _contractAddress, true);
-
             delegateApprove(UCD, _contractAddress, true);
 
             for (uint256 i = 0 ; i < TREASURY.allReservedTokensLength() ; i++) {
@@ -162,7 +161,6 @@ contract ROI is Ownable, IStabl3StakingStruct {
         }
         else {
             delegateApprove(STABL3, _contractAddress, false);
-
             delegateApprove(UCD, _contractAddress, false);
 
             for (uint256 i = 0 ; i < TREASURY.allReservedTokensLength() ; i++) {

@@ -148,7 +148,10 @@ contract Stabl3PublicSale is Ownable {
         require(_amountToken > 0, "Stabl3PublicSale: Insufficient amount");
 
         uint256 amountStabl3 = TREASURY.getAmountOut(_token, _amountToken);
-        TREASURY.checkOutputAmount(amountStabl3);
+        require(
+            STABL3.balanceOf(address(TREASURY)) >= amountStabl3 + TREASURY.getLockedAmount(),
+            "Stabl3PublicSale: Insufficient Stabl3 reserves"
+        );
 
         uint256 amountTreasury = _amountToken.mul(treasuryPercentage).div(1000);
         uint256 amountROI = _amountToken.mul(ROIPercentage).div(1000);
@@ -245,7 +248,10 @@ contract Stabl3PublicSale is Ownable {
 
         // buy
         uint256 amountStabl3 = TREASURY.getAmountOut(_token, fee);
-        TREASURY.checkOutputAmount(amountStabl3);
+        require(
+            STABL3.balanceOf(address(TREASURY)) >= amountStabl3 + TREASURY.getLockedAmount(),
+            "Stabl3PublicSale: Insufficient Stabl3 reserves"
+        );
 
         SafeERC20.safeTransferFrom(_token, msg.sender, address(ROI), fee);
 
