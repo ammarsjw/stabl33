@@ -24,7 +24,7 @@ async function main() {
   await treasuryContract.deployed()
   const treasuryTxHash = treasuryContract.deployTransaction.hash
   let treasuryTxReceipt = await treasuryContract.provider.getTransactionReceipt(treasuryTxHash)
-  console.log("Treasury deployed to:", treasuryContract.address)
+  console.log("(Graph) Treasury deployed to:", treasuryContract.address)
   console.log("at block number:", treasuryTxReceipt.blockNumber)
 
   // Deploying ROI
@@ -33,7 +33,7 @@ async function main() {
   await roiContract.deployed()
   const roiTxHash = roiContract.deployTransaction.hash
   let roiTxReceipt = await roiContract.provider.getTransactionReceipt(roiTxHash)
-  console.log("ROI deployed to:", roiContract.address)
+  console.log("(Graph) ROI deployed to:", roiContract.address)
   console.log("at block number:", roiTxReceipt.blockNumber)
 
   // Deploying Stabl3PublicSale
@@ -51,7 +51,7 @@ async function main() {
   await stabl3StakingContract.deployed()
   const stabl3StakingTxHash = stabl3StakingContract.deployTransaction.hash
   let stabl3StakingTxReceipt = await stabl3StakingContract.provider.getTransactionReceipt(stabl3StakingTxHash)
-  console.log("Stabl3Staking deployed to:", stabl3StakingContract.address)
+  console.log("(Graph) Stabl3Staking deployed to:", stabl3StakingContract.address)
   console.log("at block number:", stabl3StakingTxReceipt.blockNumber)
 
   // Deploying Stabl3Borrowing
@@ -60,7 +60,7 @@ async function main() {
   await stabl3BorrowingContract.deployed()
   const stabl3BorrowingTxHash = stabl3BorrowingContract.deployTransaction.hash
   let stabl3BorrowingTxReceipt = await stabl3BorrowingContract.provider.getTransactionReceipt(stabl3BorrowingTxHash)
-  console.log("Stabl3Borrowing deployed to:", stabl3BorrowingContract.address)
+  console.log("(Graph) Stabl3Borrowing deployed to:", stabl3BorrowingContract.address)
   console.log("at block number:", stabl3BorrowingTxReceipt.blockNumber)
 
   // Deploying Stabl3Bonding
@@ -69,7 +69,7 @@ async function main() {
   await stabl3BondingContract.deployed()
   const stabl3BondingTxHash = stabl3BondingContract.deployTransaction.hash
   let stabl3BondingTxReceipt = await stabl3BondingContract.provider.getTransactionReceipt(stabl3BondingTxHash)
-  console.log("Stabl3Bonding deployed to:", stabl3BondingContract.address)
+  console.log("(Graph) Stabl3Bonding deployed to:", stabl3BondingContract.address)
   console.log("at block number:", stabl3BondingTxReceipt.blockNumber)
 
 

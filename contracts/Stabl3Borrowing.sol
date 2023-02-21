@@ -35,7 +35,7 @@ contract Stabl3Borrowing is Ownable {
     // uint256 public donationPercentage;
 
     uint256 public borrowFee;
-    uint256 public exchangeFeeUCD;
+    uint256 public exchangeUCDFee;
 
     uint8[] public returnBorrowingPools;
 
@@ -46,8 +46,8 @@ contract Stabl3Borrowing is Ownable {
     // structs
 
     struct Borrowing {
-        uint256 amountStabl3;
         uint256 amountUCD;
+        uint256 amountStabl3;
     }
 
     // storage
@@ -64,7 +64,7 @@ contract Stabl3Borrowing is Ownable {
 
     event UpdatedBorrowFee(uint256 newBorrowFee, uint256 oldBorrowFee);
 
-    event UpdatedExchangeFeeUCD(uint256 newExchangeFeeUCD, uint256 oldExchangeFeeUCD);
+    event UpdatedExchangeUCDFee(uint256 newExchangeUCDFee, uint256 oldExchangeUCDFee);
 
     event Borrow(
         address indexed user,
@@ -113,7 +113,7 @@ contract Stabl3Borrowing is Ownable {
         // donationPercentage = 500;
 
         borrowFee = 50;
-        exchangeFeeUCD = 25;
+        exchangeUCDFee = 25;
 
         returnBorrowingPools = [0, 1, 2, 5];
     }
@@ -158,10 +158,10 @@ contract Stabl3Borrowing is Ownable {
         borrowFee = _borrowFee;
     }
 
-    function updateExchangeFeeUCD(uint256 _exchangeFeeUCD) external onlyOwner {
-        require(exchangeFeeUCD != _exchangeFeeUCD, "Stabl3Borrowing: Exchange Fee for UCD is already this value");
-        emit UpdatedExchangeFeeUCD(_exchangeFeeUCD, exchangeFeeUCD);
-        exchangeFeeUCD = _exchangeFeeUCD;
+    function updateExchangeUCDFee(uint256 _exchangeUCDFee) external onlyOwner {
+        require(exchangeUCDFee != _exchangeUCDFee, "Stabl3Borrowing: Exchange Fee for UCD is already this value");
+        emit UpdatedExchangeUCDFee(_exchangeUCDFee, exchangeUCDFee);
+        exchangeUCDFee = _exchangeUCDFee;
     }
 
     function updateReturnBorrowingPools(uint8[] memory _returnBorrowingPools) external onlyOwner {
@@ -322,7 +322,7 @@ contract Stabl3Borrowing is Ownable {
 
         uint256 fee;
         if (INVESTORS.balanceOf(msg.sender) == 0) {
-            fee = amountExchangingToken.mul(exchangeFeeUCD).div(1000);
+            fee = amountExchangingToken.mul(exchangeUCDFee).div(1000);
         }
         uint256 amountExchangingTokenWithFee = amountExchangingToken - fee;
 
