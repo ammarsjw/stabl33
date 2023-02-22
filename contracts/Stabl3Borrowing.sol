@@ -263,8 +263,9 @@ contract Stabl3Borrowing is Ownable {
         uint256 borrowingFee = borrowing.amountBorrowFee;
 
         borrowing.amountUCD = borrowing.amountUCD.safeSub(_amountUCD);
-        borrowing.amountStabl3 = borrowing.amountStabl3.safeSub(amountStabl3);
-        borrowing.amountBorrowFee = (borrowing.amountBorrowFee * (borrowingUCD - _amountUCD)) / borrowingUCD;
+        uint256 amountStabl3ToUncollateralize = (borrowing.amountStabl3 * _amountUCD) / borrowingUCD;
+        borrowing.amountStabl3 = borrowing.amountStabl3.safeSub(amountStabl3ToUncollateralize);
+        borrowing.amountBorrowFee = (borrowing.amountBorrowFee * borrowing.amountUCD) / borrowingUCD;
 
         UCD.burnWithPermit(msg.sender, _amountUCD);
         burnedUCD += _amountUCD;
@@ -272,11 +273,11 @@ contract Stabl3Borrowing is Ownable {
         STABL3.transferFrom(address(TREASURY), msg.sender, amountStabl3);
 
         TREASURY.updatePool(UCD_PAYBACK_POOL, UCD, _amountUCD, 0, 0, true);
-        TREASURY.updatePool(STABL3_COLLATERAL_POOL, STABL3, amountStabl3, 0, 0, false);
+        TREASURY.updatePool(STABL3_COLLATERAL_POOL, STABL3, amountStabl3ToUncollateralize, 0, 0, false);
         // calculating and processing STABL3 amount that is `leftover` after price changes
         _processLeftoverCollateral(borrowingUCD + borrowingFee, borrowingStabl3, _amountUCD, amountStabl3);
 
-        TREASURY.updateStabl3CirculatingSupply(amountStabl3, true);
+        TREASURY.updateStabl3CirculatingSupply(amountStabl3ToUncollateralize, true);
 
         emit Payback(msg.sender, _amountUCD, amountStabl3, TREASURY.getRate(), block.timestamp);
     }
@@ -303,13 +304,14 @@ contract Stabl3Borrowing is Ownable {
             uint256 borrowingFee = borrowing.amountBorrowFee;
 
             borrowing.amountUCD = borrowing.amountUCD.safeSub(_amountUCD);
-            borrowing.amountStabl3 = borrowing.amountStabl3.safeSub(amountStabl3);
-            borrowing.amountBorrowFee = (borrowing.amountBorrowFee * (borrowingUCD - _amountUCD)) / borrowingUCD;
+            uint256 amountStabl3ToUncollateralize = (borrowing.amountStabl3 * _amountUCD) / borrowingUCD;
+            borrowing.amountStabl3 = borrowing.amountStabl3.safeSub(amountStabl3ToUncollateralize);
+            borrowing.amountBorrowFee = (borrowing.amountBorrowFee * borrowing.amountUCD) / borrowingUCD;
 
             UCD.burnWithPermit(msg.sender, _amountUCD);
             burnedUCD += _amountUCD;
 
-            TREASURY.updatePool(STABL3_COLLATERAL_POOL, STABL3, amountStabl3, 0, 0, false);
+            TREASURY.updatePool(STABL3_COLLATERAL_POOL, STABL3, amountStabl3ToUncollateralize, 0, 0, false);
             // calculating and processing collateral STABL3 amount that is `leftover` after price changes
             _processLeftoverCollateral(borrowingUCD + borrowingFee, borrowingStabl3, _amountUCD, amountStabl3);
         }
