@@ -135,16 +135,15 @@ async function main() {
   console.log("Stabl3Bonding initialized")
 
 
-  await new Promise(resolve => setTimeout(resolve, 60000))
-
-
   // Verifying contracts
+  await new Promise(resolve => setTimeout(resolve, 60000))
   await verify(treasuryContractAddress, [])
   await verify(roiContractAddress, [treasuryContractAddress])
   await verify(stabl3PublicSaleContractAddress, [treasuryContractAddress, roiContractAddress])
   await verify(stabl3StakingContractAddress, [treasuryContractAddress, roiContractAddress])
   await verify(stabl3BorrowingContractAddress, [treasuryContractAddress, roiContractAddress])
   await verify(stabl3BondingContractAddress, [treasuryContractAddress, roiContractAddress])
+
 
   process.exit()
 }
