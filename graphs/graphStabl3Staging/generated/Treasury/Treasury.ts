@@ -575,6 +575,29 @@ export class Treasury extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
+  getLockedAmount(): BigInt {
+    let result = super.call(
+      "getLockedAmount",
+      "getLockedAmount():(uint256)",
+      []
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_getLockedAmount(): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "getLockedAmount",
+      "getLockedAmount():(uint256)",
+      []
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
   getROIPool(param0: i32, param1: Address): BigInt {
     let result = super.call(
       "getROIPool",

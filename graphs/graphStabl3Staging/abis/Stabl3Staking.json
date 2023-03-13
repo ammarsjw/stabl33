@@ -3,7 +3,7 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_treasury",
+        "name": "_TREASURY",
         "type": "address"
       },
       {
@@ -394,6 +394,19 @@
     "outputs": [
       {
         "internalType": "contract IERC20",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "TREASURY",
+    "outputs": [
+      {
+        "internalType": "contract ITreasury",
         "name": "",
         "type": "address"
       }
@@ -1466,19 +1479,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "treasury",
-    "outputs": [
-      {
-        "internalType": "contract ITreasury",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -1700,7 +1700,7 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_treasury",
+        "name": "_TREASURY",
         "type": "address"
       }
     ],

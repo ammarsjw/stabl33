@@ -195,17 +195,17 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "newExchangeFeeUCD",
+        "name": "newExchangeUCDFee",
         "type": "uint256"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "oldExchangeFeeUCD",
+        "name": "oldExchangeUCDFee",
         "type": "uint256"
       }
     ],
-    "name": "UpdatedExchangeFeeUCD",
+    "name": "UpdatedExchangeUCDFee",
     "type": "event"
   },
   {
@@ -352,51 +352,12 @@
   },
   {
     "inputs": [],
-    "name": "buybackPercentage",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "donationPercentage",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "donationWallet",
     "outputs": [
       {
         "internalType": "address",
         "name": "",
         "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "exchangeFeeUCD",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -421,6 +382,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "exchangeUCDFee",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -432,12 +406,17 @@
     "outputs": [
       {
         "internalType": "uint256",
+        "name": "amountUCD",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
         "name": "amountStabl3",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "amountUCD",
+        "name": "amountBorrowFee",
         "type": "uint256"
       }
     ],
@@ -548,24 +527,6 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_buybackPercentage",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_donationPercentage",
-        "type": "uint256"
-      }
-    ],
-    "name": "updateDistributionPercentages",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address",
         "name": "_donationWallet",
         "type": "address"
@@ -580,11 +541,11 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_exchangeFeeUCD",
+        "name": "_exchangeUCDFee",
         "type": "uint256"
       }
     ],
-    "name": "updateExchangeFeeUCD",
+    "name": "updateExchangeUCDFee",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

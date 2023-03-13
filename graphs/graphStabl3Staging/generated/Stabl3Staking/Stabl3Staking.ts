@@ -922,6 +922,21 @@ export class Stabl3Staking extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toAddress());
   }
 
+  TREASURY(): Address {
+    let result = super.call("TREASURY", "TREASURY():(address)", []);
+
+    return result[0].toAddress();
+  }
+
+  try_TREASURY(): ethereum.CallResult<Address> {
+    let result = super.tryCall("TREASURY", "TREASURY():(address)", []);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddress());
+  }
+
   allStakersLength(): BigInt {
     let result = super.call(
       "allStakersLength",
@@ -1574,21 +1589,6 @@ export class Stabl3Staking extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBoolean());
   }
 
-  treasury(): Address {
-    let result = super.call("treasury", "treasury():(address)", []);
-
-    return result[0].toAddress();
-  }
-
-  try_treasury(): ethereum.CallResult<Address> {
-    let result = super.tryCall("treasury", "treasury():(address)", []);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toAddress());
-  }
-
   treasuryPercentages(param0: BigInt): BigInt {
     let result = super.call(
       "treasuryPercentages",
@@ -1676,7 +1676,7 @@ export class ConstructorCall__Inputs {
     this._call = call;
   }
 
-  get _treasury(): Address {
+  get _TREASURY(): Address {
     return this._call.inputValues[0].value.toAddress();
   }
 
@@ -2396,7 +2396,7 @@ export class UpdateTreasuryCall__Inputs {
     this._call = call;
   }
 
-  get _treasury(): Address {
+  get _TREASURY(): Address {
     return this._call.inputValues[0].value.toAddress();
   }
 }

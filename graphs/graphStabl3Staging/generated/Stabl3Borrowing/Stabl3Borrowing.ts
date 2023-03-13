@@ -182,24 +182,24 @@ export class UpdatedDonationWallet__Params {
   }
 }
 
-export class UpdatedExchangeFeeUCD extends ethereum.Event {
-  get params(): UpdatedExchangeFeeUCD__Params {
-    return new UpdatedExchangeFeeUCD__Params(this);
+export class UpdatedExchangeUCDFee extends ethereum.Event {
+  get params(): UpdatedExchangeUCDFee__Params {
+    return new UpdatedExchangeUCDFee__Params(this);
   }
 }
 
-export class UpdatedExchangeFeeUCD__Params {
-  _event: UpdatedExchangeFeeUCD;
+export class UpdatedExchangeUCDFee__Params {
+  _event: UpdatedExchangeUCDFee;
 
-  constructor(event: UpdatedExchangeFeeUCD) {
+  constructor(event: UpdatedExchangeUCDFee) {
     this._event = event;
   }
 
-  get newExchangeFeeUCD(): BigInt {
+  get newExchangeUCDFee(): BigInt {
     return this._event.parameters[0].value.toBigInt();
   }
 
-  get oldExchangeFeeUCD(): BigInt {
+  get oldExchangeUCDFee(): BigInt {
     return this._event.parameters[1].value.toBigInt();
   }
 }
@@ -251,25 +251,32 @@ export class UpdatedTreasury__Params {
 export class Stabl3Borrowing__getBorrowingsResult {
   value0: BigInt;
   value1: BigInt;
+  value2: BigInt;
 
-  constructor(value0: BigInt, value1: BigInt) {
+  constructor(value0: BigInt, value1: BigInt, value2: BigInt) {
     this.value0 = value0;
     this.value1 = value1;
+    this.value2 = value2;
   }
 
   toMap(): TypedMap<string, ethereum.Value> {
     let map = new TypedMap<string, ethereum.Value>();
     map.set("value0", ethereum.Value.fromUnsignedBigInt(this.value0));
     map.set("value1", ethereum.Value.fromUnsignedBigInt(this.value1));
+    map.set("value2", ethereum.Value.fromUnsignedBigInt(this.value2));
     return map;
   }
 
-  getAmountStabl3(): BigInt {
+  getAmountUCD(): BigInt {
     return this.value0;
   }
 
-  getAmountUCD(): BigInt {
+  getAmountStabl3(): BigInt {
     return this.value1;
+  }
+
+  getAmountBorrowFee(): BigInt {
+    return this.value2;
   }
 }
 
@@ -415,52 +422,6 @@ export class Stabl3Borrowing extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBoolean());
   }
 
-  buybackPercentage(): BigInt {
-    let result = super.call(
-      "buybackPercentage",
-      "buybackPercentage():(uint256)",
-      []
-    );
-
-    return result[0].toBigInt();
-  }
-
-  try_buybackPercentage(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall(
-      "buybackPercentage",
-      "buybackPercentage():(uint256)",
-      []
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
-  donationPercentage(): BigInt {
-    let result = super.call(
-      "donationPercentage",
-      "donationPercentage():(uint256)",
-      []
-    );
-
-    return result[0].toBigInt();
-  }
-
-  try_donationPercentage(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall(
-      "donationPercentage",
-      "donationPercentage():(uint256)",
-      []
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
   donationWallet(): Address {
     let result = super.call("donationWallet", "donationWallet():(address)", []);
 
@@ -480,16 +441,16 @@ export class Stabl3Borrowing extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toAddress());
   }
 
-  exchangeFeeUCD(): BigInt {
-    let result = super.call("exchangeFeeUCD", "exchangeFeeUCD():(uint256)", []);
+  exchangeUCDFee(): BigInt {
+    let result = super.call("exchangeUCDFee", "exchangeUCDFee():(uint256)", []);
 
     return result[0].toBigInt();
   }
 
-  try_exchangeFeeUCD(): ethereum.CallResult<BigInt> {
+  try_exchangeUCDFee(): ethereum.CallResult<BigInt> {
     let result = super.tryCall(
-      "exchangeFeeUCD",
-      "exchangeFeeUCD():(uint256)",
+      "exchangeUCDFee",
+      "exchangeUCDFee():(uint256)",
       []
     );
     if (result.reverted) {
@@ -502,13 +463,14 @@ export class Stabl3Borrowing extends ethereum.SmartContract {
   getBorrowings(param0: Address): Stabl3Borrowing__getBorrowingsResult {
     let result = super.call(
       "getBorrowings",
-      "getBorrowings(address):(uint256,uint256)",
+      "getBorrowings(address):(uint256,uint256,uint256)",
       [ethereum.Value.fromAddress(param0)]
     );
 
     return new Stabl3Borrowing__getBorrowingsResult(
       result[0].toBigInt(),
-      result[1].toBigInt()
+      result[1].toBigInt(),
+      result[2].toBigInt()
     );
   }
 
@@ -517,7 +479,7 @@ export class Stabl3Borrowing extends ethereum.SmartContract {
   ): ethereum.CallResult<Stabl3Borrowing__getBorrowingsResult> {
     let result = super.tryCall(
       "getBorrowings",
-      "getBorrowings(address):(uint256,uint256)",
+      "getBorrowings(address):(uint256,uint256,uint256)",
       [ethereum.Value.fromAddress(param0)]
     );
     if (result.reverted) {
@@ -527,7 +489,8 @@ export class Stabl3Borrowing extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(
       new Stabl3Borrowing__getBorrowingsResult(
         value[0].toBigInt(),
-        value[1].toBigInt()
+        value[1].toBigInt(),
+        value[2].toBigInt()
       )
     );
   }
@@ -820,40 +783,6 @@ export class UpdateBorrowFeeCall__Outputs {
   }
 }
 
-export class UpdateDistributionPercentagesCall extends ethereum.Call {
-  get inputs(): UpdateDistributionPercentagesCall__Inputs {
-    return new UpdateDistributionPercentagesCall__Inputs(this);
-  }
-
-  get outputs(): UpdateDistributionPercentagesCall__Outputs {
-    return new UpdateDistributionPercentagesCall__Outputs(this);
-  }
-}
-
-export class UpdateDistributionPercentagesCall__Inputs {
-  _call: UpdateDistributionPercentagesCall;
-
-  constructor(call: UpdateDistributionPercentagesCall) {
-    this._call = call;
-  }
-
-  get _buybackPercentage(): BigInt {
-    return this._call.inputValues[0].value.toBigInt();
-  }
-
-  get _donationPercentage(): BigInt {
-    return this._call.inputValues[1].value.toBigInt();
-  }
-}
-
-export class UpdateDistributionPercentagesCall__Outputs {
-  _call: UpdateDistributionPercentagesCall;
-
-  constructor(call: UpdateDistributionPercentagesCall) {
-    this._call = call;
-  }
-}
-
 export class UpdateDonationWalletCall extends ethereum.Call {
   get inputs(): UpdateDonationWalletCall__Inputs {
     return new UpdateDonationWalletCall__Inputs(this);
@@ -884,32 +813,32 @@ export class UpdateDonationWalletCall__Outputs {
   }
 }
 
-export class UpdateExchangeFeeUCDCall extends ethereum.Call {
-  get inputs(): UpdateExchangeFeeUCDCall__Inputs {
-    return new UpdateExchangeFeeUCDCall__Inputs(this);
+export class UpdateExchangeUCDFeeCall extends ethereum.Call {
+  get inputs(): UpdateExchangeUCDFeeCall__Inputs {
+    return new UpdateExchangeUCDFeeCall__Inputs(this);
   }
 
-  get outputs(): UpdateExchangeFeeUCDCall__Outputs {
-    return new UpdateExchangeFeeUCDCall__Outputs(this);
+  get outputs(): UpdateExchangeUCDFeeCall__Outputs {
+    return new UpdateExchangeUCDFeeCall__Outputs(this);
   }
 }
 
-export class UpdateExchangeFeeUCDCall__Inputs {
-  _call: UpdateExchangeFeeUCDCall;
+export class UpdateExchangeUCDFeeCall__Inputs {
+  _call: UpdateExchangeUCDFeeCall;
 
-  constructor(call: UpdateExchangeFeeUCDCall) {
+  constructor(call: UpdateExchangeUCDFeeCall) {
     this._call = call;
   }
 
-  get _exchangeFeeUCD(): BigInt {
+  get _exchangeUCDFee(): BigInt {
     return this._call.inputValues[0].value.toBigInt();
   }
 }
 
-export class UpdateExchangeFeeUCDCall__Outputs {
-  _call: UpdateExchangeFeeUCDCall;
+export class UpdateExchangeUCDFeeCall__Outputs {
+  _call: UpdateExchangeUCDFeeCall;
 
-  constructor(call: UpdateExchangeFeeUCDCall) {
+  constructor(call: UpdateExchangeUCDFeeCall) {
     this._call = call;
   }
 }

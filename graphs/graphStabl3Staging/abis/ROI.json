@@ -3,7 +3,7 @@
     "inputs": [
       {
         "internalType": "contract ITreasury",
-        "name": "_treasury",
+        "name": "_TREASURY",
         "type": "address"
       }
     ],
@@ -104,6 +104,19 @@
     "outputs": [
       {
         "internalType": "contract IERC20",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "TREASURY",
+    "outputs": [
+      {
+        "internalType": "contract ITreasury",
         "name": "",
         "type": "address"
       }
@@ -467,19 +480,6 @@
   },
   {
     "inputs": [],
-    "name": "treasury",
-    "outputs": [
-      {
-        "internalType": "contract ITreasury",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "updateAPR",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -590,7 +590,7 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_treasury",
+        "name": "_TREASURY",
         "type": "address"
       }
     ],
