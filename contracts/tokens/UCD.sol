@@ -547,7 +547,7 @@ contract UCD is Ownable, ERC20 {
     /**
      * @dev Contract addresses with permissions to access UCD functions.
      */
-    mapping (address => bool) private _permitted;
+    mapping (address => bool) public permitted;
 
     event UpdatedPermission(address contractAddress, bool state);
 
@@ -555,17 +555,10 @@ contract UCD is Ownable, ERC20 {
 
     }
 
-    /**
-     * @dev Returns whether an address has special permission or not.
-     */
-    function permitted(address contractAddress) external view returns (bool) {
-        return _permitted[contractAddress];
-    }
-
     function updatePermission(address contractAddress, bool state) external onlyOwner {
-        require(_permitted[contractAddress] != state, "UCD: Contract Address is already this state");
+        require(permitted[contractAddress] != state, "UCD: Contract Address is already this state");
 
-        _permitted[contractAddress] = state;
+        permitted[contractAddress] = state;
 
         emit UpdatedPermission(contractAddress, state);
     }
@@ -583,7 +576,7 @@ contract UCD is Ownable, ERC20 {
     }
 
     modifier permission() {
-        require(_permitted[_msgSender()] || _msgSender() == owner(), "UCD: Not permitted");
+        require(permitted[_msgSender()] || _msgSender() == owner(), "UCD: Not permitted");
         _;
     }
 }

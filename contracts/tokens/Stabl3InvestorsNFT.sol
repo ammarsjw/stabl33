@@ -1322,13 +1322,13 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
     function _afterTokenTransfer(address from, address to, uint256 firstTokenId, uint256 batchSize) internal virtual {}
 }
 
-contract Stabl3InvestorsNFT is ERC721 {
+contract InvestorsToken is ERC721 {
 
-    // TODO minting/buying logic
-    constructor() ERC721("Stabl3InvestorsNFT", "SINFT") {
+    constructor() ERC721("Investors Token", "INV") {
 
     }
 
+    // TODO minting/buying logic
     function saleMint() external {
         totalSupply++;
 
