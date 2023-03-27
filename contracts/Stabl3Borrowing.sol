@@ -229,7 +229,7 @@ contract Stabl3Borrowing is Ownable {
 
         STABL3.transferFrom(msg.sender, address(TREASURY), _amountStabl3);
 
-        UCD.mintWithPermit(msg.sender, amountUCDWithFee);
+        UCD.mint(msg.sender, amountUCDWithFee);
 
         TREASURY.updatePool(UCD_BORROW_POOL, UCD, amountUCDWithFee, 0, 0, true);
         TREASURY.updatePool(STABL3_COLLATERAL_POOL, STABL3, _amountStabl3, 0, 0, true);
@@ -267,7 +267,7 @@ contract Stabl3Borrowing is Ownable {
         borrowing.amountStabl3 = borrowing.amountStabl3.safeSub(amountStabl3ToUncollateralize);
         borrowing.amountBorrowFee = (borrowing.amountBorrowFee * borrowing.amountUCD) / borrowingUCD;
 
-        UCD.burnWithPermit(msg.sender, _amountUCD);
+        UCD.burnFrom(msg.sender, _amountUCD);
         burnedUCD += _amountUCD;
 
         STABL3.transferFrom(address(TREASURY), msg.sender, amountStabl3);
@@ -308,7 +308,7 @@ contract Stabl3Borrowing is Ownable {
             borrowing.amountStabl3 = borrowing.amountStabl3.safeSub(amountStabl3ToUncollateralize);
             borrowing.amountBorrowFee = (borrowing.amountBorrowFee * borrowing.amountUCD) / borrowingUCD;
 
-            UCD.burnWithPermit(msg.sender, _amountUCD);
+            UCD.burnFrom(msg.sender, _amountUCD);
             burnedUCD += _amountUCD;
 
             TREASURY.updatePool(STABL3_COLLATERAL_POOL, STABL3, amountStabl3ToUncollateralize, 0, 0, false);

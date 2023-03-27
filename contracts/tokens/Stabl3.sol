@@ -429,16 +429,13 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
     function _afterTokenTransfer(address from, address to, uint256 amount) internal virtual {}
 }
 
-contract Stabl3Token is ERC20 {
-
-    uint8 private _decimals;
+contract Stabl3 is ERC20 {
 
     constructor() ERC20("Stabl3", "Stabl3") {
-        _decimals = 6;
         _mint(_msgSender(), 1500000000 * 1e6);
     }
 
-    function decimals() public view override returns (uint8) {
-        return _decimals;
+    function decimals() public pure override returns (uint8) {
+        return 6;
     }
 }
