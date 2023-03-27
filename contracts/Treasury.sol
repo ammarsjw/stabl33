@@ -398,6 +398,14 @@ contract Treasury is Ownable {
         else {
             _stabl3CirculatingSupply -= _amountStabl3;
         }
+
+        uint256 reserves = getReserves();
+
+        uint256 totalValueLocked = getTotalValueLocked();
+
+        uint256 circulatingSupply = stabl3CirculatingSupply();
+
+        emit Rate(rateInfo.rate, reserves, totalValueLocked, circulatingSupply, block.timestamp);
     }
 
     function updateRate(IERC20 _token, uint256 _amountToken) external permission reserved(_token) {

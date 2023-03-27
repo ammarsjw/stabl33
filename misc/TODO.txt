@@ -67,3 +67,9 @@ Borrowing:
 Staking:
 - Should staking only tokens such as LP tokens be available to stakers (if any are in the ROI Pool) as a form of reward
 - If not, then I would prefer to send all the LP tokens in 1 place (preferably the treasury) and not cut any fees, and if fees are cut than all fees should go to the HQ Wallet.
+
+
+1000 borrow but got 95 worth of
+5 is still a part of the locked amount
+unlock fee proportional to the amount that is unlocked
+cater for price change
