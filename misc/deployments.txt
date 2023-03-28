@@ -1,19 +1,19 @@
-(Graph) Treasury deployed to: 0x7C66793cC0ad8f765b623C3A1Ff40ea769533257
-at block number: 8647389
-(Graph) ROI deployed to: 0xDED8f3b37ACcaa54386a888e85Ab0b764D033d50
-at block number: 8647390
-Stabl3PublicSale deployed to: 0xAd14D0e6e53527116182afA252EbB6b152A682Ae
-at block number: 8647391
-(Graph) Stabl3Staking deployed to: 0x979cd0F9aC6152ad8752c9E3d3415a26848B1098
-at block number: 8647392
-(Graph) Stabl3Borrowing deployed to: 0x9217c2624B2D921acE6F9311Df16f6Abef94961f
-at block number: 8647393
-(Graph) Stabl3Bonding deployed to: 0x6B8c607E9b8B0B095ca157952174ab9aE960040f
-at block number: 8647394
+(Graph) Treasury deployed to: 0xe082514eA4249D31323D020E5a97212A7061672e
+at block number: 14683259
+(Graph) ROI deployed to: 0x054437726Ca5d7A1acE3b697cc2b4A3273f5c6Bd
+at block number: 14683261
+Stabl3PublicSale deployed to: 0x17f6BFAc1676026c601292De668002Dd90A27472
+at block number: 14683262
+(Graph) Stabl3Staking deployed to: 0x0965603D224C31491207D9ff18F327Cfc3632168
+at block number: 14683263
+(Graph) Stabl3Borrowing deployed to: 0xe30Bf4e05A09D395892438a795725A5155D41439
+at block number: 14683264
+(Graph) Stabl3Bonding deployed to: 0x969b28e21200439Ca79Aac6D85CDD7fBeCa318D8
+at block number: 14683268
 
-Treasury - https://goerli.etherscan.io/address/0x7C66793cC0ad8f765b623C3A1Ff40ea769533257#code
-ROI - https://goerli.etherscan.io/address/0xDED8f3b37ACcaa54386a888e85Ab0b764D033d50#code
-Stabl3PublicSale - https://goerli.etherscan.io/address/0xAd14D0e6e53527116182afA252EbB6b152A682Ae#code
-Stabl3Staking - https://goerli.etherscan.io/address/0x979cd0F9aC6152ad8752c9E3d3415a26848B1098#code
-Stabl3Borrowing - https://goerli.etherscan.io/address/0x9217c2624B2D921acE6F9311Df16f6Abef94961f#code
-Stabl3Bonding - https://goerli.etherscan.io/address/0x6B8c607E9b8B0B095ca157952174ab9aE960040f#code
+Treasury - https://testnet.ftmscan.com/address/0xe082514eA4249D31323D020E5a97212A7061672e#code
+ROI - https://testnet.ftmscan.com/address/0x054437726Ca5d7A1acE3b697cc2b4A3273f5c6Bd#code
+Stabl3PublicSale - https://testnet.ftmscan.com/address/0x17f6BFAc1676026c601292De668002Dd90A27472#code
+Stabl3Staking - https://testnet.ftmscan.com/address/0x0965603D224C31491207D9ff18F327Cfc3632168#code
+Stabl3Borrowing - https://testnet.ftmscan.com/address/0xe30Bf4e05A09D395892438a795725A5155D41439#code
+Stabl3Bonding - https://testnet.ftmscan.com/address/0x969b28e21200439Ca79Aac6D85CDD7fBeCa318D8#code

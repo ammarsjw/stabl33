@@ -24,6 +24,7 @@ const Web3 = require('web3')
 const web3 = new Web3(provider)
 
 async function main() {
+  // // checking gas price
   // let gasPrice = 1000000
   // while (gasPrice > 100) {
   //   feeData = await hre.ethers.provider.getFeeData()
@@ -149,7 +150,7 @@ async function main() {
 
 
   // Verifying contracts
-  await new Promise(resolve => setTimeout(resolve, 60000))
+  await new Promise(resolve => setTimeout(resolve, 20000))
   await verify(treasuryContractAddress, [])
   await verify(roiContractAddress, [treasuryContractAddress])
   await verify(stabl3PublicSaleContractAddress, [treasuryContractAddress, roiContractAddress])

@@ -1,19 +1,19 @@
 {
-  "goerli": {
+  "fantom-testnet": {
     "Treasury": {
-      "address": "0x7C66793cC0ad8f765b623C3A1Ff40ea769533257"
+      "address": "0xe082514eA4249D31323D020E5a97212A7061672e"
     },
     "ROI": {
-      "address": "0xDED8f3b37ACcaa54386a888e85Ab0b764D033d50"
+      "address": "0x054437726Ca5d7A1acE3b697cc2b4A3273f5c6Bd"
     },
     "Stabl3Staking": {
-      "address": "0x979cd0F9aC6152ad8752c9E3d3415a26848B1098"
+      "address": "0x0965603D224C31491207D9ff18F327Cfc3632168"
     },
     "Stabl3Borrowing": {
-      "address": "0x9217c2624B2D921acE6F9311Df16f6Abef94961f"
+      "address": "0xe30Bf4e05A09D395892438a795725A5155D41439"
     },
     "Stabl3Bonding": {
-      "address": "0x6B8c607E9b8B0B095ca157952174ab9aE960040f"
+      "address": "0x969b28e21200439Ca79Aac6D85CDD7fBeCa318D8"
     }
   }
 }
