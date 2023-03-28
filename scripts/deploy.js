@@ -1,11 +1,17 @@
 let HDWalletProvider = require('@truffle/hdwallet-provider')
 require("dotenv").config()
 
-// goerli provider
+// fantom provider
 const provider = new HDWalletProvider(
-  process.env.PRIVATE_KEY,
-  process.env.URL
+  process.env.PRIVATE_KEY_FANTOM,
+  process.env.URL_FANTOM
 )
+
+// // goerli provider
+// const provider = new HDWalletProvider(
+//   process.env.PRIVATE_KEY,
+//   process.env.URL
+// )
 
 // mainnet provider
 // const provider = new HDWalletProvider(
@@ -18,6 +24,13 @@ const Web3 = require('web3')
 const web3 = new Web3(provider)
 
 async function main() {
+  // let gasPrice = 1000000
+  // while (gasPrice > 100) {
+  //   feeData = await hre.ethers.provider.getFeeData()
+  //   gasPrice = hre.ethers.utils.formatUnits(feeData.gasPrice, "gwei")
+  //   console.log(gasPrice);
+  // }
+
   // Deploying Treasury
   const treasury = await hre.ethers.getContractFactory("Treasury")
   const treasuryContract = await treasury.deploy()
