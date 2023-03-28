@@ -2,14 +2,14 @@
 
 pragma solidity 0.8.19;
 
-import "./SafeMathUpgradeable.sol";
+import "./SafeMath.sol";
 
 import "./IROI.sol";
 import "./IStabl3Staking.sol";
 import "./IStabl3StakingStruct.sol";
 
 contract Stabl3StakingHelper is IStabl3StakingStruct {
-    using SafeMathUpgradeable for uint256;
+    using SafeMath for uint256;
 
     // TODO remove
     uint256 private constant oneDayTime = 10;

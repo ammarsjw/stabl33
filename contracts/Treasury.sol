@@ -4,7 +4,7 @@ pragma solidity 0.8.19;
 
 import "./Ownable.sol";
 
-import "./SafeMathUpgradeable.sol";
+import "./SafeMath.sol";
 import "./SafeERC20.sol";
 
 import "./IUniswapV2Router.sol";
@@ -12,7 +12,7 @@ import "./IUniswapV2Factory.sol";
 import "./IUniswapV2Pair.sol";
 
 contract Treasury is Ownable {
-    using SafeMathUpgradeable for uint256;
+    using SafeMath for uint256;
 
     uint256 private constant MAX_INT = 2 ** 256 - 1;
 

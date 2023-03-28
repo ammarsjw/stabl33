@@ -3,14 +3,14 @@
 pragma solidity 0.8.17;
 
 import "../../Contracts/Ownable.sol";
-import "../../Contracts/SafeMathUpgradeable.sol";
+import "../../Contracts/SafeMath.sol";
 import "../../Contracts/SafeERC20.sol";
 
 import "../../Contracts/ITreasury.sol";
 import "../../Contracts/IStabl3Staking.sol";
 
 contract ROI is Ownable, IStabl3StakingStruct {
-    using SafeMathUpgradeable for uint256;
+    using SafeMath for uint256;
 
     uint256 private constant MAX_INT = 2 ** 256 - 1;
 

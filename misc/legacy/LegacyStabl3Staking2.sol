@@ -3,7 +3,7 @@
 pragma solidity 0.8.17;
 
 import "../../Contracts/Ownable.sol";
-import "../../Contracts/SafeMathUpgradeable.sol";
+import "../../Contracts/SafeMath.sol";
 import "../../Contracts/SafeERC20.sol";
 import "../../Contracts/ReentrancyGuard.sol";
 
@@ -12,7 +12,7 @@ import "../../Contracts/IROI.sol";
 import "../../Contracts/IStabl3StakingStruct.sol";
 
 contract Stabl3Staking is Ownable, ReentrancyGuard, IStabl3StakingStruct {
-    using SafeMathUpgradeable for uint256;
+    using SafeMath for uint256;
 
     uint8 private constant BUY_POOL = 0;
 

@@ -6,7 +6,7 @@ import "./Stabl3StakingHelper.sol";
 
 import "./Ownable.sol";
 
-import "./SafeMathUpgradeable.sol";
+import "./SafeMath.sol";
 import "./SafeERC20.sol";
 
 import "./IStabl3StakingStruct.sol";
@@ -14,7 +14,7 @@ import "./ITreasury.sol";
 import "./IROI.sol";
 
 contract Stabl3Staking is Ownable, IStabl3StakingStruct {
-    using SafeMathUpgradeable for uint256;
+    using SafeMath for uint256;
 
     uint8 private constant BUY_POOL = 0;
 

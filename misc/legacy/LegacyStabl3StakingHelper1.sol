@@ -2,14 +2,14 @@
 
 pragma solidity 0.8.17;
 
-import "../../Contracts/SafeMathUpgradeable.sol";
+import "../../Contracts/SafeMath.sol";
 
 import "../../Contracts/IROI.sol";
 import "../../Contracts/IStabl3Staking.sol";
 import "../../Contracts/IStabl3StakingStruct.sol";
 
 contract Stabl3StakingHelper is IStabl3StakingStruct {
-    using SafeMathUpgradeable for uint256;
+    using SafeMath for uint256;
 
     IStabl3Staking public stabl3Staking;
 

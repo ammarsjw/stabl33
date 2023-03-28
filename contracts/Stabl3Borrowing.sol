@@ -4,7 +4,7 @@ pragma solidity 0.8.19;
 
 import "./Ownable.sol";
 
-import "./SafeMathUpgradeable.sol";
+import "./SafeMath.sol";
 import "./SafeERC20.sol";
 
 import "./IERC721.sol";
@@ -13,7 +13,7 @@ import "./IROI.sol";
 import "./IUCD.sol";
 
 contract Stabl3Borrowing is Ownable {
-    using SafeMathUpgradeable for uint256;
+    using SafeMath for uint256;
 
     uint8 private constant UCD_BORROW_POOL = 8;
     uint8 private constant UCD_PAYBACK_POOL = 9;
