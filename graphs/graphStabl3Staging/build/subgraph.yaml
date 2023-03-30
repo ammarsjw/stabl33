@@ -4,11 +4,11 @@ schema:
 dataSources:
   - kind: ethereum
     name: Treasury
-    network: fantom-testnet
+    network: mumbai
     source:
-      address: "0xe082514eA4249D31323D020E5a97212A7061672e"
+      address: "0xC3E4419FDaC127A02aF2C7A9f9d66614450c5da6"
       abi: Treasury
-      startBlock: 14683259
+      startBlock: 33760618
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -30,11 +30,11 @@ dataSources:
       file: Treasury\Treasury.wasm
   - kind: ethereum
     name: ROI
-    network: fantom-testnet
+    network: mumbai
     source:
-      address: "0x054437726Ca5d7A1acE3b697cc2b4A3273f5c6Bd"
+      address: "0xAaEa09f2f0880E30a789fE91287C8db1990f0C0d"
       abi: ROI
-      startBlock: 14683261
+      startBlock: 33760623
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -50,11 +50,11 @@ dataSources:
       file: ROI\ROI.wasm
   - kind: ethereum
     name: Stabl3Staking
-    network: fantom-testnet
+    network: mumbai
     source:
-      address: "0x0965603D224C31491207D9ff18F327Cfc3632168"
+      address: "0xE062f7B4EEd85ec609129c4de29a8734ea4e736A"
       abi: Stabl3Staking
-      startBlock: 14683263
+      startBlock: 33760630
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -80,11 +80,11 @@ dataSources:
       file: Stabl3Staking\Stabl3Staking.wasm
   - kind: ethereum
     name: Stabl3Borrowing
-    network: fantom-testnet
+    network: mumbai
     source:
-      address: "0xe30Bf4e05A09D395892438a795725A5155D41439"
+      address: "0xF2f407d4e8490aF71F10787B990Db1664ecD0e6A"
       abi: Stabl3Borrowing
-      startBlock: 14683264
+      startBlock: 33760634
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -106,11 +106,11 @@ dataSources:
       file: Stabl3Borrowing\Stabl3Borrowing.wasm
   - kind: ethereum
     name: Stabl3Bonding
-    network: fantom-testnet
+    network: mumbai
     source:
-      address: "0x969b28e21200439Ca79Aac6D85CDD7fBeCa318D8"
+      address: "0xD01Aa3bce308b395547dAcf06272613E3a6984f3"
       abi: Stabl3Bonding
-      startBlock: 14683268
+      startBlock: 33760639
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6

@@ -1,19 +1,19 @@
 {
-  "fantom-testnet": {
+  "mumbai": {
     "Treasury": {
-      "address": "0xe082514eA4249D31323D020E5a97212A7061672e"
+      "address": "0xC3E4419FDaC127A02aF2C7A9f9d66614450c5da6"
     },
     "ROI": {
-      "address": "0x054437726Ca5d7A1acE3b697cc2b4A3273f5c6Bd"
+      "address": "0xAaEa09f2f0880E30a789fE91287C8db1990f0C0d"
     },
     "Stabl3Staking": {
-      "address": "0x0965603D224C31491207D9ff18F327Cfc3632168"
+      "address": "0xE062f7B4EEd85ec609129c4de29a8734ea4e736A"
     },
     "Stabl3Borrowing": {
-      "address": "0xe30Bf4e05A09D395892438a795725A5155D41439"
+      "address": "0xF2f407d4e8490aF71F10787B990Db1664ecD0e6A"
     },
     "Stabl3Bonding": {
-      "address": "0x969b28e21200439Ca79Aac6D85CDD7fBeCa318D8"
+      "address": "0xD01Aa3bce308b395547dAcf06272613E3a6984f3"
     }
   }
 }
