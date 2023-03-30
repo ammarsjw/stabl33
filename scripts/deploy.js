@@ -1,13 +1,13 @@
 let HDWalletProvider = require('@truffle/hdwallet-provider')
 require("dotenv").config()
 
-// fantom provider
+// mumbai provider
 const provider = new HDWalletProvider(
-  process.env.PRIVATE_KEY_FANTOM,
-  process.env.URL_FANTOM
+  process.env.PRIVATE_KEY_MUMBAI,
+  process.env.URL_MUMBAI
 )
 
-// // goerli provider
+// goerli provider
 // const provider = new HDWalletProvider(
 //   process.env.PRIVATE_KEY,
 //   process.env.URL

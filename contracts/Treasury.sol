@@ -82,17 +82,17 @@ contract Treasury is Ownable {
 
     constructor() {
         // TODO change
-        uniswapRouter = IUniswapV2Router02(0xa6AD18C2aC47803E193F75c3677b14BF19B94883);
+        uniswapRouter = IUniswapV2Router02(0x8954AfA98594b838bda56FE4C12a09D7739D179b);
         uniswapFactory = IUniswapV2Factory(uniswapRouter.factory());
 
         // TODO change
         HQ = 0x294d0487fdf7acecf342ae70AFc5549A6E90f3e0;
 
         // TODO change
-        STABL3 = IERC20(0x6d4eaE732C9f34C6EAE0CFFD9c267b2d25583782);
+        STABL3 = IERC20(0xc3Bf0c0172E3638d383361801e9BF63B4FfE0d6e);
 
         // TODO change
-        UCD = IERC20(0xe33a5606B04d240d77da315e19a6D8AC7303F06F);
+        UCD = IERC20(0x78Ef94529fC06F08756a43f6Bdfe61395C0e1428);
 
         exchangeFee = 3;
 
@@ -104,8 +104,8 @@ contract Treasury is Ownable {
         lockedStabl3Pools = [11, 25];
 
         // TODO change
-        IERC20 USDC = IERC20(0xc2d2431d0Ffa449ee7957ae7dCF6D95F2bc2CC77);
-        IERC20 DAI = IERC20(0x2F037383A80ee2141D553E10FA747Bc0d6c5AC43);
+        IERC20 USDC = IERC20(0x16c1038a989E7c52c7B0FBDE889249C02d7e205D);
+        IERC20 DAI = IERC20(0x63720e1a9E780865B9FbDb148c25AEa0B59170F1);
 
         updateReservedToken(USDC, true);
         updateReservedToken(DAI, true);

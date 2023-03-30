@@ -17,14 +17,14 @@ module.exports = {
     ],
   },
   networks: {
+    mumbai: {
+      url: process.env.URL_MUMBAI,
+      accounts: [process.env.PRIVATE_KEY_MUMBAI],
+    },
     // goerli: {
     //   url: process.env.URL,
     //   accounts: [process.env.PRIVATE_KEY],
     // },
-    fantom: {
-      url: process.env.URL_FANTOM,
-      accounts: [process.env.PRIVATE_KEY_FANTOM],
-    },
     // mainnet: {
     //   url: process.env.URL_MAIN,
     //   accounts: [process.env.PRIVATE_KEY_MAIN],
@@ -32,7 +32,7 @@ module.exports = {
     // },
   },
   etherscan: {
+    apiKey: 'WPJFDVCHRSQNBVUM5I5WCAW65C69BT6B3V' // mumbai
     // apiKey: 'AYBZ53EN445WNPFP2IZ85RXRPB4FH5XBP7' // goerli
-    apiKey: 'NRPW61SBBW81ZMKYYDY12ZSXRJ8Q6JITGC' // fantom
   },
 };
