@@ -38,6 +38,8 @@ contract Stabl3Borrowing is Ownable {
 
     uint256 private burnedUCD;
 
+    Borrowing public getBorrowing;
+
     bool public borrowState;
 
     // structs
@@ -48,10 +50,6 @@ contract Stabl3Borrowing is Ownable {
         uint256 amountFee;
         uint256 amountStabl3Fee;
     }
-
-    // storage
-
-    mapping (address => Borrowing) public getBorrowings;
 
     // events
 
@@ -190,12 +188,10 @@ contract Stabl3Borrowing is Ownable {
         (uint256 availableUCD, , ) = getReservesUCD();
         require(amountUCDWithFee <= availableUCD, "Stabl3Borrowing: Insufficient available UCD");
 
-        Borrowing storage borrowing = getBorrowings[msg.sender];
-
-        borrowing.amountUCD += amountUCDWithFee;
-        borrowing.amountStabl3 += amountStabl3WithFee;
-        borrowing.amountFee += fee;
-        borrowing.amountStabl3Fee += stabl3Fee;
+        getBorrowing.amountUCD += amountUCDWithFee;
+        getBorrowing.amountStabl3 += amountStabl3WithFee;
+        getBorrowing.amountFee += fee;
+        getBorrowing.amountStabl3Fee += stabl3Fee;
 
         IERC20 reservedToken = TREASURY.reservedTokenSelector();
 
@@ -233,20 +229,18 @@ contract Stabl3Borrowing is Ownable {
      */
     function payback(uint256 _amountUCD) external borrowActive {
         require(_amountUCD > 0, "Stabl3Borrowing: Insufficient amount");
-
-        Borrowing storage borrowing = getBorrowings[msg.sender];
-        require(borrowing.amountUCD > 0, "Stabl3Borrowing: No debt to payback");
+        require(getBorrowing.amountUCD > 0, "Stabl3Borrowing: No debt to payback");
 
         uint256 amountStabl3 = TREASURY.getAmountOut(UCD, _amountUCD);
 
-        uint256 amountStabl3ToUncollateralize = (borrowing.amountStabl3 * _amountUCD) / borrowing.amountUCD;
-        uint256 amountFeeToUncollateralize = (borrowing.amountFee * _amountUCD) / borrowing.amountUCD;
-        uint256 amountStabl3FeeToUncollateralize = (borrowing.amountStabl3Fee * _amountUCD) / borrowing.amountUCD;
+        uint256 amountStabl3ToUncollateralize = (getBorrowing.amountStabl3 * _amountUCD) / getBorrowing.amountUCD;
+        uint256 amountFeeToUncollateralize = (getBorrowing.amountFee * _amountUCD) / getBorrowing.amountUCD;
+        uint256 amountStabl3FeeToUncollateralize = (getBorrowing.amountStabl3Fee * _amountUCD) / getBorrowing.amountUCD;
 
-        borrowing.amountUCD -= _amountUCD;
-        borrowing.amountStabl3 -= amountStabl3ToUncollateralize;
-        borrowing.amountFee -= amountFeeToUncollateralize;
-        borrowing.amountStabl3Fee -= amountStabl3FeeToUncollateralize;
+        getBorrowing.amountUCD -= _amountUCD;
+        getBorrowing.amountStabl3 -= amountStabl3ToUncollateralize;
+        getBorrowing.amountFee -= amountFeeToUncollateralize;
+        getBorrowing.amountStabl3Fee -= amountStabl3FeeToUncollateralize;
 
         UCD.burnFrom(msg.sender, _amountUCD);
         burnedUCD += _amountUCD;
@@ -281,45 +275,40 @@ contract Stabl3Borrowing is Ownable {
      */
     function exchangeUCD(IERC20 _exchangingToken, uint256 _amountUCD) external borrowActive reserved(_exchangingToken) {
         require(_amountUCD > 0, "Stabl3Borrowing: Insufficient amount");
+        require(getBorrowing.amountUCD > 0, "Stabl3Borrowing: No debt to payback");
 
-        // payback the user's debt if they owe any
-        // if they don't owe any debt, the user is a third-party
-        if (getBorrowings[msg.sender].amountUCD > 0) {
-            Borrowing storage borrowing = getBorrowings[msg.sender];
+        uint256 amountStabl3 = TREASURY.getAmountOut(UCD, _amountUCD);
 
-            uint256 amountStabl3 = TREASURY.getAmountOut(UCD, _amountUCD);
+        uint256 amountStabl3ToUncollateralize = (getBorrowing.amountStabl3 * _amountUCD) / getBorrowing.amountUCD;
+        uint256 amountFeeToUncollateralize = (getBorrowing.amountFee * _amountUCD) / getBorrowing.amountUCD;
+        uint256 amountStabl3FeeToUncollateralize = (getBorrowing.amountStabl3Fee * _amountUCD) / getBorrowing.amountUCD;
 
-            uint256 amountStabl3ToUncollateralize = (borrowing.amountStabl3 * _amountUCD) / borrowing.amountUCD;
-            uint256 amountFeeToUncollateralize = (borrowing.amountFee * _amountUCD) / borrowing.amountUCD;
-            uint256 amountStabl3FeeToUncollateralize = (borrowing.amountStabl3Fee * _amountUCD) / borrowing.amountUCD;
+        getBorrowing.amountUCD -= _amountUCD;
+        getBorrowing.amountStabl3 -= amountStabl3ToUncollateralize;
+        getBorrowing.amountFee -= amountFeeToUncollateralize;
+        getBorrowing.amountStabl3Fee -= amountStabl3FeeToUncollateralize;
 
-            borrowing.amountUCD -= _amountUCD;
-            borrowing.amountStabl3 -= amountStabl3ToUncollateralize;
-            borrowing.amountFee -= amountFeeToUncollateralize;
-            borrowing.amountStabl3Fee -= amountStabl3FeeToUncollateralize;
+        UCD.burnFrom(msg.sender, _amountUCD);
+        burnedUCD += _amountUCD;
 
-            UCD.burnFrom(msg.sender, _amountUCD);
-            burnedUCD += _amountUCD;
+        uint256 leftoverCollateralStabl3 = amountStabl3ToUncollateralize.safeSub(amountStabl3);
 
-            uint256 leftoverCollateralStabl3 = amountStabl3ToUncollateralize.safeSub(amountStabl3);
+        if (leftoverCollateralStabl3 > 0) {
+            // donation
+            STABL3.transferFrom(address(TREASURY), donationWallet, leftoverCollateralStabl3);
 
-            if (leftoverCollateralStabl3 > 0) {
-                // donation
-                STABL3.transferFrom(address(TREASURY), donationWallet, leftoverCollateralStabl3);
+            // leftoverCollateralStabl3 is the only amount unlocked and the rest of the amountStabl3ToUncollateralize stays locked
+            // amountStabl3FeeToUncollateralize is unlocked as this is not linked to the exact borrowing amount
+            TREASURY.updatePool(
+                STABL3_COLLATERAL_POOL,
+                STABL3,
+                leftoverCollateralStabl3 + amountStabl3FeeToUncollateralize,
+                0,
+                0,
+                false
+            );
 
-                // leftoverCollateralStabl3 is the only amount unlocked and the rest of the amountStabl3ToUncollateralize stays locked
-                // amountStabl3FeeToUncollateralize is unlocked as this is not linked to the exact borrowing amount
-                TREASURY.updatePool(
-                    STABL3_COLLATERAL_POOL,
-                    STABL3,
-                    leftoverCollateralStabl3 + amountStabl3FeeToUncollateralize,
-                    0,
-                    0,
-                    false
-                );
-
-                TREASURY.updateStabl3CirculatingSupply(leftoverCollateralStabl3, true);
-            }
+            TREASURY.updateStabl3CirculatingSupply(leftoverCollateralStabl3, true);
         }
 
         uint256 amountExchangingToken = _amountUCD;
