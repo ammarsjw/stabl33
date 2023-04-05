@@ -181,6 +181,9 @@ contract Stabl3Borrowing is Ownable {
         if (INVESTORS.balanceOf(msg.sender) == 0) {
             fee = amountUCD.mul(borrowFee).div(1000);
             stabl3Fee = TREASURY.getAmountOut(UCD, fee);
+            if (_amountStabl3 > amountStabl3ToConsider) {
+                stabl3Fee += _amountStabl3 - amountStabl3ToConsider;
+            }
         }
         uint256 amountUCDWithFee = amountUCD - fee;
         uint256 amountStabl3WithFee = amountStabl3ToConsider - stabl3Fee;
@@ -209,18 +212,18 @@ contract Stabl3Borrowing is Ownable {
 
         SafeERC20.safeTransferFrom(reservedToken, address(TREASURY), address(ROI), fee);
 
-        STABL3.transferFrom(msg.sender, address(TREASURY), _amountStabl3);
+        STABL3.transferFrom(msg.sender, address(TREASURY), amountStabl3WithFee + stabl3Fee);
 
         UCD.mint(msg.sender, amountUCDWithFee);
 
         TREASURY.updatePool(UCD_BORROW_POOL, UCD, amountUCDWithFee, 0, 0, true);
-        TREASURY.updatePool(STABL3_COLLATERAL_POOL, STABL3, amountStabl3ToConsider, 0, 0, true);
+        TREASURY.updatePool(STABL3_COLLATERAL_POOL, STABL3, amountStabl3WithFee + stabl3Fee, 0, 0, true);
 
-        TREASURY.updateStabl3CirculatingSupply(_amountStabl3, false);
+        TREASURY.updateStabl3CirculatingSupply(amountStabl3WithFee + stabl3Fee, false);
 
         ROI.updateAPR();
 
-        emit Borrow(msg.sender, amountUCDWithFee, _amountStabl3, TREASURY.getRate(), block.timestamp);
+        emit Borrow(msg.sender, amountUCDWithFee, amountStabl3WithFee + stabl3Fee, TREASURY.getRate(), block.timestamp);
     }
 
     /**
@@ -302,7 +305,7 @@ contract Stabl3Borrowing is Ownable {
             TREASURY.updatePool(
                 STABL3_COLLATERAL_POOL,
                 STABL3,
-                leftoverCollateralStabl3 + amountStabl3FeeToUncollateralize,
+                amountStabl3ToUncollateralize + amountStabl3FeeToUncollateralize,
                 0,
                 0,
                 false
