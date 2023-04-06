@@ -208,7 +208,7 @@ contract Stabl3Borrowing is Ownable {
             fee /= 10 ** (decimalsUCD - decimalsReservedToken);
         }
 
-        _returnBorrowingFunds(reservedToken, fee);
+        _returnBorrowingFunds(reservedToken, fee, true);
 
         SafeERC20.safeTransferFrom(reservedToken, address(TREASURY), address(ROI), fee);
 
@@ -336,7 +336,8 @@ contract Stabl3Borrowing is Ownable {
             ROI.returnFunds(_exchangingToken, amountExchangingToken - _exchangingToken.balanceOf(address(TREASURY)));
         }
 
-        _returnBorrowingFunds(_exchangingToken, amountExchangingToken);
+        _returnBorrowingFunds(_exchangingToken, fee, true);
+        _returnBorrowingFunds(_exchangingToken, amountExchangingTokenWithFee, false);
 
         SafeERC20.safeTransferFrom(_exchangingToken, address(TREASURY), address(ROI), fee);
         SafeERC20.safeTransferFrom(_exchangingToken, address(TREASURY), msg.sender, amountExchangingTokenWithFee);
@@ -352,7 +353,7 @@ contract Stabl3Borrowing is Ownable {
     /**
      * @dev Calls TREASURY's updatePool to reduce the TREASURY amounts
      */
-    function _returnBorrowingFunds(IERC20 _token, uint256 _amountToken) internal {
+    function _returnBorrowingFunds(IERC20 _token, uint256 _amountToken, bool _isUpdate) internal {
         uint256 amountToUpdate = _amountToken;
 
         for (uint8 i = 0 ; i < returnBorrowingPools.length ; i++) {
@@ -361,13 +362,17 @@ contract Stabl3Borrowing is Ownable {
             if (amountPool != 0) {
                 if (amountPool < amountToUpdate) {
                     TREASURY.updatePool(returnBorrowingPools[i], _token, amountPool, 0, 0, false);
-                    TREASURY.updatePool(returnBorrowingPools[i], _token, 0, amountPool, 0, true);
+                    if (_isUpdate) {
+                        TREASURY.updatePool(returnBorrowingPools[i], _token, 0, amountPool, 0, true);
+                    }
 
                     amountToUpdate -= amountPool;
                 }
                 else {
                     TREASURY.updatePool(returnBorrowingPools[i], _token, amountToUpdate, 0, 0, false);
-                    TREASURY.updatePool(returnBorrowingPools[i], _token, 0, amountToUpdate, 0, true);
+                    if (_isUpdate) {
+                        TREASURY.updatePool(returnBorrowingPools[i], _token, 0, amountToUpdate, 0, true);
+                    }
 
                     amountToUpdate = 0;
                     break;
