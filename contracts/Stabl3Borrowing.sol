@@ -299,20 +299,20 @@ contract Stabl3Borrowing is Ownable {
         if (leftoverCollateralStabl3 > 0) {
             // donation
             STABL3.transferFrom(address(TREASURY), donationWallet, leftoverCollateralStabl3);
-
-            // leftoverCollateralStabl3 is the only amount unlocked and the rest of the amountStabl3ToUncollateralize stays locked
-            // amountStabl3FeeToUncollateralize is unlocked as this is not linked to the exact borrowing amount
-            TREASURY.updatePool(
-                STABL3_COLLATERAL_POOL,
-                STABL3,
-                leftoverCollateralStabl3 + amountStabl3FeeToUncollateralize,
-                0,
-                0,
-                false
-            );
-
-            TREASURY.updateStabl3CirculatingSupply(leftoverCollateralStabl3, true);
         }
+
+        // leftoverCollateralStabl3 is the only amount unlocked and the rest of the amountStabl3ToUncollateralize stays locked
+        // amountStabl3FeeToUncollateralize is unlocked as this is not linked to the exact borrowing amount
+        TREASURY.updatePool(
+            STABL3_COLLATERAL_POOL,
+            STABL3,
+            leftoverCollateralStabl3 + amountStabl3FeeToUncollateralize,
+            0,
+            0,
+            false
+        );
+
+        TREASURY.updateStabl3CirculatingSupply(leftoverCollateralStabl3, true);
 
         uint256 amountExchangingToken = _amountUCD;
 
