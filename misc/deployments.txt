@@ -6,8 +6,8 @@ Stabl3PublicSale deployed to: 0x21DfE08eA6980d10c17258dB764fec58D39ea0Ed
 at block number: 34204555
 (Graph) Stabl3Staking deployed to: 0x2507b9eA883206d316CB71992130d7319358827D
 at block number: 34204561
-(Graph) Stabl3Borrowing deployed to: 0xaAacE8d646dCf9f120906c3254bE0aE32A18d303
-at block number: 34204566
+(Graph) Stabl3Borrowing deployed to: 0x186EdcB1DC03837473d3565eC452fF6c32346C3B
+at block number: 34208754
 (Graph) Stabl3Bonding deployed to: 0xE6b49407346123177F748fCa934cc1deCA34Fc7a
 at block number: 34204571
 

@@ -305,7 +305,7 @@ contract Stabl3Borrowing is Ownable {
             TREASURY.updatePool(
                 STABL3_COLLATERAL_POOL,
                 STABL3,
-                amountStabl3ToUncollateralize + amountStabl3FeeToUncollateralize,
+                leftoverCollateralStabl3 + amountStabl3FeeToUncollateralize,
                 0,
                 0,
                 false

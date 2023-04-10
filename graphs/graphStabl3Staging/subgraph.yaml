@@ -81,9 +81,9 @@ dataSources:
     name: Stabl3Borrowing
     network: mumbai
     source:
-      address: "0xaAacE8d646dCf9f120906c3254bE0aE32A18d303"
+      address: "0x186EdcB1DC03837473d3565eC452fF6c32346C3B"
       abi: Stabl3Borrowing
-      startBlock: 34204566
+      startBlock: 34208754
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
