@@ -248,15 +248,17 @@ export class UpdatedTreasury__Params {
   }
 }
 
-export class Stabl3Borrowing__getBorrowingsResult {
+export class Stabl3Borrowing__getBorrowingResult {
   value0: BigInt;
   value1: BigInt;
   value2: BigInt;
+  value3: BigInt;
 
-  constructor(value0: BigInt, value1: BigInt, value2: BigInt) {
+  constructor(value0: BigInt, value1: BigInt, value2: BigInt, value3: BigInt) {
     this.value0 = value0;
     this.value1 = value1;
     this.value2 = value2;
+    this.value3 = value3;
   }
 
   toMap(): TypedMap<string, ethereum.Value> {
@@ -264,6 +266,7 @@ export class Stabl3Borrowing__getBorrowingsResult {
     map.set("value0", ethereum.Value.fromUnsignedBigInt(this.value0));
     map.set("value1", ethereum.Value.fromUnsignedBigInt(this.value1));
     map.set("value2", ethereum.Value.fromUnsignedBigInt(this.value2));
+    map.set("value3", ethereum.Value.fromUnsignedBigInt(this.value3));
     return map;
   }
 
@@ -275,8 +278,12 @@ export class Stabl3Borrowing__getBorrowingsResult {
     return this.value1;
   }
 
-  getAmountBorrowFee(): BigInt {
+  getAmountFee(): BigInt {
     return this.value2;
+  }
+
+  getAmountStabl3Fee(): BigInt {
+    return this.value3;
   }
 }
 
@@ -460,37 +467,37 @@ export class Stabl3Borrowing extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
-  getBorrowings(param0: Address): Stabl3Borrowing__getBorrowingsResult {
+  getBorrowing(): Stabl3Borrowing__getBorrowingResult {
     let result = super.call(
-      "getBorrowings",
-      "getBorrowings(address):(uint256,uint256,uint256)",
-      [ethereum.Value.fromAddress(param0)]
+      "getBorrowing",
+      "getBorrowing():(uint256,uint256,uint256,uint256)",
+      []
     );
 
-    return new Stabl3Borrowing__getBorrowingsResult(
+    return new Stabl3Borrowing__getBorrowingResult(
       result[0].toBigInt(),
       result[1].toBigInt(),
-      result[2].toBigInt()
+      result[2].toBigInt(),
+      result[3].toBigInt()
     );
   }
 
-  try_getBorrowings(
-    param0: Address
-  ): ethereum.CallResult<Stabl3Borrowing__getBorrowingsResult> {
+  try_getBorrowing(): ethereum.CallResult<Stabl3Borrowing__getBorrowingResult> {
     let result = super.tryCall(
-      "getBorrowings",
-      "getBorrowings(address):(uint256,uint256,uint256)",
-      [ethereum.Value.fromAddress(param0)]
+      "getBorrowing",
+      "getBorrowing():(uint256,uint256,uint256,uint256)",
+      []
     );
     if (result.reverted) {
       return new ethereum.CallResult();
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(
-      new Stabl3Borrowing__getBorrowingsResult(
+      new Stabl3Borrowing__getBorrowingResult(
         value[0].toBigInt(),
         value[1].toBigInt(),
-        value[2].toBigInt()
+        value[2].toBigInt(),
+        value[3].toBigInt()
       )
     );
   }

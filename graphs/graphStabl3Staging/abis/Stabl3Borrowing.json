@@ -395,14 +395,8 @@
         "type": "function"
     },
     {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "name": "getBorrowings",
+        "inputs": [],
+        "name": "getBorrowing",
         "outputs": [
             {
                 "internalType": "uint256",
@@ -416,7 +410,12 @@
             },
             {
                 "internalType": "uint256",
-                "name": "amountBorrowFee",
+                "name": "amountFee",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "amountStabl3Fee",
                 "type": "uint256"
             }
         ],
