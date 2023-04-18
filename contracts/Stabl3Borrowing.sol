@@ -160,7 +160,6 @@ contract Stabl3Borrowing is Ownable {
     }
 
     function getReservesUCD() public view returns (uint256 availableUCD, uint256 borrowedUCD, uint256 returnedUCD) {
-        uint256 availableReserves = TREASURY.getReserves() + ROI.getReserves();
         uint256 totalExtraLiquidity;
 
         for (uint256 i = 0 ; i < TREASURY.allReservedTokensLength() ; i++) {
@@ -179,14 +178,15 @@ contract Stabl3Borrowing is Ownable {
             }
         }
 
-        availableReserves -= totalExtraLiquidity;
-        availableReserves /= 10 ** (18 - UCD.decimals());
+        availableUCD = TREASURY.getReserves() + ROI.getReserves();
+        availableUCD = availableUCD.safeSub(totalExtraLiquidity);
+        availableUCD /= 10 ** (18 - UCD.decimals());
+        uint256 ucdTotalSupply = UCD.totalSupply();
+        availableUCD = availableUCD.safeSub(ucdTotalSupply);
 
-        return (
-            availableReserves.safeSub(UCD.totalSupply()),
-            UCD.totalSupply(),
-            burnedUCD
-        );
+        borrowedUCD = ucdTotalSupply;
+
+        returnedUCD = burnedUCD;
     }
 
     /**
