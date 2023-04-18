@@ -15,6 +15,9 @@ import "./IUCD.sol";
 contract Stabl3Borrowing is Ownable {
     using SafeMath for uint256;
 
+    uint8 private constant STAKE_POOL = 2;
+    uint8 private constant LEND_POOL = 5;
+
     uint8 private constant UCD_BORROW_POOL = 8;
     uint8 private constant UCD_PAYBACK_POOL = 9;
     uint8 private constant UCD_TO_TOKEN_EXCHANGE_POOL = 10;
@@ -157,7 +160,27 @@ contract Stabl3Borrowing is Ownable {
     }
 
     function getReservesUCD() public view returns (uint256 availableUCD, uint256 borrowedUCD, uint256 returnedUCD) {
-        uint256 availableReserves = (TREASURY.getReserves() + ROI.getReserves()) / (10 ** (18 - UCD.decimals()));
+        uint256 availableReserves = TREASURY.getReserves() + ROI.getReserves();
+        uint256 totalExtraLiquidity;
+
+        for (uint256 i = 0 ; i < TREASURY.allReservedTokensLength() ; i++) {
+            IERC20 reservedToken = TREASURY.allReservedTokens(i);
+
+            if (TREASURY.isReservedToken(reservedToken)) {
+                uint256 stakeAmount = TREASURY.getTreasuryPool(STAKE_POOL, reservedToken);
+                uint256 lendAmount = TREASURY.getTreasuryPool(LEND_POOL, reservedToken);
+
+                uint256 decimals = reservedToken.decimals();
+
+                totalExtraLiquidity +=
+                    decimals < 18 ?
+                    (stakeAmount * (10 ** (18 - decimals))) + (lendAmount * (10 ** (18 - decimals))) :
+                    stakeAmount + lendAmount;
+            }
+        }
+
+        availableReserves -= totalExtraLiquidity;
+        availableReserves /= 10 ** (18 - UCD.decimals());
 
         return (
             availableReserves.safeSub(UCD.totalSupply()),
