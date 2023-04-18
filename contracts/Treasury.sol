@@ -326,6 +326,12 @@ contract Treasury is Ownable {
         return amountToken;
     }
 
+    function getBaseAmountOut() external view returns (uint256) {
+    }
+
+    function getBaseAmountIn() external view returns (uint256) {
+    }
+
     function getExchangeAmountOut(IERC20 _exchangingToken, IERC20 _token, uint256 _amountToken) external view returns (uint256) {
         if (_amountToken == 0) {
             return 0;
