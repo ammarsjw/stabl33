@@ -30,6 +30,7 @@ contract Treasury is Ownable {
     uint256 public exchangeFee;
 
     uint256 private immutable rateImpactSlope;
+    RateInfo public rateHistory;
     RateInfo public rateInfo;
 
     uint8[] public lockedStabl3Pools;
@@ -97,6 +98,9 @@ contract Treasury is Ownable {
         exchangeFee = 3;
 
         rateImpactSlope = 0.000000000699993 * (10 ** 18);
+        rateHistory.rate = 0.0007 * (10 ** 24);
+        // rateHistory.stabl3CirculatingSupply = 0;
+        // rateHistory.totalValueLocked = 0;
         rateInfo.rate = 0.0007 * (10 ** 18);
         // rateInfo.stabl3CirculatingSupply = 0;
         // rateInfo.totalValueLocked = 0;
@@ -326,10 +330,60 @@ contract Treasury is Ownable {
         return amountToken;
     }
 
-    function getBaseAmountOut() external view returns (uint256) {
+    function getBaseRateImpact(IERC20 _token, uint256 _amountToken) public view returns (uint256) {
+        if (_amountToken == 0) {
+            return rateHistory.rate;
+        }
+
+        uint256 amountTokenConverted = _token.decimals() < 24 ? _amountToken * ( 10 ** (24 - _token.decimals())) :  _amountToken ;
+
+        uint256 rate = rateHistory.rate + (( amountTokenConverted * rateImpactSlope) / (10 ** 18) );
+
+        return rate;
     }
 
-    function getBaseAmountIn() external view returns (uint256) {
+    function getBaseAmountOut(uint256 _amountToken, IERC20 _token) external view returns (uint256) {
+        if (_amountToken == 0) {
+            return 0;
+        }
+        
+        uint256 amountTokenConverted = _token.decimals() < 24 ? _amountToken * (10 ** (24 - _token.decimals())) : _amountToken;
+
+        uint  amountStabl3=  (((amountTokenConverted + rateHistory.totalValueLocked ) * 1e6 )/rateHistory.rate)-(rateHistory.stabl3CirculatingSupply ) ;
+
+        // uint256 amountToken = amountStabl3 / 1e18;
+        if (amountStabl3 % 10 == 9) {
+            amountStabl3 += 10;
+        }
+
+        amountStabl3 /= 10;
+        // amountToken =
+        //     _token.decimals() < 6 ?
+        //     amountToken / (10 ** (6 - _token.decimals())) :
+        //     amountToken * (10 ** (_token.decimals() - 6));
+
+        return amountStabl3;
+    }
+
+    function getBaseAmountIn(uint256 _amountStabl3, IERC20 _token) external view returns (uint256) {
+        if (_amountStabl3 == 0) {
+            return 0;
+        }
+
+        uint256 amountTokenConverted = (((_amountStabl3 + rateHistory.stabl3CirculatingSupply) * 10 * rateHistory.rate ) / 1e6) - (rateHistory.totalValueLocked * 10);
+
+        uint256 amountToken = amountTokenConverted / 1e18;
+        if (amountToken % 10 == 9) {
+            amountToken += 10;
+        }
+
+        amountToken /= 10;
+        amountToken =
+            _token.decimals() < 6 ?
+            amountToken / (10 ** (6 - _token.decimals())) :
+            amountToken * (10 ** (_token.decimals() - 6));
+
+        return amountToken;
     }
 
     function getExchangeAmountOut(IERC20 _exchangingToken, IERC20 _token, uint256 _amountToken) external view returns (uint256) {
@@ -415,6 +469,10 @@ contract Treasury is Ownable {
     }
 
     function updateRate(IERC20 _token, uint256 _amountToken) external permission reserved(_token) {
+        rateHistory.stabl3CirculatingSupply = rateInfo.stabl3CirculatingSupply;
+        rateHistory.totalValueLocked = rateInfo.totalValueLocked * 1e6;
+        rateHistory.rate = getBaseRateImpact(_token, _amountToken);
+
         rateInfo.stabl3CirculatingSupply += getAmountOut(_token, _amountToken);
         rateInfo.totalValueLocked +=
             _token.decimals() < 18 ?
