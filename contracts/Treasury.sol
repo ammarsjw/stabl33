@@ -335,27 +335,28 @@ contract Treasury is Ownable {
             return rateHistory.rate;
         }
 
-        uint256 amountTokenConverted = _token.decimals() < 24 ? _amountToken * ( 10 ** (24 - _token.decimals())) :  _amountToken ;
+        uint256 amountTokenConverted = _token.decimals() < 24 ? _amountToken * (10 ** (24 - _token.decimals())) : _amountToken;
 
-        uint256 rate = rateHistory.rate + (( amountTokenConverted * rateImpactSlope) / (10 ** 18) );
+        uint256 rate = rateHistory.rate + ((amountTokenConverted * rateImpactSlope) / (10 ** 18));
 
         return rate;
     }
 
-    function getBaseAmountOut(uint256 _amountToken, IERC20 _token) external view returns (uint256) {
+    function getBaseAmountOut(IERC20 _token, uint256 _amountToken) external view returns (uint256) {
         if (_amountToken == 0) {
             return 0;
         }
-        
+
         uint256 amountTokenConverted = _token.decimals() < 24 ? _amountToken * (10 ** (24 - _token.decimals())) : _amountToken;
 
-        uint  amountStabl3=  (((amountTokenConverted + rateHistory.totalValueLocked ) * 1e6 )/rateHistory.rate)-(rateHistory.stabl3CirculatingSupply ) ;
+        uint256 amountStabl3 =
+            (((amountTokenConverted + rateHistory.totalValueLocked) * 10 * 1e6) / rateHistory.rate) -
+            (rateHistory.stabl3CirculatingSupply * 10);
 
         // uint256 amountToken = amountStabl3 / 1e18;
         if (amountStabl3 % 10 == 9) {
             amountStabl3 += 10;
         }
-
         amountStabl3 /= 10;
         // amountToken =
         //     _token.decimals() < 6 ?
@@ -370,13 +371,15 @@ contract Treasury is Ownable {
             return 0;
         }
 
-        uint256 amountTokenConverted = (((_amountStabl3 + rateHistory.stabl3CirculatingSupply) * 10 * rateHistory.rate ) / 1e6) - (rateHistory.totalValueLocked * 10);
+        uint256 amountTokenConverted =
+            (((_amountStabl3 + rateHistory.stabl3CirculatingSupply) * 10 * rateHistory.rate) / 1e6) -
+            (rateHistory.totalValueLocked * 10);
 
         uint256 amountToken = amountTokenConverted / 1e18;
+
         if (amountToken % 10 == 9) {
             amountToken += 10;
         }
-
         amountToken /= 10;
         amountToken =
             _token.decimals() < 6 ?
