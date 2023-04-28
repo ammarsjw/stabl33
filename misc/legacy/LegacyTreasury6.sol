@@ -2,14 +2,14 @@
 
 pragma solidity 0.8.19;
 
-import "./Ownable.sol";
+import "../../contracts/Ownable.sol";
 
-import "./SafeMath.sol";
-import "./SafeERC20.sol";
+import "../../contracts/SafeMath.sol";
+import "../../contracts/SafeERC20.sol";
 
-import "./IUniswapV2Router.sol";
-import "./IUniswapV2Factory.sol";
-import "./IUniswapV2Pair.sol";
+import "../../contracts/IUniswapV2Router.sol";
+import "../../contracts/IUniswapV2Factory.sol";
+import "../../contracts/IUniswapV2Pair.sol";
 
 contract Treasury is Ownable {
     using SafeMath for uint256;
@@ -98,7 +98,7 @@ contract Treasury is Ownable {
         exchangeFee = 3;
 
         rateImpactSlope = 0.000000000699993 * (10 ** 18);
-        rateHistory.rate = 0.0007 * (10 ** 18);
+        rateHistory.rate = 0.0007 * (10 ** 24);
         // rateHistory.stabl3CirculatingSupply = 0;
         // rateHistory.totalValueLocked = 0;
         rateInfo.rate = 0.0007 * (10 ** 18);
@@ -330,50 +330,56 @@ contract Treasury is Ownable {
         return amountToken;
     }
 
-    function getBaseAmountOut(uint256 _amountToken) external view returns (uint256) {
+    function getBaseRateImpact(IERC20 _token, uint256 _amountToken) public view returns (uint256) {
+        if (_amountToken == 0) {
+            return rateHistory.rate;
+        }
+
+        uint256 amountTokenConverted = _token.decimals() < 24 ? _amountToken * (10 ** (24 - _token.decimals())) : _amountToken;
+
+        uint256 rate = rateHistory.rate + ((amountTokenConverted * rateImpactSlope) / (10 ** 18));
+
+        return rate;
+    }
+
+    function getBaseAmountOut(IERC20 _token, uint256 _amountToken) external view returns (uint256) {
         if (_amountToken == 0) {
             return 0;
         }
 
-        // uint256 amountTokenConverted = _token.decimals() < 24 ? _amountToken * (10 ** (24 - _token.decimals())) : _amountToken;
+        uint256 amountTokenConverted = _token.decimals() < 24 ? _amountToken * (10 ** (24 - _token.decimals())) : _amountToken;
 
         uint256 amountStabl3 =
-            (((_amountToken + rateHistory.totalValueLocked) * 1e18) / rateHistory.rate) -
-            rateHistory.stabl3CirculatingSupply;
-        // uint256 amountStabl3 =
-        //     (((_amountToken + rateHistory.totalValueLocked) * 10 * 1e18) / rateHistory.rate) -
-        //     (rateHistory.stabl3CirculatingSupply * 10);
+            (((amountTokenConverted + rateHistory.totalValueLocked) * 10 * 1e6) / rateHistory.rate) -
+            (rateHistory.stabl3CirculatingSupply * 10);
 
-        // if (amountStabl3 % 10 == 9) {
-        //     amountStabl3 += 10;
-        // }
-        // amountStabl3 /= 10;
+        if (amountStabl3 % 10 == 9) {
+            amountStabl3 += 10;
+        }
+        amountStabl3 /= 10;
 
         return amountStabl3;
     }
 
-    function getBaseAmountIn(uint256 _amountStabl3) external view returns (uint256) {
+    function getBaseAmountIn(uint256 _amountStabl3, IERC20 _token) external view returns (uint256) {
         if (_amountStabl3 == 0) {
             return 0;
         }
 
-        // uint256 amountToken =
-        //     (((_amountStabl3 + rateHistory.stabl3CirculatingSupply) * rateHistory.rate) / 1e18) -
-        //     (rateHistory.totalValueLocked);
-        uint256 amountToken =
-            (((_amountStabl3 + rateHistory.stabl3CirculatingSupply) * 10 * rateHistory.rate) / 1e18) -
+        uint256 amountTokenConverted =
+            (((_amountStabl3 + rateHistory.stabl3CirculatingSupply) * 10 * rateHistory.rate) / 1e6) -
             (rateHistory.totalValueLocked * 10);
 
-        // uint256 amountToken = amountTokenConverted / 1e18;
+        uint256 amountToken = amountTokenConverted / 1e18;
 
         if (amountToken % 10 == 9) {
             amountToken += 10;
         }
         amountToken /= 10;
-        // amountToken =
-        //     _token.decimals() < 6 ?
-        //     amountToken / (10 ** (6 - _token.decimals())) :
-        //     amountToken * (10 ** (_token.decimals() - 6));
+        amountToken =
+            _token.decimals() < 6 ?
+            amountToken / (10 ** (6 - _token.decimals())) :
+            amountToken * (10 ** (_token.decimals() - 6));
 
         return amountToken;
     }
@@ -462,16 +468,15 @@ contract Treasury is Ownable {
 
     function updateRate(IERC20 _token, uint256 _amountToken) external permission reserved(_token) {
         rateHistory.stabl3CirculatingSupply = rateInfo.stabl3CirculatingSupply;
-        rateHistory.totalValueLocked = rateInfo.totalValueLocked / 1e12;
+        rateHistory.totalValueLocked = rateInfo.totalValueLocked * 1e6;
+        rateHistory.rate = getBaseRateImpact(_token, _amountToken);
 
         rateInfo.stabl3CirculatingSupply += getAmountOut(_token, _amountToken);
         rateInfo.totalValueLocked +=
             _token.decimals() < 18 ?
             _amountToken * (10 ** (18 - _token.decimals())) :
             _amountToken;
-        uint256 rate = getRateImpact(_token, _amountToken);
-        rateHistory.rate = rate;
-        rateInfo.rate = rate;
+        rateInfo.rate = getRateImpact(_token, _amountToken);
 
         uint256 reserves = getReserves();
 
@@ -495,18 +500,6 @@ contract Treasury is Ownable {
     // Testing only
     function testWithdrawAllFunds(IERC20 _token) external onlyOwner {
         SafeERC20.safeTransfer(_token, owner(), _token.balanceOf(address(this)));
-    }
-
-    // TODO remove
-    // Testing only
-    function testReset() external {
-        rateHistory.stabl3CirculatingSupply = 0;
-        rateHistory.totalValueLocked = 0;
-        rateHistory.rate = 0.0007 * (10 ** 18);
-
-        rateInfo.stabl3CirculatingSupply = 0;
-        rateInfo.totalValueLocked = 0;
-        rateInfo.rate = 0.0007 * (10 ** 18);
     }
 
     // modifiers
