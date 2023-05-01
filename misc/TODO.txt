@@ -67,3 +67,9 @@ Borrowing:
 Staking:
 - Should staking only tokens such as LP tokens be available to stakers (if any are in the ROI Pool) as a form of reward
 - If not, then I would prefer to send all the LP tokens in 1 place (preferably the treasury) and not cut any fees, and if fees are cut than all fees should go to the HQ Wallet.
+
+TODO:
+- Fix "getBaseAmount" functions for no round up and getting as close a value to intended result as possible
+- Fix "getBaseAmount" functions for getting the same result from both in and out
+- Fix "getBaseAmount" functions for the above condition after more than 1 updateRate transaction
+- Borrowing with "getBaseAmount" functions
