@@ -3,7 +3,7 @@ Questions:
 Q. Do staking and lending share the same pool (current/max pool)
 A. Yes. For current pool exceeds checker we add both pools and compare it with max pool
 Q. How to calculate APY? (refer to excel sheet maybe)
-A. ROI Pool / ((Staking + Lending(minus the xy% portion for purchasing STABL3))
+A. ROI Pool / ((Staking + Lending(minus the xy% portion for purchasing STABL3)))
    So basically, everything what is in the ROI Pool is distributed based on all supplied liquidity from Lenders and Stakers over one year.
 Q. 5% tax when unstaking or what?
 A. Distribute stake/lend amounts to all 3 but when unstaking take stakedAmount from Treasury and rewardAmount from ROI and cut 5% from stakedAmount
@@ -69,7 +69,7 @@ Staking:
 - If not, then I would prefer to send all the LP tokens in 1 place (preferably the treasury) and not cut any fees, and if fees are cut than all fees should go to the HQ Wallet.
 
 TODO:
-- Fix "getBaseAmount" functions for no round up and getting as close a value to intended result as possible
 - Fix "getBaseAmount" functions for getting the same result from both in and out
 - Fix "getBaseAmount" functions for the above condition after more than 1 updateRate transaction
+- Can fix "getBaseAmount" functions for no round up and getting as close a value to intended result as possible?
 - Borrowing with "getBaseAmount" functions
