@@ -196,20 +196,16 @@ contract Stabl3Borrowing is Ownable {
     function borrow(uint256 _amountStabl3) external borrowActive {
         require(_amountStabl3 > 0, "Stabl3Borrowing: Insufficient amount");
 
-        uint256 amountUCD = TREASURY.getAmountIn(_amountStabl3, UCD);
-        uint256 amountStabl3ToConsider = TREASURY.getAmountOut(UCD, amountUCD);
+        uint256 amountUCD = TREASURY.getBaseAmountIn(_amountStabl3);
 
         uint256 fee;
         uint256 stabl3Fee;
         if (INVESTORS.balanceOf(msg.sender) == 0) {
             fee = amountUCD.mul(borrowFee).div(1000);
             stabl3Fee = TREASURY.getAmountOut(UCD, fee);
-            if (_amountStabl3 > amountStabl3ToConsider) {
-                stabl3Fee += _amountStabl3 - amountStabl3ToConsider;
-            }
         }
         uint256 amountUCDWithFee = amountUCD - fee;
-        uint256 amountStabl3WithFee = amountStabl3ToConsider - stabl3Fee;
+        uint256 amountStabl3WithFee = _amountStabl3 - stabl3Fee;
 
         (uint256 availableUCD, , ) = getReservesUCD();
         require(amountUCDWithFee <= availableUCD, "Stabl3Borrowing: Insufficient available UCD");
@@ -235,18 +231,18 @@ contract Stabl3Borrowing is Ownable {
 
         SafeERC20.safeTransferFrom(reservedToken, address(TREASURY), address(ROI), fee);
 
-        STABL3.transferFrom(msg.sender, address(TREASURY), amountStabl3WithFee + stabl3Fee);
+        STABL3.transferFrom(msg.sender, address(TREASURY), _amountStabl3);
 
         UCD.mint(msg.sender, amountUCDWithFee);
 
         TREASURY.updatePool(UCD_BORROW_POOL, UCD, amountUCDWithFee, 0, 0, true);
-        TREASURY.updatePool(STABL3_COLLATERAL_POOL, STABL3, amountStabl3WithFee + stabl3Fee, 0, 0, true);
+        TREASURY.updatePool(STABL3_COLLATERAL_POOL, STABL3, _amountStabl3, 0, 0, true);
 
-        TREASURY.updateStabl3CirculatingSupply(amountStabl3WithFee + stabl3Fee, false);
+        TREASURY.updateStabl3CirculatingSupply(_amountStabl3, false);
 
         ROI.updateAPR();
 
-        emit Borrow(msg.sender, amountUCDWithFee, amountStabl3WithFee + stabl3Fee, TREASURY.getRate(), block.timestamp);
+        emit Borrow(msg.sender, amountUCDWithFee, _amountStabl3, TREASURY.getRate(), block.timestamp);
     }
 
     /**
@@ -257,7 +253,7 @@ contract Stabl3Borrowing is Ownable {
         require(_amountUCD > 0, "Stabl3Borrowing: Insufficient amount");
         require(getBorrowing.amountUCD > 0, "Stabl3Borrowing: No debt to payback");
 
-        uint256 amountStabl3 = TREASURY.getAmountOut(UCD, _amountUCD);
+        uint256 amountStabl3 = TREASURY.getBaseAmountOut(_amountUCD);
 
         uint256 amountStabl3ToUncollateralize = (getBorrowing.amountStabl3 * _amountUCD) / getBorrowing.amountUCD;
         uint256 amountFeeToUncollateralize = (getBorrowing.amountFee * _amountUCD) / getBorrowing.amountUCD;
@@ -303,7 +299,7 @@ contract Stabl3Borrowing is Ownable {
         require(_amountUCD > 0, "Stabl3Borrowing: Insufficient amount");
         require(getBorrowing.amountUCD > 0, "Stabl3Borrowing: No debt to payback");
 
-        uint256 amountStabl3 = TREASURY.getAmountOut(UCD, _amountUCD);
+        uint256 amountStabl3 = TREASURY.getBaseAmountOut(_amountUCD);
 
         uint256 amountStabl3ToUncollateralize = (getBorrowing.amountStabl3 * _amountUCD) / getBorrowing.amountUCD;
         uint256 amountFeeToUncollateralize = (getBorrowing.amountFee * _amountUCD) / getBorrowing.amountUCD;
