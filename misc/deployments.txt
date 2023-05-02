@@ -1,19 +1,19 @@
-(Graph) Treasury deployed to: 0x72C8761AE08D57Ef8c6b23ee559ABdDfd5E97E8A
-at block number: 34924920
-(Graph) ROI deployed to: 0x64c0aFa7b3Fe5d7CA8f73d98241f138Cec4381Da
-at block number: 34924926
-Stabl3PublicSale deployed to: 0xb7Fb96C0f2238a3A22bF2a843C9f941B7D225818
-at block number: 34924930
-(Graph) Stabl3Staking deployed to: 0x8e55B7295DCCC9A5B491234620C97fFB6535dF60
-at block number: 34924937
-(Graph) Stabl3Borrowing deployed to: 0x84dDdc6C52Cda4A83D72dBb327B61968eB11778D
-at block number: 34924942
-(Graph) Stabl3Bonding deployed to: 0xDc0bB06740e6C1f5bFa0a9220bbCf2292727Bbdb
-at block number: 34924947
+(Graph) Treasury deployed to: 0x032112a548B3b3Dde1B1C2a1928b290831353376
+at block number: 35083905
+(Graph) ROI deployed to: 0xCa883ca3Cb33342e83215FD6246b0e2A2fbe6d2b
+at block number: 35083910
+Stabl3PublicSale deployed to: 0x749d437Ed2D6503D22Eb92dD23D83f2b73A4746B
+at block number: 35083915
+(Graph) Stabl3Staking deployed to: 0xc0442ba89cdFBEcc4FB8089b689d917aB925405b
+at block number: 35083919
+(Graph) Stabl3Borrowing deployed to: 0x26A213CD4802Eae0c2E414AD18BC5239CbAd984e
+at block number: 35083923
+(Graph) Stabl3Bonding deployed to: 0x76b0f62dD9D456cdd095fAc383A97cAdD6848a00
+at block number: 35083928
 
-Treasury - https://mumbai.polygonscan.com/address/0x72C8761AE08D57Ef8c6b23ee559ABdDfd5E97E8A#code
-ROI - https://mumbai.polygonscan.com/address/0x64c0aFa7b3Fe5d7CA8f73d98241f138Cec4381Da#code
-Stabl3PublicSale - https://mumbai.polygonscan.com/address/0xb7Fb96C0f2238a3A22bF2a843C9f941B7D225818#code
-Stabl3Staking - https://mumbai.polygonscan.com/address/0x8e55B7295DCCC9A5B491234620C97fFB6535dF60#code
-Stabl3Borrowing - https://mumbai.polygonscan.com/address/0x84dDdc6C52Cda4A83D72dBb327B61968eB11778D#code
-Stabl3Bonding - https://mumbai.polygonscan.com/address/0xDc0bB06740e6C1f5bFa0a9220bbCf2292727Bbdb#code
+Treasury - https://mumbai.polygonscan.com/address/0x032112a548B3b3Dde1B1C2a1928b290831353376#code
+ROI - https://mumbai.polygonscan.com/address/0xCa883ca3Cb33342e83215FD6246b0e2A2fbe6d2b#code
+Stabl3PublicSale - https://mumbai.polygonscan.com/address/0x749d437Ed2D6503D22Eb92dD23D83f2b73A4746B#code
+Stabl3Staking - https://mumbai.polygonscan.com/address/0xc0442ba89cdFBEcc4FB8089b689d917aB925405b#code
+Stabl3Borrowing - https://mumbai.polygonscan.com/address/0x26A213CD4802Eae0c2E414AD18BC5239CbAd984e#code
+Stabl3Bonding - https://mumbai.polygonscan.com/address/0x76b0f62dD9D456cdd095fAc383A97cAdD6848a00#code
