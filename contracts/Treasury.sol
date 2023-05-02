@@ -499,15 +499,15 @@ contract Treasury is Ownable {
 
     // TODO remove
     // Testing only
-    function testReset() external {
-        rateHistory.stabl3CirculatingSupply = 0;
-        rateHistory.totalValueLocked = 0;
-        rateHistory.rate = 0.0007 * (10 ** 18);
+    // function testReset() external {
+    //     rateHistory.stabl3CirculatingSupply = 0;
+    //     rateHistory.totalValueLocked = 0;
+    //     rateHistory.rate = 0.0007 * (10 ** 18);
 
-        rateInfo.stabl3CirculatingSupply = 0;
-        rateInfo.totalValueLocked = 0;
-        rateInfo.rate = 0.0007 * (10 ** 18);
-    }
+    //     rateInfo.stabl3CirculatingSupply = 0;
+    //     rateInfo.totalValueLocked = 0;
+    //     rateInfo.rate = 0.0007 * (10 ** 18);
+    // }
 
     // modifiers
 
