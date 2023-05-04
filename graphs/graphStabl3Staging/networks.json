@@ -1,19 +1,19 @@
 {
   "mumbai": {
     "Treasury": {
-      "address": "0x032112a548B3b3Dde1B1C2a1928b290831353376"
+      "address": "0x2922Cd77BdABf2f47aEad5012265E338B542Fe36"
     },
     "ROI": {
-      "address": "0xCa883ca3Cb33342e83215FD6246b0e2A2fbe6d2b"
+      "address": "0x157ce9D93A9dE2a479dfa11eC05318e25AD2d339"
     },
     "Stabl3Staking": {
-      "address": "0xc0442ba89cdFBEcc4FB8089b689d917aB925405b"
+      "address": "0x5f70b098b25D7534ED76ee5fEfFa86E2A0eb8254"
     },
     "Stabl3Borrowing": {
-      "address": "0x26A213CD4802Eae0c2E414AD18BC5239CbAd984e"
+      "address": "0x84BDB35d603a3D84299F50CbE206a86Ea056a4B8"
     },
     "Stabl3Bonding": {
-      "address": "0x76b0f62dD9D456cdd095fAc383A97cAdD6848a00"
+      "address": "0x225e1Fc9330Efd3bD0B1B6c05078A8eD49d1d3CA"
     }
   }
 }

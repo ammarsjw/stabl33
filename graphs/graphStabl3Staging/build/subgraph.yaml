@@ -6,9 +6,9 @@ dataSources:
     name: Treasury
     network: mumbai
     source:
-      address: "0x032112a548B3b3Dde1B1C2a1928b290831353376"
+      address: "0x2922Cd77BdABf2f47aEad5012265E338B542Fe36"
       abi: Treasury
-      startBlock: 35083905
+      startBlock: 35169408
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -32,9 +32,9 @@ dataSources:
     name: ROI
     network: mumbai
     source:
-      address: "0xCa883ca3Cb33342e83215FD6246b0e2A2fbe6d2b"
+      address: "0x157ce9D93A9dE2a479dfa11eC05318e25AD2d339"
       abi: ROI
-      startBlock: 35083910
+      startBlock: 35169415
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -52,9 +52,9 @@ dataSources:
     name: Stabl3Staking
     network: mumbai
     source:
-      address: "0xc0442ba89cdFBEcc4FB8089b689d917aB925405b"
+      address: "0x5f70b098b25D7534ED76ee5fEfFa86E2A0eb8254"
       abi: Stabl3Staking
-      startBlock: 35083919
+      startBlock: 35169425
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -82,9 +82,9 @@ dataSources:
     name: Stabl3Borrowing
     network: mumbai
     source:
-      address: "0x26A213CD4802Eae0c2E414AD18BC5239CbAd984e"
+      address: "0x84BDB35d603a3D84299F50CbE206a86Ea056a4B8"
       abi: Stabl3Borrowing
-      startBlock: 35083923
+      startBlock: 35169429
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -108,9 +108,9 @@ dataSources:
     name: Stabl3Bonding
     network: mumbai
     source:
-      address: "0x76b0f62dD9D456cdd095fAc383A97cAdD6848a00"
+      address: "0x225e1Fc9330Efd3bD0B1B6c05078A8eD49d1d3CA"
       abi: Stabl3Bonding
-      startBlock: 35083928
+      startBlock: 35169435
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
