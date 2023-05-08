@@ -335,19 +335,11 @@ contract Treasury is Ownable {
             return 0;
         }
 
-        // uint256 amountTokenConverted = _token.decimals() < 24 ? _amountToken * (10 ** (24 - _token.decimals())) : _amountToken;
-
-        uint256 amountStabl3 =
-            (((_amountToken + rateHistory.totalValueLocked) * 1e18) / rateHistory.rate) -
-            rateHistory.stabl3CirculatingSupply;
-        // uint256 amountStabl3 =
-        //     (((_amountToken + rateHistory.totalValueLocked) * 10 * 1e18) / rateHistory.rate) -
-        //     (rateHistory.stabl3CirculatingSupply * 10);
-
-        // if (amountStabl3 % 10 == 9) {
-        //     amountStabl3 += 10;
-        // }
-        // amountStabl3 /= 10;
+        (uint256 circulatingSupply, uint256 valueLocked) =
+            _amountToken * 1e12 > rateHistory.totalValueLocked ?
+            (rateInfo.stabl3CirculatingSupply, rateInfo.totalValueLocked) :
+            (rateHistory.stabl3CirculatingSupply, rateHistory.totalValueLocked);
+        uint256 amountStabl3 = (_amountToken * circulatingSupply * 1e12) / valueLocked;
 
         return amountStabl3;
     }
@@ -357,23 +349,11 @@ contract Treasury is Ownable {
             return 0;
         }
 
-        uint256 amountToken =
-            (((_amountStabl3 + rateHistory.stabl3CirculatingSupply) * rateHistory.rate) / 1e18) -
-            (rateHistory.totalValueLocked);
-        // uint256 amountToken =
-        //     (((_amountStabl3 + rateHistory.stabl3CirculatingSupply) * 10 * rateHistory.rate) / 1e18) -
-        //     (rateHistory.totalValueLocked * 10);
-
-        // uint256 amountToken = amountTokenConverted / 1e18;
-
-        // if (amountToken % 10 == 9) {
-        //     amountToken += 10;
-        // }
-        // amountToken /= 10;
-        // amountToken =
-        //     _token.decimals() < 6 ?
-        //     amountToken / (10 ** (6 - _token.decimals())) :
-        //     amountToken * (10 ** (_token.decimals() - 6));
+        (uint256 valueLocked, uint256 circulatingSupply) =
+            _amountStabl3 > rateHistory.stabl3CirculatingSupply ?
+            (rateInfo.totalValueLocked, rateInfo.stabl3CirculatingSupply) :
+            (rateHistory.totalValueLocked, rateHistory.stabl3CirculatingSupply);
+        uint256 amountToken = (_amountStabl3 * valueLocked) / (circulatingSupply * 1e12);
 
         return amountToken;
     }
@@ -461,14 +441,12 @@ contract Treasury is Ownable {
     }
 
     function updateRate(IERC20 _token, uint256 _amountToken) external permission reserved(_token) {
-        rateHistory.stabl3CirculatingSupply = rateInfo.stabl3CirculatingSupply;
-        rateHistory.totalValueLocked = rateInfo.totalValueLocked / 1e12;
-
-        rateInfo.stabl3CirculatingSupply += getAmountOut(_token, _amountToken);
-        rateInfo.totalValueLocked +=
-            _token.decimals() < 18 ?
-            _amountToken * (10 ** (18 - _token.decimals())) :
-            _amountToken;
+        uint256 amountStabl3 = getAmountOut(_token, _amountToken);
+        rateHistory.stabl3CirculatingSupply = amountStabl3;
+        rateInfo.stabl3CirculatingSupply += amountStabl3;
+        uint256 amountTokenConverted = _token.decimals() < 18 ? _amountToken * (10 ** (18 - _token.decimals())) : _amountToken;
+        rateHistory.totalValueLocked = amountTokenConverted;
+        rateInfo.totalValueLocked += amountTokenConverted;
         uint256 rate = getRateImpact(_token, _amountToken);
         rateHistory.rate = rate;
         rateInfo.rate = rate;
