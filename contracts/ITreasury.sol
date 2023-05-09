@@ -61,5 +61,7 @@ interface ITreasury {
 
     function updateStabl3CirculatingSupply(uint256 _amountStabl3, bool _isIncrease) external;
 
+    function updateRateHistoryTotal() external;
+
     function updateRate(IERC20 _token, uint256 _amountToken) external;
 }

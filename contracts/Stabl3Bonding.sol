@@ -265,6 +265,7 @@ contract Stabl3Bonding is Ownable {
 
         record.totalAmountToken += amountTokenConverted;
 
+        // TREASURY.updateRateHistoryTotal();
         TREASURY.updateRate(_token, _amountToken);
 
         ROI.updateAPR();
@@ -331,6 +332,7 @@ contract Stabl3Bonding is Ownable {
 
         TREASURY.updatePool(STABL3_RESERVED_POOL, STABL3, bonding.amountStabl3, 0, 0, false);
         TREASURY.updateStabl3CirculatingSupply(bonding.amountStabl3, true);
+        TREASURY.updateRateHistoryTotal();
 
         emit ClaimedBond(
             bonding.user,

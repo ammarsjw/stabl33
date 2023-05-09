@@ -434,12 +434,16 @@ contract Treasury is Ownable {
         else {
             _stabl3CirculatingSupply -= _amountStabl3;
         }
+    }
 
+    function updateRateHistoryTotal() external permission {
         uint256 reserves = getReserves();
 
         uint256 totalValueLocked = getTotalValueLocked();
+        rateHistory.totalValue = totalValueLocked;
 
         uint256 circulatingSupply = stabl3CirculatingSupply();
+        rateHistory.totalStabl3 = circulatingSupply;
 
         emit Rate(rateInfo.rate, reserves, totalValueLocked, circulatingSupply, block.timestamp);
     }

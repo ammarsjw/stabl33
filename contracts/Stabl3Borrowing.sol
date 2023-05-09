@@ -237,8 +237,8 @@ contract Stabl3Borrowing is Ownable {
 
         TREASURY.updatePool(UCD_BORROW_POOL, UCD, amountUCDWithFee, 0, 0, true);
         TREASURY.updatePool(STABL3_COLLATERAL_POOL, STABL3, _amountStabl3, 0, 0, true);
-
         TREASURY.updateStabl3CirculatingSupply(_amountStabl3, false);
+        TREASURY.updateRateHistoryTotal();
 
         ROI.updateAPR();
 
@@ -288,6 +288,7 @@ contract Stabl3Borrowing is Ownable {
         );
 
         TREASURY.updateStabl3CirculatingSupply(amountStabl3ToUncollateralize, true);
+        TREASURY.updateRateHistoryTotal();
 
         emit Payback(msg.sender, _amountUCD, amountStabl3, TREASURY.getRate(), block.timestamp);
     }
@@ -363,6 +364,7 @@ contract Stabl3Borrowing is Ownable {
 
         TREASURY.updatePool(UCD_TO_TOKEN_EXCHANGE_POOL, _exchangingToken, amountExchangingTokenWithFee, 0, 0, true);
         TREASURY.updatePool(UCD_TO_TOKEN_EXCHANGE_POOL, UCD, _amountUCD, 0, 0, true);
+        TREASURY.updateRateHistoryTotal();
 
         ROI.updateAPR();
 

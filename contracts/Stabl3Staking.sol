@@ -362,6 +362,8 @@ contract Stabl3Staking is Ownable, IStabl3StakingStruct {
         uint256 amountTokenConverted = _token.decimals() < 18 ? _amountToken * (10 ** (18 - _token.decimals())) : _amountToken;
 
         TREASURY.updatePool(STAKING_TYPE_POOL + _stakingType, IERC20(address(0)), amountTokenConverted, 0, 0, true);
+        TREASURY.updateRateHistoryTotal();
+
         record.totalAmountTokenStaked += amountTokenConverted;
 
         emit Stake(
@@ -454,6 +456,8 @@ contract Stabl3Staking is Ownable, IStabl3StakingStruct {
                 withdrawnROIReserves += rewardConverted;
             }
 
+            TREASURY.updateRateHistoryTotal();
+
             ROI.updateAPR();
 
             staking.timeWeightedAPRLast = ROI.timeWeightedAPR();
@@ -508,6 +512,7 @@ contract Stabl3Staking is Ownable, IStabl3StakingStruct {
 
             TREASURY.updatePool(STABL3_RESERVED_POOL, STABL3, amountStabl3Lending, 0, 0, false);
             TREASURY.updateStabl3CirculatingSupply(amountStabl3Lending, true);
+            TREASURY.updateRateHistoryTotal();
 
             emit ClaimedLendingStabl3(
                 staking.user,
@@ -567,6 +572,8 @@ contract Stabl3Staking is Ownable, IStabl3StakingStruct {
 
             TREASURY.updatePool(STAKING_TYPE_POOL + staking.stakingType, IERC20(address(0)), amountTokenConverted, 0, 0, false);
         }
+
+        TREASURY.updateRateHistoryTotal();
 
         ROI.updateAPR();
 

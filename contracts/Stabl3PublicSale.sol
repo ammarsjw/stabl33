@@ -171,6 +171,7 @@ contract Stabl3PublicSale is Ownable {
         TREASURY.updatePool(BUY_POOL, _token, amountTreasury, amountROI, amountHQ, true);
         TREASURY.updateStabl3CirculatingSupply(amountStabl3, true);
 
+        // TREASURY.updateRateHistoryTotal();
         TREASURY.updateRate(_token, _amountToken);
 
         ROI.updateAPR();
@@ -260,8 +261,6 @@ contract Stabl3PublicSale is Ownable {
         TREASURY.updatePool(BUY_POOL, _token, 0, fee, 0, true);
         TREASURY.updateStabl3CirculatingSupply(amountStabl3, true);
 
-        TREASURY.updateRate(_token, fee);
-
         // exchange
         SafeERC20.safeTransferFrom(_exchangingToken, address(TREASURY), msg.sender, amountExchangingToken);
 
@@ -269,6 +268,10 @@ contract Stabl3PublicSale is Ownable {
 
         TREASURY.updatePool(BUY_POOL, _exchangingToken, amountExchangingToken, 0, 0, false);
         TREASURY.updatePool(BUY_POOL, _token, amountTokenWithFee, 0, 0, true);
+
+        // generic
+        // TREASURY.updateRateHistoryTotal();
+        TREASURY.updateRate(_token, fee);
 
         ROI.updateAPR();
 
