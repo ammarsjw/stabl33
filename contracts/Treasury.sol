@@ -30,7 +30,7 @@ contract Treasury is Ownable {
     uint256 public exchangeFee;
 
     uint256 private immutable rateImpactSlope;
-    RateInfo public rateHistory;
+    RateHistory public rateHistory;
     RateInfo public rateInfo;
 
     uint8[] public lockedStabl3Pools;
@@ -41,6 +41,13 @@ contract Treasury is Ownable {
         uint256 rate;
         uint256 totalValueLocked;
         uint256 stabl3CirculatingSupply;
+    }
+
+    struct RateHistory {
+        uint256 singleValue;
+        uint256 totalValue;
+        uint256 singleStabl3;
+        uint256 totalStabl3;
     }
 
     // storage
@@ -98,9 +105,6 @@ contract Treasury is Ownable {
         exchangeFee = 3;
 
         rateImpactSlope = 0.000000000699993 * (10 ** 18);
-        rateHistory.rate = 0.0007 * (10 ** 18);
-        // rateHistory.stabl3CirculatingSupply = 0;
-        // rateHistory.totalValueLocked = 0;
         rateInfo.rate = 0.0007 * (10 ** 18);
         // rateInfo.stabl3CirculatingSupply = 0;
         // rateInfo.totalValueLocked = 0;
@@ -336,9 +340,9 @@ contract Treasury is Ownable {
         }
 
         (uint256 circulatingSupply, uint256 valueLocked) =
-            _amountToken * 1e12 > rateHistory.totalValueLocked ?
-            (rateInfo.stabl3CirculatingSupply, rateInfo.totalValueLocked) :
-            (rateHistory.stabl3CirculatingSupply, rateHistory.totalValueLocked);
+            _amountToken * 1e12 > rateHistory.singleValue ?
+            (rateHistory.totalStabl3, rateHistory.totalValue) :
+            (rateHistory.singleStabl3, rateHistory.singleValue);
         uint256 amountStabl3 = (_amountToken * circulatingSupply * 1e12) / valueLocked;
 
         return amountStabl3;
@@ -350,9 +354,9 @@ contract Treasury is Ownable {
         }
 
         (uint256 valueLocked, uint256 circulatingSupply) =
-            _amountStabl3 > rateHistory.stabl3CirculatingSupply ?
-            (rateInfo.totalValueLocked, rateInfo.stabl3CirculatingSupply) :
-            (rateHistory.totalValueLocked, rateHistory.stabl3CirculatingSupply);
+            _amountStabl3 > rateHistory.singleStabl3 ?
+            (rateHistory.totalValue, rateHistory.totalStabl3) :
+            (rateHistory.singleValue, rateHistory.singleStabl3);
         uint256 amountToken = (_amountStabl3 * valueLocked) / (circulatingSupply * 1e12);
 
         return amountToken;
@@ -441,21 +445,22 @@ contract Treasury is Ownable {
     }
 
     function updateRate(IERC20 _token, uint256 _amountToken) external permission reserved(_token) {
-        uint256 amountStabl3 = getAmountOut(_token, _amountToken);
-        rateHistory.stabl3CirculatingSupply = amountStabl3;
-        rateInfo.stabl3CirculatingSupply += amountStabl3;
         uint256 amountTokenConverted = _token.decimals() < 18 ? _amountToken * (10 ** (18 - _token.decimals())) : _amountToken;
-        rateHistory.totalValueLocked = amountTokenConverted;
+        uint256 amountStabl3 = getAmountOut(_token, _amountToken);
+
+        rateInfo.rate = getRateImpact(_token, _amountToken);
         rateInfo.totalValueLocked += amountTokenConverted;
-        uint256 rate = getRateImpact(_token, _amountToken);
-        rateHistory.rate = rate;
-        rateInfo.rate = rate;
+        rateInfo.stabl3CirculatingSupply += amountStabl3;
 
         uint256 reserves = getReserves();
 
         uint256 totalValueLocked = getTotalValueLocked();
+        rateHistory.singleValue = amountTokenConverted;
+        rateHistory.totalValue = totalValueLocked;
 
         uint256 circulatingSupply = stabl3CirculatingSupply();
+        rateHistory.singleStabl3 = amountStabl3;
+        rateHistory.totalStabl3 = circulatingSupply;
 
         emit Rate(rateInfo.rate, reserves, totalValueLocked, circulatingSupply, block.timestamp);
     }
