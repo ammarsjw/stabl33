@@ -11,7 +11,7 @@ import "../contracts/ROI.sol";
 import "../contracts/Stabl3PublicSale.sol";
 import "../contracts/Stabl3Staking.sol";
 
-contract FirstTest is Test, Constants {
+contract FirstRoundTest is Test, Constants {
 
     Treasury treasury;
     ROI roi;
@@ -54,7 +54,7 @@ contract FirstTest is Test, Constants {
         vm.stopPrank();
     }
 
-    function test_MarketCap() external {
+    function test_Only_Investments() external {
         dai.approve(address(publicSale), type(uint256).max);
 
         for (uint256 i = 0 ; i < 100 ; i++) {
@@ -65,14 +65,18 @@ contract FirstTest is Test, Constants {
                 "Price      :",
                 treasury.getRate()
             );
-            // console.log(treasury.getReserves());
-            // console.log(treasury.getTotalValueLocked());
+            console.log(
+                "TVL        :",
+                treasury.getTotalValueLocked()
+            );
             console.log(
                 "Market Cap :",
-                // treasury.getBaseAmountIn(stabl3.balanceOf(address(this))),
                 treasury.getBaseAmountIn(treasury.stabl3CirculatingSupply())
             );
             i + 1 < 10 ? console.log("-------------") : i + 1 < 100 ? console.log("--------------") : console.log("---------------");
         }
     }
+
+    // function test_Investments_Borrows() external {
+    // }
 }
