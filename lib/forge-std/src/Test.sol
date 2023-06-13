@@ -23,7 +23,7 @@ import {StdStyle} from "./StdStyle.sol";
 
 // 📦 BOILERPLATE
 import {TestBase} from "./Base.sol";
-import {DSTest} from "ds-test/test.sol";
+import {DSTest} from "../lib/ds-test/src/test.sol";
 
 // ⭐️ TEST
 abstract contract Test is DSTest, StdAssertions, StdChains, StdCheats, StdInvariant, StdUtils, TestBase {
