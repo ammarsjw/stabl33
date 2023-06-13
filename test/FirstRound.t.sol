@@ -67,7 +67,7 @@ contract FirstRoundTest is Test, Constants {
         vm.stopPrank();
     }
 
-    // function test_Only_Investments() external {
+    // function test_Invest_Basic() external {
     //     dai.approve(address(publicSale), type(uint256).max);
 
     //     for (uint256 i = 0 ; i < 100 ; i++) {
@@ -86,20 +86,42 @@ contract FirstRoundTest is Test, Constants {
     //     }
     // }
 
-    function test_Investments_Borrows() external {
+    // function test_Invest_Borrow() external {
+    //     dai.approve(address(publicSale), type(uint256).max);
+    //     stabl3.approve(address(borrowing), type(uint256).max);
+
+    //     for (uint256 i = 0 ; i < 5 ; i++) {
+    //         publicSale.buy(dai, firstHundredInvestments[i]);
+    //         // Only considering the part of the investment that does not go into the HQ wallet.
+    //         uint256 amountBorrow = ((firstHundredInvestments[i] * (1000 - 39)) / 1000) / 1e12;
+    //         // The given amount of Dollars is reduced with respect to the price and the amount of Stabl3 taken is kept the same.
+    //         // Hence causing a deterministic reduction of amount being paid back to the user.
+    //         uint256 amountBorrowStabl3 = treasury.getBaseAmountOut(amountBorrow);
+    //         uint256 balanceStabl3Before = stabl3.balanceOf(address(this));
+    //         borrowing.borrow(amountBorrow);
+    //         uint256 balanceStabl3After = stabl3.balanceOf(address(this));
+
+    //         console.log("-----", i + 1, "-----");
+    //         console.log("Borrow Stabl3 With Fee :", amountBorrowStabl3);
+    //         console.log("Delta Balance Stabl3   :", balanceStabl3Before - balanceStabl3After);
+    //         assertEq(amountBorrowStabl3, balanceStabl3Before - balanceStabl3After);
+    //         i + 1 < 10 ?
+    //             console.log("-------------") :
+    //             i + 1 < 100 ?
+    //                 console.log("--------------") :
+    //                 console.log("---------------");
+    //     }
+    // }
+
+    function test_Invest_Borrow_Payback() external {
         dai.approve(address(publicSale), type(uint256).max);
         stabl3.approve(address(borrowing), type(uint256).max);
 
         for (uint256 i = 0 ; i < 5 ; i++) {
             publicSale.buy(dai, firstHundredInvestments[i]);
-            // Only considering the part of the investment that does not go into the HQ wallet.
             uint256 amountBorrow = ((firstHundredInvestments[i] * (1000 - 39)) / 1000) / 1e12;
-            // The given amount of Dollars is reduced with respect to the price and the amount of Stabl3 taken is kept the same.
-            // Hence causing a deterministic reduction of amount being paid back to the user.
-            uint256 amountBorrowStabl3 = treasury.getBaseAmountOut(amountBorrow);
-            uint256 balanceStabl3Before = stabl3.balanceOf(address(this));
             borrowing.borrow(amountBorrow);
-            uint256 balanceStabl3After = stabl3.balanceOf(address(this));
+            uint256 amountPayback = ucd.balanceOf(address(this));
 
             console.log("-----", i + 1, "-----");
             console.log("Borrow Stabl3 With Fee :", amountBorrowStabl3);
