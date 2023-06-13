@@ -480,7 +480,7 @@ contract Treasury is Ownable {
 
     // TODO remove
     // Testing only
-    function testWithdrawAllFunds(IERC20 _token) external onlyOwner {
+    function temp_WithdrawAllFunds(IERC20 _token) external onlyOwner {
         SafeERC20.safeTransfer(_token, owner(), _token.balanceOf(address(this)));
     }
 
