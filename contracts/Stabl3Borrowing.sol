@@ -183,6 +183,7 @@ contract Stabl3Borrowing is Ownable {
         availableUCD /= 10 ** (18 - UCD.decimals());
         uint256 ucdTotalSupply = UCD.totalSupply();
         availableUCD = availableUCD.safeSub(ucdTotalSupply);
+        availableUCD = (availableUCD * (1000 - borrowFee)) / 1000;
 
         borrowedUCD = ucdTotalSupply;
 
@@ -193,19 +194,19 @@ contract Stabl3Borrowing is Ownable {
      * @dev This function allows users to deposit STABL3 and to receive UCD at current protocol rates
      * @dev Fees are cut in the form of stablecoins by reducing amount of UCD
      */
-    function borrow(uint256 _amountStabl3) external borrowActive {
-        require(_amountStabl3 > 0, "Stabl3Borrowing: Insufficient amount");
+    function borrow(uint256 _amount) external borrowActive {
+        require(_amount > 0, "Stabl3Borrowing: Insufficient amount");
 
-        uint256 amountUCD = TREASURY.getBaseAmountIn(_amountStabl3);
+        uint256 amountStabl3 = TREASURY.getBaseAmountOut(_amount);
 
         uint256 fee;
         uint256 stabl3Fee;
         if (INVESTORS.balanceOf(msg.sender) == 0) {
-            fee = amountUCD.mul(borrowFee).div(1000);
-            stabl3Fee = TREASURY.getAmountOut(UCD, fee);
+            fee = _amount.mul(borrowFee).div(1000);
+            stabl3Fee = amountStabl3.mul(borrowFee).div(1000);
         }
-        uint256 amountUCDWithFee = amountUCD - fee;
-        uint256 amountStabl3WithFee = _amountStabl3 - stabl3Fee;
+        uint256 amountUCDWithFee = _amount - fee;
+        uint256 amountStabl3WithFee = amountStabl3 - stabl3Fee;
 
         (uint256 availableUCD, , ) = getReservesUCD();
         require(amountUCDWithFee <= availableUCD, "Stabl3Borrowing: Insufficient available UCD");
@@ -231,18 +232,18 @@ contract Stabl3Borrowing is Ownable {
 
         SafeERC20.safeTransferFrom(reservedToken, address(TREASURY), address(ROI), fee);
 
-        STABL3.transferFrom(msg.sender, address(TREASURY), _amountStabl3);
+        STABL3.transferFrom(msg.sender, address(TREASURY), amountStabl3);
 
         UCD.mint(msg.sender, amountUCDWithFee);
 
         TREASURY.updatePool(UCD_BORROW_POOL, UCD, amountUCDWithFee, 0, 0, true);
-        TREASURY.updatePool(STABL3_COLLATERAL_POOL, STABL3, _amountStabl3, 0, 0, true);
-        TREASURY.updateStabl3CirculatingSupply(_amountStabl3, false);
+        TREASURY.updatePool(STABL3_COLLATERAL_POOL, STABL3, amountStabl3, 0, 0, true);
+        TREASURY.updateStabl3CirculatingSupply(amountStabl3, false);
         TREASURY.updateRateHistoryTotal();
 
         ROI.updateAPR();
 
-        emit Borrow(msg.sender, amountUCDWithFee, _amountStabl3, TREASURY.getRate(), block.timestamp);
+        emit Borrow(msg.sender, amountUCDWithFee, amountStabl3, TREASURY.getRate(), block.timestamp);
     }
 
     /**

@@ -8,6 +8,8 @@ interface IUCD is IERC20 {
 
     function permitted(address contractAddress) external view returns (bool);
 
+    function updatePermission(address contractAddress, bool state) external;
+
     function mint(address account, uint256 amount) external returns (bool);
 
     function burnFrom(address account, uint256 amount) external returns (bool);
