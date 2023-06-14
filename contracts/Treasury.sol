@@ -44,9 +44,7 @@ contract Treasury is Ownable {
     }
 
     struct RateHistory {
-        uint256 singleValue;
         uint256 totalValue;
-        uint256 singleStabl3;
         uint256 totalStabl3;
     }
 
@@ -78,13 +76,7 @@ contract Treasury is Ownable {
 
     event UpdatedReservedToken(IERC20 token, bool state);
 
-    event Rate(
-        uint256 rate,
-        uint256 reserves,
-        uint256 totalValueLocked,
-        uint256 stabl3CirculatingSupply,
-        uint256 timestamp
-    );
+    event Rate(uint256 rate, uint256 reserves, uint256 totalValueLocked, uint256 stabl3CirculatingSupply, uint256 timestamp);
 
     // constructor
 
@@ -339,11 +331,7 @@ contract Treasury is Ownable {
             return 0;
         }
 
-        (uint256 circulatingSupply, uint256 valueLocked) =
-            _amountToken * 1e12 > rateHistory.singleValue ?
-            (rateHistory.totalStabl3, rateHistory.totalValue) :
-            (rateHistory.singleStabl3, rateHistory.singleValue);
-        uint256 amountStabl3 = (_amountToken * circulatingSupply * 1e12) / valueLocked;
+        uint256 amountStabl3 = (_amountToken * rateHistory.totalStabl3 * 1e12) / rateHistory.totalValue;
 
         return amountStabl3;
     }
@@ -353,11 +341,7 @@ contract Treasury is Ownable {
             return 0;
         }
 
-        (uint256 valueLocked, uint256 circulatingSupply) =
-            _amountStabl3 > rateHistory.singleStabl3 ?
-            (rateHistory.totalValue, rateHistory.totalStabl3) :
-            (rateHistory.singleValue, rateHistory.singleStabl3);
-        uint256 amountToken = (_amountStabl3 * valueLocked) / (circulatingSupply * 1e12);
+        uint256 amountToken = (_amountStabl3 * rateHistory.totalValue) / (rateHistory.totalStabl3 * 1e12);
 
         return amountToken;
     }
@@ -459,11 +443,9 @@ contract Treasury is Ownable {
         uint256 reserves = getReserves();
 
         uint256 totalValueLocked = getTotalValueLocked();
-        rateHistory.singleValue = amountTokenConverted;
         rateHistory.totalValue = totalValueLocked;
 
         uint256 circulatingSupply = stabl3CirculatingSupply();
-        rateHistory.singleStabl3 = amountStabl3;
         rateHistory.totalStabl3 = circulatingSupply;
 
         emit Rate(rateInfo.rate, reserves, totalValueLocked, circulatingSupply, block.timestamp);

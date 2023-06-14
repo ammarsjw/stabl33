@@ -200,13 +200,12 @@ contract Stabl3Borrowing is Ownable {
         uint256 amountStabl3 = TREASURY.getBaseAmountOut(_amount);
 
         uint256 fee;
-        uint256 stabl3Fee;
         if (INVESTORS.balanceOf(msg.sender) == 0) {
             fee = _amount.mul(borrowFee).div(1000);
-            stabl3Fee = amountStabl3.mul(borrowFee).div(1000);
         }
         uint256 amountUCDWithFee = _amount - fee;
-        uint256 amountStabl3WithFee = amountStabl3 - stabl3Fee;
+        uint256 amountStabl3WithFee = TREASURY.getBaseAmountOut(amountUCDWithFee);
+        uint256 stabl3Fee = amountStabl3 - amountStabl3WithFee;
 
         (uint256 availableUCD, , ) = getReservesUCD();
         require(amountUCDWithFee <= availableUCD, "Stabl3Borrowing: Insufficient available UCD");

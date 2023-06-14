@@ -14,6 +14,8 @@ import "../contracts/Treasury.sol";
 
 contract FirstRoundTest is Test, Constants {
 
+    uint256 numInvestments;
+
     Treasury treasury;
     ROI roi;
     address hq = 0x294d0487fdf7acecf342ae70AFc5549A6E90f3e0;
@@ -34,6 +36,7 @@ contract FirstRoundTest is Test, Constants {
     /// @dev Invoked before each test.
     function setUp() public {
         vm.deal(address(this), 1_000_000_000 * 1e18);
+        numInvestments = 5;
 
         treasury = new Treasury();
         address treasuryAddress = address(treasury);
@@ -67,66 +70,77 @@ contract FirstRoundTest is Test, Constants {
         vm.stopPrank();
     }
 
-    // function test_Invest_Basic() external {
-    //     dai.approve(address(publicSale), type(uint256).max);
+    function test_Invest_Basic() external {
+        dai.approve(address(publicSale), type(uint256).max);
 
-    //     for (uint256 i = 0 ; i < 100 ; i++) {
-    //         publicSale.buy(dai, firstHundredInvestments[i]);
+        for (uint256 i = 0 ; i < numInvestments ; i++) {
+            publicSale.buy(dai, investments[i]);
 
-    //         console.log("-----", i + 1, "-----");
-    //         console.log("Price              :", treasury.getRate());
-    //         console.log("Circulating Supply :", treasury.stabl3CirculatingSupply());
-    //         console.log("Total Value Locked :", treasury.getTotalValueLocked());
-    //         console.log("Market Cap         :", treasury.getBaseAmountIn(treasury.stabl3CirculatingSupply()));
-    //         i + 1 < 10 ?
-    //             console.log("-------------") :
-    //             i + 1 < 100 ?
-    //                 console.log("--------------") :
-    //                 console.log("---------------");
-    //     }
-    // }
+            console.log("-----", i + 1, "-----");
+            console.log("Price              :", treasury.getRate());
+            console.log("Circulating Supply :", treasury.stabl3CirculatingSupply());
+            console.log("Total Value Locked :", treasury.getTotalValueLocked());
+            console.log("Market Cap         :", treasury.getBaseAmountIn(treasury.stabl3CirculatingSupply()));
+            i + 1 < 10 ?
+                console.log("-------------") :
+                i + 1 < 100 ?
+                    console.log("--------------") :
+                    console.log("---------------");
+        }
+    }
 
-    // function test_Invest_Borrow() external {
-    //     dai.approve(address(publicSale), type(uint256).max);
-    //     stabl3.approve(address(borrowing), type(uint256).max);
+    function test_Invest_Borrow() external {
+        dai.approve(address(publicSale), type(uint256).max);
+        stabl3.approve(address(borrowing), type(uint256).max);
 
-    //     for (uint256 i = 0 ; i < 5 ; i++) {
-    //         publicSale.buy(dai, firstHundredInvestments[i]);
-    //         // Only considering the part of the investment that does not go into the HQ wallet.
-    //         uint256 amountBorrow = ((firstHundredInvestments[i] * (1000 - 39)) / 1000) / 1e12;
-    //         // The given amount of Dollars is reduced with respect to the price and the amount of Stabl3 taken is kept the same.
-    //         // Hence causing a deterministic reduction of amount being paid back to the user.
-    //         uint256 amountBorrowStabl3 = treasury.getBaseAmountOut(amountBorrow);
-    //         uint256 balanceStabl3Before = stabl3.balanceOf(address(this));
-    //         borrowing.borrow(amountBorrow);
-    //         uint256 balanceStabl3After = stabl3.balanceOf(address(this));
+        for (uint256 i = 0 ; i < numInvestments ; i++) {
+            publicSale.buy(dai, investments[i]);
+            // Only considering the part of the investment that does not go into the HQ wallet.
+            uint256 borrowUCD = ((investments[i] * (1000 - 39)) / 1000) / 1e12;
+            // The given amount of Dollars is reduced with respect to the price and the amount of Stabl3 taken is kept the same.
+            // Hence causing a deterministic reduction of amount being paid back to the user.
+            uint256 borrowStabl3 = treasury.getBaseAmountOut(borrowUCD);
+            uint256 balanceUCDBefore = ucd.balanceOf(address(this));
+            borrowing.borrow(borrowUCD);
+            uint256 balanceUCDAfter = ucd.balanceOf(address(this));
 
-    //         console.log("-----", i + 1, "-----");
-    //         console.log("Borrow Stabl3 With Fee :", amountBorrowStabl3);
-    //         console.log("Delta Balance Stabl3   :", balanceStabl3Before - balanceStabl3After);
-    //         assertEq(amountBorrowStabl3, balanceStabl3Before - balanceStabl3After);
-    //         i + 1 < 10 ?
-    //             console.log("-------------") :
-    //             i + 1 < 100 ?
-    //                 console.log("--------------") :
-    //                 console.log("---------------");
-    //     }
-    // }
+            console.log("-----", i + 1, "-----");
+            console.log("UCD borrow   :", borrowUCD);
+            console.log("UCD received :", balanceUCDAfter - balanceUCDBefore);
+            console.log("Stabl3 used  :", borrowStabl3);
+            assertLt(balanceUCDAfter - balanceUCDBefore, borrowUCD);
+            i + 1 < 10 ?
+                console.log("-------------") :
+                i + 1 < 100 ?
+                    console.log("--------------") :
+                    console.log("---------------");
+        }
+    }
 
     function test_Invest_Borrow_Payback() external {
         dai.approve(address(publicSale), type(uint256).max);
         stabl3.approve(address(borrowing), type(uint256).max);
 
-        for (uint256 i = 0 ; i < 5 ; i++) {
-            publicSale.buy(dai, firstHundredInvestments[i]);
-            uint256 amountBorrow = ((firstHundredInvestments[i] * (1000 - 39)) / 1000) / 1e12;
-            borrowing.borrow(amountBorrow);
-            uint256 amountPayback = ucd.balanceOf(address(this));
+        for (uint256 i = 0 ; i < numInvestments ; i++) {
+            publicSale.buy(dai, investments[i]);
+            // Only considering the part of the investment that does not go into the HQ wallet.
+            uint256 borrowUCD = ((investments[i] * (1000 - 39)) / 1000) / 1e12;
+            // The given amount of Dollars is reduced with respect to the price and the amount of Stabl3 taken is kept the same.
+            // Hence causing a deterministic reduction of amount being paid back to the user.
+            uint256 balanceUCDBefore = ucd.balanceOf(address(this));
+            borrowing.borrow(borrowUCD);
+            uint256 balanceUCDAfter = ucd.balanceOf(address(this));
+            borrowing.payback(balanceUCDAfter - balanceUCDBefore);
 
             console.log("-----", i + 1, "-----");
-            console.log("Borrow Stabl3 With Fee :", amountBorrowStabl3);
-            console.log("Delta Balance Stabl3   :", balanceStabl3Before - balanceStabl3After);
-            assertEq(amountBorrowStabl3, balanceStabl3Before - balanceStabl3After);
+            console.log("Price              :", treasury.getRate());
+            console.log("Circulating Supply :", treasury.stabl3CirculatingSupply());
+            console.log("Total Value Locked :", treasury.getTotalValueLocked());
+            console.log("Market Cap         :", treasury.getBaseAmountIn(treasury.stabl3CirculatingSupply()));
+            assertEq(treasury.getRate(), prices[i]);
+            assertLt(treasury.stabl3CirculatingSupply(), cs[i]);
+            assertEq(treasury.getTotalValueLocked(), tvl[i]);
+            assertEq(treasury.getBaseAmountIn(treasury.stabl3CirculatingSupply()), mc[i]);
             i + 1 < 10 ?
                 console.log("-------------") :
                 i + 1 < 100 ?
