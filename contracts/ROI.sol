@@ -13,8 +13,6 @@ import "./ITreasury.sol";
 contract ROI is Ownable, IStabl3StakingStruct {
     using SafeMath for uint256;
 
-    uint256 private constant MAX_INT = 2 ** 256 - 1;
-
     uint8 private constant BUY_POOL = 0;
 
     uint8 private constant BOND_POOL = 1;
@@ -156,7 +154,9 @@ contract ROI is Ownable, IStabl3StakingStruct {
             delegateApprove(UCD, _contractAddress, true);
 
             for (uint256 i = 0 ; i < TREASURY.allReservedTokensLength() ; i++) {
-                delegateApprove(TREASURY.allReservedTokens(i), _contractAddress, true);
+                IERC20 reservedToken = TREASURY.allReservedTokens(i);
+
+                if (TREASURY.isReservedToken(reservedToken)) delegateApprove(reservedToken, _contractAddress, true);
             }
         }
         else {
@@ -164,7 +164,9 @@ contract ROI is Ownable, IStabl3StakingStruct {
             delegateApprove(UCD, _contractAddress, false);
 
             for (uint256 i = 0 ; i < TREASURY.allReservedTokensLength() ; i++) {
-                delegateApprove(TREASURY.allReservedTokens(i), _contractAddress, false);
+                IERC20 reservedToken = TREASURY.allReservedTokens(i);
+
+                if (TREASURY.isReservedToken(reservedToken)) delegateApprove(reservedToken, _contractAddress, false);
             }
         }
 
@@ -409,7 +411,7 @@ contract ROI is Ownable, IStabl3StakingStruct {
 
     function delegateApprove(IERC20 _token, address _spender, bool _isApprove) public onlyOwner {
         if (_isApprove) {
-            SafeERC20.safeApprove(_token, _spender, MAX_INT);
+            SafeERC20.safeApprove(_token, _spender, type(uint256).max);
         }
         else {
             SafeERC20.safeApprove(_token, _spender, 0);

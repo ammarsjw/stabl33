@@ -195,17 +195,17 @@ contract Stabl3Borrowing is Ownable {
      * @dev This function allows users to deposit STABL3 and to receive UCD at current protocol rates
      * @dev Fees are cut in the form of stablecoins by reducing amount of UCD
      */
-    function borrow(uint256 _amount) external borrowActive {
-        require(_amount > 0, "Stabl3Borrowing: Insufficient amount");
+    function borrow(uint256 _amountUSD) external borrowActive {
+        require(_amountUSD > 0, "Stabl3Borrowing: Insufficient amount");
 
-        uint256 amountStabl3 = TREASURY.getBaseAmountOut(_amount);
+        uint256 amountStabl3 = TREASURY.getBorrowingAmount(_amountUSD);
 
         uint256 fee;
         if (INVESTORS.balanceOf(msg.sender) == 0) {
-            fee = _amount.mul(borrowFee).div(1000);
+            fee = _amountUSD.mul(borrowFee).div(1000);
         }
-        uint256 amountUCDWithFee = _amount - fee;
-        uint256 amountStabl3WithFee = TREASURY.getBaseAmountOut(amountUCDWithFee);
+        uint256 amountUCDWithFee = _amountUSD - fee;
+        uint256 amountStabl3WithFee = TREASURY.getBorrowingAmount(amountUCDWithFee);
         uint256 stabl3Fee = amountStabl3 - amountStabl3WithFee;
 
         (uint256 availableUCD, , ) = getReservesUCD();
@@ -254,7 +254,7 @@ contract Stabl3Borrowing is Ownable {
         require(_amountUCD > 0, "Stabl3Borrowing: Insufficient amount");
         require(getBorrowing.amountUCD > 0, "Stabl3Borrowing: No debt to payback");
 
-        uint256 amountStabl3 = TREASURY.getBaseAmountOut(_amountUCD);
+        uint256 amountStabl3 = TREASURY.getBorrowingAmount(_amountUCD);
 
         uint256 amountStabl3ToUncollateralize = (getBorrowing.amountStabl3 * _amountUCD) / getBorrowing.amountUCD;
         uint256 amountFeeToUncollateralize = (getBorrowing.amountFee * _amountUCD) / getBorrowing.amountUCD;
@@ -301,7 +301,7 @@ contract Stabl3Borrowing is Ownable {
         require(_amountUCD > 0, "Stabl3Borrowing: Insufficient amount");
         require(getBorrowing.amountUCD > 0, "Stabl3Borrowing: No debt to payback");
 
-        uint256 amountStabl3 = TREASURY.getBaseAmountOut(_amountUCD);
+        uint256 amountStabl3 = TREASURY.getBorrowingAmount(_amountUCD);
 
         uint256 amountStabl3ToUncollateralize = (getBorrowing.amountStabl3 * _amountUCD) / getBorrowing.amountUCD;
         uint256 amountFeeToUncollateralize = (getBorrowing.amountFee * _amountUCD) / getBorrowing.amountUCD;

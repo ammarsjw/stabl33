@@ -42,9 +42,9 @@ interface ITreasury {
 
     function getAmountIn(uint256 _amountStabl3, IERC20 _token) external view returns (uint256);
 
-    function getBaseAmountOut(uint256 _amountToken) external view returns (uint256);
+    function getBorrowingAmount(uint256 _amountToken) external view returns (uint256);
 
-    function getBaseAmountIn(uint256 _amountStabl3) external view returns (uint256);
+    function getMarketCap() external view returns (uint256);
 
     function getExchangeAmountOut(IERC20 _exchangingToken, IERC20 _token, uint256 _amountToken) external view returns (uint256);
 

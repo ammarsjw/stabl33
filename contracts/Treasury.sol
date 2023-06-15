@@ -14,7 +14,8 @@ import "./IUniswapV2Pair.sol";
 contract Treasury is Ownable {
     using SafeMath for uint256;
 
-    uint256 private constant MAX_INT = 2 ** 256 - 1;
+    uint8 private constant STAKE_POOL = 2;
+    uint8 private constant LEND_POOL = 5;
 
     IUniswapV2Router02 public uniswapRouter;
     IUniswapV2Factory public uniswapFactory;
@@ -183,7 +184,9 @@ contract Treasury is Ownable {
             delegateApprove(UCD, _contractAddress, true);
 
             for (uint256 i = 0 ; i < allReservedTokens.length ; i++) {
-                delegateApprove(allReservedTokens[i], _contractAddress, true);
+                IERC20 reservedToken = allReservedTokens[i];
+
+                if (isReservedToken[reservedToken]) delegateApprove(allReservedTokens[i], _contractAddress, true);
             }
         }
         else {
@@ -191,7 +194,9 @@ contract Treasury is Ownable {
             delegateApprove(UCD, _contractAddress, false);
 
             for (uint256 i = 0 ; i < allReservedTokens.length ; i++) {
-                delegateApprove(allReservedTokens[i], _contractAddress, false);
+                IERC20 reservedToken = allReservedTokens[i];
+
+                if (isReservedToken[reservedToken]) delegateApprove(allReservedTokens[i], _contractAddress, false);
             }
         }
 
@@ -208,10 +213,12 @@ contract Treasury is Ownable {
         uint256 totalReserves;
 
         for (uint256 i = 0 ; i < allReservedTokens.length ; i++) {
-            if (isReservedToken[allReservedTokens[i]]) {
-                uint256 amountToken = allReservedTokens[i].balanceOf(address(this));
+            IERC20 reservedToken = allReservedTokens[i];
 
-                uint256 decimals = allReservedTokens[i].decimals();
+            if (isReservedToken[reservedToken]) {
+                uint256 amountToken = reservedToken.balanceOf(address(this));
+
+                uint256 decimals = reservedToken.decimals();
 
                 totalReserves += decimals < 18 ? amountToken * (10 ** (18 - decimals)) : amountToken;
             }
@@ -224,13 +231,15 @@ contract Treasury is Ownable {
         uint256 totalValueLocked;
 
         for (uint256 i = 0 ; i < allReservedTokens.length ; i++) {
-            if (isReservedToken[allReservedTokens[i]]) {
-                uint256 amountToken = allReservedTokens[i].balanceOf(address(this));
+            IERC20 reservedToken = allReservedTokens[i];
 
-                amountToken += allReservedTokens[i].balanceOf(ROI);
-                amountToken += allReservedTokens[i].balanceOf(HQ);
+            if (isReservedToken[reservedToken]) {
+                uint256 amountToken = reservedToken.balanceOf(address(this));
 
-                uint256 decimals = allReservedTokens[i].decimals();
+                amountToken += reservedToken.balanceOf(ROI);
+                amountToken += reservedToken.balanceOf(HQ);
+
+                uint256 decimals = reservedToken.decimals();
 
                 totalValueLocked += decimals < 18 ? amountToken * (10 ** (18 - decimals)) : amountToken;
             }
@@ -245,10 +254,12 @@ contract Treasury is Ownable {
         uint256 maxAmountReservedToken;
 
         for (uint256 i = 0 ; i < allReservedTokens.length ; i++) {
-            if (isReservedToken[allReservedTokens[i]]) {
-                uint256 amountReservedToken = allReservedTokens[i].balanceOf(address(this));
+            IERC20 reservedToken = allReservedTokens[i];
 
-                uint256 decimals = allReservedTokens[i].decimals();
+            if (isReservedToken[reservedToken]) {
+                uint256 amountReservedToken = reservedToken.balanceOf(address(this));
+
+                uint256 decimals = reservedToken.decimals();
 
                 uint256 amountReservedTokenConverted =
                     decimals < 18 ?
@@ -256,7 +267,7 @@ contract Treasury is Ownable {
                     amountReservedToken;
 
                 if (amountReservedTokenConverted > maxAmountReservedToken) {
-                    selectedReservedToken = allReservedTokens[i];
+                    selectedReservedToken = reservedToken;
 
                     maxAmountReservedToken = amountReservedTokenConverted;
                 }
@@ -326,24 +337,42 @@ contract Treasury is Ownable {
         return amountToken;
     }
 
-    function getBaseAmountOut(uint256 _amountToken) external view returns (uint256) {
+    function getBorrowingAmount(uint256 _amountToken) external view returns (uint256) {
         if (_amountToken == 0) {
             return 0;
         }
 
-        uint256 amountStabl3 = (_amountToken * rateHistory.totalStabl3 * 1e12) / rateHistory.totalValue;
+        uint256 marketCap = getMarketCap();
+        uint256 circulatingSupply = stabl3CirculatingSupply();
+        uint256 amountStabl3 = (_amountToken * circulatingSupply) / marketCap;
 
         return amountStabl3;
     }
 
-    function getBaseAmountIn(uint256 _amountStabl3) external view returns (uint256) {
-        if (_amountStabl3 == 0) {
-            return 0;
+    function getMarketCap() public view returns (uint256) {
+        uint256 totalExtraLiquidity;
+
+        for (uint256 i = 0 ; i < allReservedTokens.length ; i++) {
+            IERC20 reservedToken = allReservedTokens[i];
+
+            if (isReservedToken[reservedToken]) {
+                uint256 stakeAmount = getTreasuryPool[STAKE_POOL][reservedToken];
+                uint256 lendAmount = getTreasuryPool[LEND_POOL][reservedToken];
+
+                uint256 decimals = reservedToken.decimals();
+
+                totalExtraLiquidity +=
+                    decimals < 18 ?
+                    (stakeAmount * (10 ** (18 - decimals))) + (lendAmount * (10 ** (18 - decimals))) :
+                    stakeAmount + lendAmount;
+            }
         }
 
-        uint256 amountToken = (_amountStabl3 * rateHistory.totalValue) / (rateHistory.totalStabl3 * 1e12);
+        uint256 marketCap = getTotalValueLocked();
+        marketCap = marketCap.safeSub(totalExtraLiquidity);
+        marketCap /= 1e12;
 
-        return amountToken;
+        return marketCap;
     }
 
     function getExchangeAmountOut(IERC20 _exchangingToken, IERC20 _token, uint256 _amountToken) external view returns (uint256) {
@@ -453,7 +482,7 @@ contract Treasury is Ownable {
 
     function delegateApprove(IERC20 _token, address _spender, bool _isApprove) public onlyOwner {
         if (_isApprove) {
-            SafeERC20.safeApprove(_token, _spender, MAX_INT);
+            SafeERC20.safeApprove(_token, _spender, type(uint256).max);
         }
         else {
             SafeERC20.safeApprove(_token, _spender, 0);
