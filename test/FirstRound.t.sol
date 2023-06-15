@@ -36,7 +36,7 @@ contract FirstRoundTest is Test, Constants {
     /// @dev Invoked before each test.
     function setUp() public {
         vm.deal(address(this), 1_000_000_000 * 1e18);
-        numInvestments = 5;
+        numInvestments = 10;
 
         treasury = new Treasury();
         address treasuryAddress = address(treasury);
@@ -124,7 +124,7 @@ contract FirstRoundTest is Test, Constants {
         for (uint256 i = 0 ; i < numInvestments ; i++) {
             publicSale.buy(dai, investments[i]);
             // Only considering the part of the investment that does not go into the HQ wallet.
-            uint256 borrowUCD = ((investments[i] * (1000 - 39)) / 1000) / 1e12;
+            uint256 borrowUCD = investments[i] / 1e12;
             // The given amount of Dollars is reduced with respect to the price and the amount of Stabl3 taken is kept the same.
             // Hence causing a deterministic reduction of amount being paid back to the user.
             uint256 balanceUCDBefore = ucd.balanceOf(address(this));
@@ -138,7 +138,7 @@ contract FirstRoundTest is Test, Constants {
             console.log("Total Value Locked :", treasury.getTotalValueLocked());
             console.log("Market Cap         :", treasury.getBaseAmountIn(treasury.stabl3CirculatingSupply()));
             assertEq(treasury.getRate(), prices[i]);
-            assertLt(treasury.stabl3CirculatingSupply(), cs[i]);
+            assertLe(treasury.stabl3CirculatingSupply(), cs[i]);
             assertEq(treasury.getTotalValueLocked(), tvl[i]);
             assertEq(treasury.getBaseAmountIn(treasury.stabl3CirculatingSupply()), mc[i]);
             i + 1 < 10 ?

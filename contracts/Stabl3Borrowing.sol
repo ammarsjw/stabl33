@@ -178,12 +178,13 @@ contract Stabl3Borrowing is Ownable {
             }
         }
 
-        availableUCD = TREASURY.getReserves() + ROI.getReserves();
+        availableUCD = TREASURY.getTotalValueLocked();
         availableUCD = availableUCD.safeSub(totalExtraLiquidity);
         availableUCD /= 10 ** (18 - UCD.decimals());
         uint256 ucdTotalSupply = UCD.totalSupply();
         availableUCD = availableUCD.safeSub(ucdTotalSupply);
-        availableUCD = (availableUCD * (1000 - borrowFee)) / 1000;
+        uint256 fee = (availableUCD * borrowFee) / 1000;
+        availableUCD = availableUCD - fee;
 
         borrowedUCD = ucdTotalSupply;
 
