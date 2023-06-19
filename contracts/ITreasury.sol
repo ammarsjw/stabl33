@@ -20,6 +20,8 @@ interface ITreasury {
 
     function permitted(address) external view returns (bool);
 
+    function stabl3CirculatingSupply() external view returns (uint256);
+
     function allReservedTokensLength() external view returns (uint256);
 
     function allPools(uint8 _type, IERC20 _token) external view returns (uint256, uint256, uint256);

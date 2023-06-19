@@ -23,6 +23,8 @@ contract Treasury is Ownable {
     address public ROI;
     address public HQ;
 
+    address public donationWallet;
+
     IERC20 public immutable STABL3;
     uint256 private _stabl3CirculatingSupply;
 
@@ -88,6 +90,8 @@ contract Treasury is Ownable {
 
         // TODO change
         HQ = 0x294d0487fdf7acecf342ae70AFc5549A6E90f3e0;
+
+        donationWallet = 0x3edCe801a3f1851675e68589844B1b412EAc6B07;
 
         // TODO change
         STABL3 = IERC20(0xc3Bf0c0172E3638d383361801e9BF63B4FfE0d6e);
@@ -337,14 +341,14 @@ contract Treasury is Ownable {
         return amountToken;
     }
 
-    function getBorrowingAmount(uint256 _amountToken) external view returns (uint256) {
+    function getBorrowingAmount(uint256 _amountToken) public view returns (uint256) {
         if (_amountToken == 0) {
             return 0;
         }
 
-        uint256 marketCap = getMarketCap();
-        uint256 circulatingSupply = stabl3CirculatingSupply();
-        uint256 amountStabl3 = (_amountToken * circulatingSupply) / marketCap;
+        uint256 totalValue = getMarketCap();
+        uint256 totalSupply = stabl3CirculatingSupply();
+        uint256 amountStabl3 = (_amountToken * totalSupply) / totalValue;
 
         return amountStabl3;
     }
