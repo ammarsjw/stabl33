@@ -341,44 +341,6 @@ contract Treasury is Ownable {
         return amountToken;
     }
 
-    function getBorrowingAmount(uint256 _amountToken) public view returns (uint256) {
-        if (_amountToken == 0) {
-            return 0;
-        }
-
-        uint256 totalValue = getMarketCap();
-        uint256 totalSupply = stabl3CirculatingSupply();
-        uint256 amountStabl3 = (_amountToken * totalSupply) / totalValue;
-
-        return amountStabl3;
-    }
-
-    function getMarketCap() public view returns (uint256) {
-        uint256 totalExtraLiquidity;
-
-        for (uint256 i = 0 ; i < allReservedTokens.length ; i++) {
-            IERC20 reservedToken = allReservedTokens[i];
-
-            if (isReservedToken[reservedToken]) {
-                uint256 stakeAmount = getTreasuryPool[STAKE_POOL][reservedToken];
-                uint256 lendAmount = getTreasuryPool[LEND_POOL][reservedToken];
-
-                uint256 decimals = reservedToken.decimals();
-
-                totalExtraLiquidity +=
-                    decimals < 18 ?
-                    (stakeAmount * (10 ** (18 - decimals))) + (lendAmount * (10 ** (18 - decimals))) :
-                    stakeAmount + lendAmount;
-            }
-        }
-
-        uint256 marketCap = getTotalValueLocked();
-        marketCap = marketCap.safeSub(totalExtraLiquidity);
-        marketCap /= 1e12;
-
-        return marketCap;
-    }
-
     function getExchangeAmountOut(IERC20 _exchangingToken, IERC20 _token, uint256 _amountToken) external view returns (uint256) {
         if (_amountToken == 0) {
             return 0;
@@ -422,6 +384,44 @@ contract Treasury is Ownable {
         uint256 amountTokenWithFee = amountToken.mul(1000).div(1000 - exchangeFee);
 
         return amountTokenWithFee;
+    }
+
+    function getBorrowingAmount(uint256 _amountToken) public view returns (uint256) {
+        if (_amountToken == 0) {
+            return 0;
+        }
+
+        uint256 totalValue = getMarketCap();
+        uint256 totalSupply = stabl3CirculatingSupply();
+        uint256 amountStabl3 = (_amountToken * totalSupply) / totalValue;
+
+        return amountStabl3;
+    }
+
+    function getMarketCap() public view returns (uint256) {
+        uint256 totalExtraLiquidity;
+
+        for (uint256 i = 0 ; i < allReservedTokens.length ; i++) {
+            IERC20 reservedToken = allReservedTokens[i];
+
+            if (isReservedToken[reservedToken]) {
+                uint256 stakeAmount = getTreasuryPool[STAKE_POOL][reservedToken];
+                uint256 lendAmount = getTreasuryPool[LEND_POOL][reservedToken];
+
+                uint256 decimals = reservedToken.decimals();
+
+                totalExtraLiquidity +=
+                    decimals < 18 ?
+                    (stakeAmount * (10 ** (18 - decimals))) + (lendAmount * (10 ** (18 - decimals))) :
+                    stakeAmount + lendAmount;
+            }
+        }
+
+        uint256 marketCap = getTotalValueLocked();
+        marketCap = marketCap.safeSub(totalExtraLiquidity);
+        marketCap /= 1e12;
+
+        return marketCap;
     }
 
     function updatePool(
