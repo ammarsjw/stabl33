@@ -2,14 +2,14 @@
 
 pragma solidity 0.8.19;
 
-import "./Ownable.sol";
+import "./interfaces/IUniswapV2Factory.sol";
+import "./interfaces/IUniswapV2Pair.sol";
+import "./interfaces/IUniswapV2Router.sol";
 
-import "./SafeMath.sol";
-import "./SafeERC20.sol";
+import "./libraries/SafeERC20.sol";
+import "./libraries/SafeMath.sol";
 
-import "./IUniswapV2Router.sol";
-import "./IUniswapV2Factory.sol";
-import "./IUniswapV2Pair.sol";
+import "./utils/Ownable.sol";
 
 contract Treasury is Ownable {
     using SafeMath for uint256;

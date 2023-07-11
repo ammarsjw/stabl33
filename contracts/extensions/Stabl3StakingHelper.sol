@@ -2,11 +2,11 @@
 
 pragma solidity 0.8.19;
 
-import "./SafeMath.sol";
+import "../interfaces/IROI.sol";
+import "../interfaces/IStabl3Staking.sol";
+import "../interfaces/IStabl3StakingStruct.sol";
 
-import "./IROI.sol";
-import "./IStabl3Staking.sol";
-import "./IStabl3StakingStruct.sol";
+import "../libraries/SafeMath.sol";
 
 contract Stabl3StakingHelper is IStabl3StakingStruct {
     using SafeMath for uint256;

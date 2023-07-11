@@ -2,13 +2,13 @@
 
 pragma solidity 0.8.19;
 
-import "./Ownable.sol";
+import "./interfaces/IROI.sol";
+import "./interfaces/ITreasury.sol";
 
-import "./SafeMath.sol";
-import "./SafeERC20.sol";
+import "./libraries/SafeERC20.sol";
+import "./libraries/SafeMath.sol";
 
-import "./ITreasury.sol";
-import "./IROI.sol";
+import "./utils/Ownable.sol";
 
 contract Stabl3Bonding is Ownable {
     using SafeMath for uint256;

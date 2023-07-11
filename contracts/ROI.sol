@@ -2,15 +2,15 @@
 
 pragma solidity 0.8.19;
 
-import "./Ownable.sol";
+import "./interfaces/IStabl3Staking.sol";
+import "./interfaces/ITreasury.sol";
 
-import "./SafeMath.sol";
-import "./SafeERC20.sol";
+import "./libraries/SafeERC20.sol";
+import "./libraries/SafeMath.sol";
 
-import "./IStabl3Staking.sol";
-import "./ITreasury.sol";
+import "./utils/Ownable.sol";
 
-contract ROI is Ownable, IStabl3StakingStruct {
+contract ROI is IStabl3StakingStruct, Ownable {
     using SafeMath for uint256;
 
     uint8 private constant BUY_POOL = 0;
