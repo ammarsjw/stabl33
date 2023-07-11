@@ -10,7 +10,7 @@ import "./libraries/SafeMath.sol";
 
 import "./utils/Ownable.sol";
 
-contract ROI is IStabl3StakingStruct, Ownable {
+contract ROI is IROIStruct, Ownable {
     using SafeMath for uint256;
 
     uint8 private constant BUY_POOL = 0;

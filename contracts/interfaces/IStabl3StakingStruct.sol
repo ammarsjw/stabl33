@@ -3,13 +3,9 @@
 pragma solidity ^0.8.0;
 
 import "./IERC20.sol";
+import "./IROIStruct.sol";
 
-interface IStabl3StakingStruct {
-
-    struct TimeWeightedAPR {
-        uint256 APR;
-        uint256 timeWeight;
-    }
+interface IStabl3StakingStruct is IROIStruct {
 
     struct Staking {
         uint256 index;

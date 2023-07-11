@@ -4,7 +4,6 @@ pragma solidity 0.8.19;
 
 import "../interfaces/IROI.sol";
 import "../interfaces/IStabl3Staking.sol";
-import "../interfaces/IStabl3StakingStruct.sol";
 
 import "../libraries/SafeMath.sol";
 

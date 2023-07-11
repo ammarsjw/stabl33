@@ -3,9 +3,9 @@
 pragma solidity ^0.8.0;
 
 import "./IERC20.sol";
-import "./IStabl3StakingStruct.sol";
+import "./IROIStruct.sol";
 
-interface IROI is IStabl3StakingStruct {
+interface IROI is IROIStruct {
 
     function timeWeightedAPR() external view returns (TimeWeightedAPR memory);
     function updateAPRLast() external view returns (uint256);

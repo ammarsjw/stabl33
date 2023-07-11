@@ -2,7 +2,6 @@
 
 pragma solidity ^0.8.0;
 
-import "./IROI.sol";
 import "./IStabl3StakingStruct.sol";
 
 interface IStabl3Staking is IStabl3StakingStruct {
