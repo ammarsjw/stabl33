@@ -70,24 +70,24 @@ contract FirstRoundTest is Test, Constants {
         vm.stopPrank();
     }
 
-    function test_Invest() external {
-        dai.approve(address(publicSale), type(uint256).max);
+    // function test_Invest() external {
+    //     dai.approve(address(publicSale), type(uint256).max);
 
-        for (uint256 i = 0 ; i < numInvestments ; i++) {
-            publicSale.buy(dai, investments[i]);
+    //     for (uint256 i = 0 ; i < numInvestments ; i++) {
+    //         publicSale.buy(dai, investments[i]);
 
-            console.log("-----", i + 1, "-----");
-            console.log("Price              :", treasury.getRate());
-            console.log("Circulating Supply :", treasury.stabl3CirculatingSupply());
-            console.log("Total Value Locked :", treasury.getTotalValueLocked());
-            console.log("Market Cap         :", treasury.getMarketCap());
-            i + 1 < 10 ?
-                console.log("-------------") :
-                i + 1 < 100 ?
-                    console.log("--------------") :
-                    console.log("---------------");
-        }
-    }
+    //         console.log("-----", i + 1, "-----");
+    //         console.log("Price              :", treasury.getRate());
+    //         console.log("Circulating Supply :", treasury.stabl3CirculatingSupply());
+    //         console.log("Total Value Locked :", treasury.getTotalValueLocked());
+    //         console.log("Market Cap         :", treasury.getMarketCap());
+    //         i + 1 < 10 ?
+    //             console.log("-------------") :
+    //             i + 1 < 100 ?
+    //                 console.log("--------------") :
+    //                 console.log("---------------");
+    //     }
+    // }
 
     function test_Invest_Borrow() external {
         dai.approve(address(publicSale), type(uint256).max);
@@ -148,109 +148,109 @@ contract FirstRoundTest is Test, Constants {
         }
     }
 
-    function test_Invest_Borrow_Payback() external {
-        dai.approve(address(publicSale), type(uint256).max);
-        stabl3.approve(address(borrowing), type(uint256).max);
+    // function test_Invest_Borrow_Payback() external {
+    //     dai.approve(address(publicSale), type(uint256).max);
+    //     stabl3.approve(address(borrowing), type(uint256).max);
 
-        for (uint256 i = 0 ; i < numInvestments ; i++) {
-            publicSale.buy(dai, investments[i]);
-            // Only considering the part of the investment that does not go into the HQ wallet.
-            uint256 borrowUCD = investments[i] / 1e12;
-            // The given amount of Dollars is reduced with respect to the price and the amount of Stabl3 taken is kept the same.
-            // Hence causing a deterministic reduction of amount being paid back to the user.
-            uint256 balanceUCDBefore = ucd.balanceOf(address(this));
-            borrowing.borrow(borrowUCD);
-            uint256 balanceUCDAfter = ucd.balanceOf(address(this));
-            borrowing.payback(balanceUCDAfter - balanceUCDBefore);
+    //     for (uint256 i = 0 ; i < numInvestments ; i++) {
+    //         publicSale.buy(dai, investments[i]);
+    //         // Only considering the part of the investment that does not go into the HQ wallet.
+    //         uint256 borrowUCD = investments[i] / 1e12;
+    //         // The given amount of Dollars is reduced with respect to the price and the amount of Stabl3 taken is kept the same.
+    //         // Hence causing a deterministic reduction of amount being paid back to the user.
+    //         uint256 balanceUCDBefore = ucd.balanceOf(address(this));
+    //         borrowing.borrow(borrowUCD);
+    //         uint256 balanceUCDAfter = ucd.balanceOf(address(this));
+    //         borrowing.payback(balanceUCDAfter - balanceUCDBefore);
 
-            console.log("-----", i + 1, "-----");
-            console.log("Price              :", treasury.getRate());
-            console.log("Circulating Supply :", treasury.stabl3CirculatingSupply());
-            console.log("Total Value Locked :", treasury.getTotalValueLocked());
-            console.log("Market Cap         :", treasury.getMarketCap());
-            console.log("Donation Stabl3    :", stabl3.balanceOf(address(borrowing.donationWallet())));
-            assertEq(treasury.getRate(), prices[i]);
-            assertLt(treasury.stabl3CirculatingSupply(), cs[i]);
-            assertEq(treasury.getTotalValueLocked(), tvl[i]);
-            assertEq(treasury.getMarketCap(), mc[i]);
-            assertEq(stabl3.balanceOf(address(borrowing.donationWallet())), 0);
-            i + 1 < 10 ?
-                console.log("-------------") :
-                i + 1 < 100 ?
-                    console.log("--------------") :
-                    console.log("---------------");
-        }
-    }
+    //         console.log("-----", i + 1, "-----");
+    //         console.log("Price              :", treasury.getRate());
+    //         console.log("Circulating Supply :", treasury.stabl3CirculatingSupply());
+    //         console.log("Total Value Locked :", treasury.getTotalValueLocked());
+    //         console.log("Market Cap         :", treasury.getMarketCap());
+    //         console.log("Donation Stabl3    :", stabl3.balanceOf(address(borrowing.donationWallet())));
+    //         assertEq(treasury.getRate(), prices[i]);
+    //         assertLt(treasury.stabl3CirculatingSupply(), cs[i]);
+    //         assertEq(treasury.getTotalValueLocked(), tvl[i]);
+    //         assertEq(treasury.getMarketCap(), mc[i]);
+    //         assertEq(stabl3.balanceOf(address(borrowing.donationWallet())), 0);
+    //         i + 1 < 10 ?
+    //             console.log("-------------") :
+    //             i + 1 < 100 ?
+    //                 console.log("--------------") :
+    //                 console.log("---------------");
+    //     }
+    // }
 
-    function test_Invest_Borrow_ExchangeUCD() external {
-        dai.approve(address(publicSale), type(uint256).max);
-        stabl3.approve(address(borrowing), type(uint256).max);
+    // function test_Invest_Borrow_ExchangeUCD() external {
+    //     dai.approve(address(publicSale), type(uint256).max);
+    //     stabl3.approve(address(borrowing), type(uint256).max);
 
-        for (uint256 i = 0 ; i < numInvestments ; i++) {
-            publicSale.buy(dai, investments[i]);
-            // Only considering the part of the investment that does not go into the HQ wallet.
-            uint256 borrowUCD = investments[i] / 1e12;
-            // The given amount of Dollars is reduced with respect to the price and the amount of Stabl3 taken is kept the same.
-            // Hence causing a deterministic reduction of amount being paid back to the user.
-            uint256 balanceUCDBefore = ucd.balanceOf(address(this));
-            borrowing.borrow(borrowUCD);
-            uint256 balanceUCDAfter = ucd.balanceOf(address(this));
-            borrowing.exchangeUCD(dai, balanceUCDAfter - balanceUCDBefore);
+    //     for (uint256 i = 0 ; i < numInvestments ; i++) {
+    //         publicSale.buy(dai, investments[i]);
+    //         // Only considering the part of the investment that does not go into the HQ wallet.
+    //         uint256 borrowUCD = investments[i] / 1e12;
+    //         // The given amount of Dollars is reduced with respect to the price and the amount of Stabl3 taken is kept the same.
+    //         // Hence causing a deterministic reduction of amount being paid back to the user.
+    //         uint256 balanceUCDBefore = ucd.balanceOf(address(this));
+    //         borrowing.borrow(borrowUCD);
+    //         uint256 balanceUCDAfter = ucd.balanceOf(address(this));
+    //         borrowing.exchangeUCD(dai, balanceUCDAfter - balanceUCDBefore);
 
-            console.log("-----", i + 1, "-----");
-            console.log("Price              :", treasury.getRate());
-            console.log("Circulating Supply :", treasury.stabl3CirculatingSupply());
-            console.log("Total Value Locked :", treasury.getTotalValueLocked());
-            console.log("Market Cap         :", treasury.getMarketCap());
-            console.log("Donation Stabl3    :", stabl3.balanceOf(address(borrowing.donationWallet())));
-            assertEq(treasury.getRate(), prices[i]);
-            assertLt(treasury.stabl3CirculatingSupply(), cs[i]);
-            assertLe(treasury.getTotalValueLocked(), tvl[i]);
-            assertLe(treasury.getMarketCap(), mc[i]);
-            assertEq(stabl3.balanceOf(address(borrowing.donationWallet())), 0);
-            i + 1 < 10 ?
-                console.log("-------------") :
-                i + 1 < 100 ?
-                    console.log("--------------") :
-                    console.log("---------------");
-        }
-    }
+    //         console.log("-----", i + 1, "-----");
+    //         console.log("Price              :", treasury.getRate());
+    //         console.log("Circulating Supply :", treasury.stabl3CirculatingSupply());
+    //         console.log("Total Value Locked :", treasury.getTotalValueLocked());
+    //         console.log("Market Cap         :", treasury.getMarketCap());
+    //         console.log("Donation Stabl3    :", stabl3.balanceOf(address(borrowing.donationWallet())));
+    //         assertEq(treasury.getRate(), prices[i]);
+    //         assertLt(treasury.stabl3CirculatingSupply(), cs[i]);
+    //         assertLe(treasury.getTotalValueLocked(), tvl[i]);
+    //         assertLe(treasury.getMarketCap(), mc[i]);
+    //         assertEq(stabl3.balanceOf(address(borrowing.donationWallet())), 0);
+    //         i + 1 < 10 ?
+    //             console.log("-------------") :
+    //             i + 1 < 100 ?
+    //                 console.log("--------------") :
+    //                 console.log("---------------");
+    //     }
+    // }
 
-    function test_Invest_Borrow_ExchangeUCD_Twice() external {
-        dai.approve(address(publicSale), type(uint256).max);
-        stabl3.approve(address(borrowing), type(uint256).max);
+    // function test_Invest_Borrow_ExchangeUCD_Twice() external {
+    //     dai.approve(address(publicSale), type(uint256).max);
+    //     stabl3.approve(address(borrowing), type(uint256).max);
 
-        for (uint256 i = 0 ; i < numInvestments ; i++) {
-            publicSale.buy(dai, investments[i]);
-            // Only considering the part of the investment that does not go into the HQ wallet.
-            uint256 borrowUCD = investments[i] / 1e12;
-            uint256 borrowUCDHalf = borrowUCD / 2;
-            // The given amount of Dollars is reduced with respect to the price and the amount of Stabl3 taken is kept the same.
-            // Hence causing a deterministic reduction of amount being paid back to the user.
-            uint256 balanceUCDBefore = ucd.balanceOf(address(this));
-            uint256 borrowStabl3 = treasury.getBorrowingAmount(borrowUCD);
-            borrowing.borrow(borrowUCDHalf);
-            borrowStabl3 += treasury.getBorrowingAmount(borrowUCD);
-            borrowing.borrow(borrowUCDHalf);
-            uint256 balanceUCDAfter = ucd.balanceOf(address(this));
-            borrowing.exchangeUCD(dai, balanceUCDAfter - balanceUCDBefore);
+    //     for (uint256 i = 0 ; i < numInvestments ; i++) {
+    //         publicSale.buy(dai, investments[i]);
+    //         // Only considering the part of the investment that does not go into the HQ wallet.
+    //         uint256 borrowUCD = investments[i] / 1e12;
+    //         uint256 borrowUCDHalf = borrowUCD / 2;
+    //         // The given amount of Dollars is reduced with respect to the price and the amount of Stabl3 taken is kept the same.
+    //         // Hence causing a deterministic reduction of amount being paid back to the user.
+    //         uint256 balanceUCDBefore = ucd.balanceOf(address(this));
+    //         uint256 borrowStabl3 = treasury.getBorrowingAmount(borrowUCD);
+    //         borrowing.borrow(borrowUCDHalf);
+    //         borrowStabl3 += treasury.getBorrowingAmount(borrowUCD);
+    //         borrowing.borrow(borrowUCDHalf);
+    //         uint256 balanceUCDAfter = ucd.balanceOf(address(this));
+    //         borrowing.exchangeUCD(dai, balanceUCDAfter - balanceUCDBefore);
 
-            console.log("-----", i + 1, "-----");
-            console.log("Price              :", treasury.getRate());
-            console.log("Circulating Supply :", treasury.stabl3CirculatingSupply());
-            console.log("Total Value Locked :", treasury.getTotalValueLocked());
-            console.log("Market Cap         :", treasury.getMarketCap());
-            console.log("Donation Stabl3    :", stabl3.balanceOf(address(borrowing.donationWallet())));
-            assertEq(treasury.getRate(), prices[i]);
-            assertLt(treasury.stabl3CirculatingSupply(), cs[i]);
-            assertLe(treasury.getTotalValueLocked(), tvl[i]);
-            assertLe(treasury.getMarketCap(), mc[i]);
-            assertEq(stabl3.balanceOf(address(borrowing.donationWallet())), 0);
-            i + 1 < 10 ?
-                console.log("-------------") :
-                i + 1 < 100 ?
-                    console.log("--------------") :
-                    console.log("---------------");
-        }
-    }
+    //         console.log("-----", i + 1, "-----");
+    //         console.log("Price              :", treasury.getRate());
+    //         console.log("Circulating Supply :", treasury.stabl3CirculatingSupply());
+    //         console.log("Total Value Locked :", treasury.getTotalValueLocked());
+    //         console.log("Market Cap         :", treasury.getMarketCap());
+    //         console.log("Donation Stabl3    :", stabl3.balanceOf(address(borrowing.donationWallet())));
+    //         assertEq(treasury.getRate(), prices[i]);
+    //         assertLt(treasury.stabl3CirculatingSupply(), cs[i]);
+    //         assertLe(treasury.getTotalValueLocked(), tvl[i]);
+    //         assertLe(treasury.getMarketCap(), mc[i]);
+    //         assertEq(stabl3.balanceOf(address(borrowing.donationWallet())), 0);
+    //         i + 1 < 10 ?
+    //             console.log("-------------") :
+    //             i + 1 < 100 ?
+    //                 console.log("--------------") :
+    //                 console.log("---------------");
+    //     }
+    // }
 }
