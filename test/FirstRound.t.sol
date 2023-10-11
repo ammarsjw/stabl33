@@ -4,13 +4,13 @@ pragma solidity 0.8.19;
 
 import "forge-std/Test.sol";
 
-import "contracts/ROI.sol";
-import "contracts/Stabl3Borrowing.sol";
-import "contracts/Stabl3PublicSale.sol";
-import "contracts/Stabl3Staking.sol";
-import "contracts/Treasury.sol";
+import { ROI } from "contracts/ROI.sol";
+import { Stabl3Borrowing } from "contracts/Stabl3Borrowing.sol";
+import { Stabl3PublicSale } from "contracts/Stabl3PublicSale.sol";
+import { Stabl3Staking } from "contracts/Stabl3Staking.sol";
+import { Treasury } from "contracts/Treasury.sol";
 
-import "./utils/Globals.sol";
+import { Constants } from "./utils/Globals.sol";
 
 contract FirstRoundTest is Test, Constants {
 
